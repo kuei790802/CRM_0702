@@ -1,0 +1,29 @@
+# === Frontend (React/Vite) ===
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/*.local
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/lerna-debug.log*
+
+# === Backend (Spring Boot / Maven) ===
+/backend/target/
+/backend/*.log
+/backend/.settings/
+/backend/.classpath
+/backend/.project
+/backend/.metadata/
+/backend/.idea/
+/backend/*.iml
+
+# === General IDE ===
+.idea/
+.vscode/
+*.iml
+
+# === OS ===
+.DS_Store
+Thumbs.db
