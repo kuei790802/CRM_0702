@@ -9,7 +9,7 @@ import com.example.demo.dto.ProductCreateRequestDTO;
 import com.example.demo.dto.ProductUpdateRequestDTO;
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
-import com.example.specification.ProductSpecification;
+import com.example.demo.specification.ProductSpecification;
 
 import lombok.RequiredArgsConstructor;
 
