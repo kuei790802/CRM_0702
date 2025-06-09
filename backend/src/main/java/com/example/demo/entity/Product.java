@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,7 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name="product")
+@Table(name="products")
 @Getter
 @Setter
 public class Product {

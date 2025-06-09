@@ -1,12 +1,13 @@
 package com.example.demo.specification;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import com.example.demo.entity.Product;
 
 import jakarta.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class ProductSpecification {
@@ -38,7 +39,7 @@ public class ProductSpecification {
             }
 
             
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 }
