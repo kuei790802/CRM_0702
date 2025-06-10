@@ -52,7 +52,7 @@ const Navbar = () => {
           {/* 桌面導覽連結 */}
           <div className="hidden md:flex items-center space-x-6 font-semibold text-lg">
             <Link to="/store" className="hover:text-logo-lightBlue">
-              精選商店
+              商店
             </Link>
             <Link to="/about" className="hover:text-logo-lightBlue">
               關於良野
