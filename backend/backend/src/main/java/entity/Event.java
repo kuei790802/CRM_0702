@@ -23,7 +23,7 @@ public class Event {
     private Date end;
 
     @Column(name = "salespersonname")
-    private String sales;
+    private String salesPersonName;
 
     @Column(name = "customerid")
     private Long customerid;
@@ -67,12 +67,12 @@ public class Event {
         this.end = end;
     }
 
-    public String getSales() {
-        return sales;
+    public String getSalesPersonName() {
+        return salesPersonName;
     }
 
-    public void setSales(String sales) {
-        this.sales = sales;
+    public void setSalesPersonName(String sales) {
+        this.salesPersonName = sales;
     }
 
     public Long getCustomerid() {

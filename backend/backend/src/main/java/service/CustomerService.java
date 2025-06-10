@@ -4,7 +4,6 @@ import entity.Customer;
 import org.springframework.stereotype.Service;
 import repository.CustomerRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,12 +24,6 @@ public class CustomerService {
     }
 
     public Customer save(Customer customer) {
-        // 新增填入時間
-        if (customer.getId() == null) {
-            customer.setCreatedAt(LocalDateTime.now());
-        }
-        // 更新時間
-        customer.setUpdatedAt(LocalDateTime.now());
         return customerRepository.save(customer);
     }
     public void delete(Long id) {

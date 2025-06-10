@@ -1,11 +1,17 @@
 package entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "customers")
+@EntityListeners(AuditingEntityListener.class)
 public class Customer {
 
     @Id
@@ -37,11 +43,23 @@ public class Customer {
     @Column(name = "customeremail")
     private String email;
 
+    @CreatedDate
     @Column(name = "customercreated", updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "customerupdated")
     private LocalDateTime updatedAt;
+
+    // ----- Join -----
+    @ManyToMany
+    @JoinTable(
+            name = "tagmaps",
+            joinColumns = @JoinColumn(name = "customerid"),
+            inverseJoinColumns = @JoinColumn(name = "tagid")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
 
     // Getter and Setter
     public Long getId() {
@@ -120,15 +138,15 @@ public class Customer {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+//    public void setCreatedAt(LocalDateTime createdAt) {
+//        this.createdAt = createdAt;
+//    }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+//    public void setUpdatedAt(LocalDateTime updatedAt) {
+//        this.updatedAt = updatedAt;
+//    }
 }
