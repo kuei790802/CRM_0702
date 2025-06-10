@@ -1,34 +1,51 @@
 package com.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
+
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.example.demo.dto.PurchaseOrderCreateDTO;
 import com.example.demo.dto.PurchaseOrderDetailCreateDTO;
+import com.example.demo.entity.Product;
 import com.example.demo.entity.PurchaseOrder;
-
-import jakarta.inject.Inject;
+import com.example.demo.entity.Supplier;
+import com.example.demo.entity.Warehouse;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.PurchaseOrderRepository;
+import com.example.demo.repository.SupplierRepository;
+import com.example.demo.repository.WarehouseRepository;
+import com.example.demo.service.PurchaseOrderService;
 
 @ExtendWith(MockitoExtension.class)
 public class PurchaseOrderServiceTest {
 
     @Mock
     private PurchaseOrderRepository purchaseOrderRepository;
+    @Mock
+    private ProductRepository productRepository;
+    @Mock
+    private SupplierRepository supplierRepository;
+    @Mock
+    private WarehouseRepository warehouseRepository;
 
-    @Inject Mock
+    @InjectMocks
     private PurchaseOrderService purchaseOrderService;
 
     @Test
-    void testCreatePurchaseOrder_Success(){
+    void testCreatePurchaseOrder_Success() {
+  
         PurchaseOrderDetailCreateDTO detailCreateDTO = new PurchaseOrderDetailCreateDTO();
         detailCreateDTO.setProductId(1L);
         detailCreateDTO.setQuantity(new BigDecimal(10));
@@ -39,19 +56,35 @@ public class PurchaseOrderServiceTest {
         orderCreateDTO.setSupplierId(1L);
         orderCreateDTO.setOrderDate(LocalDate.now());
         orderCreateDTO.setCurrency("TWD");
+        orderCreateDTO.setRemarks("Test");
         orderCreateDTO.setDetails(Collections.singletonList(detailCreateDTO));
+        when(supplierRepository.findById(1L))
+                .thenReturn(Optional.of(new Supplier())); 
 
+        when(productRepository.findById(1L))
+                .thenReturn(Optional.of(new Product())); 
+
+       
+        when(warehouseRepository.findById(1L))
+                .thenReturn(Optional.of(new Warehouse())); 
+
+        
         PurchaseOrder savedOrder = new PurchaseOrder();
         savedOrder.setPurchaseOrderId(1L);
-        savedOrder.setStatus("DRAFT");
+        when(purchaseOrderRepository.save(any(PurchaseOrder.class)))
+                .thenReturn(savedOrder);
 
-        when(purchaseOrderRepository.save(any(PurchaseOrder.class))).thenReturn(savedOrder);
+        
+        PurchaseOrder result = purchaseOrderService.createPurchaseOrder(orderCreateDTO, 1L);
 
-        PurchaseOrder result = purchaseOrderService.createPurchaseOrder(orderCreateDTO);
-
+        
         assertNotNull(result);
         assertEquals(1L, result.getPurchaseOrderId());
-        assertEquals("DRAFT", result.getStatus());
 
+        
+        verify(supplierRepository).findById(1L);
+        verify(productRepository).findById(1L);
+        verify(warehouseRepository).findById(1L);
+        verify(purchaseOrderRepository).save(any(PurchaseOrder.class));
     }
 }
