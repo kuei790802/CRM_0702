@@ -1,41 +1,41 @@
 package controller;
 
-import entity.Contact;
+import entity.Activity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import service.ContactService;
+import service.ActivityService;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/contacts")
-public class ContactController {
 
+@RestController
+@RequestMapping("/api/activities")
+public class ActivityController {
     @Autowired
-    private ContactService service;
+    private ActivityService service;
 
     // Read All
     @GetMapping
-    public List<Contact> getAll() {
+    public List<Activity> getAll() {
         return service.findAll();
     }
     // Read By id
     @GetMapping("/{id}")
-    public Contact getById(@PathVariable Long id) {
+    public Activity getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
     // Create
     @PostMapping
-    public Contact create(@RequestBody Contact contact) {
-        return service.save(contact);
+    public Activity create(@RequestBody Activity activity) {
+        return service.save(activity);
     }
 
     // Update
     @PutMapping("/{id}")
-    public Contact update(@PathVariable Long id, @RequestBody Contact contact) {
-        contact.setId(id);
-        return service.save(contact);
+    public Activity update(@PathVariable Long id, @RequestBody Activity activity) {
+        activity.setId(id);
+        return service.save(activity);
     }
 
     // Delete
@@ -43,5 +43,4 @@ public class ContactController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
-
 }

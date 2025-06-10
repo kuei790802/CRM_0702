@@ -1,41 +1,41 @@
 package controller;
 
-import entity.Contact;
+import entity.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import service.ContactService;
+import service.ProductService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/contacts")
-public class ContactController {
+@RequestMapping("/api/products")
+public class ProductController {
 
     @Autowired
-    private ContactService service;
+    private ProductService service;
 
     // Read All
     @GetMapping
-    public List<Contact> getAll() {
+    public List<Product> getAll() {
         return service.findAll();
     }
     // Read By id
     @GetMapping("/{id}")
-    public Contact getById(@PathVariable Long id) {
+    public Product getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
     // Create
     @PostMapping
-    public Contact create(@RequestBody Contact contact) {
-        return service.save(contact);
+    public Product create(@RequestBody Product product) {
+        return service.save(product);
     }
 
     // Update
     @PutMapping("/{id}")
-    public Contact update(@PathVariable Long id, @RequestBody Contact contact) {
-        contact.setId(id);
-        return service.save(contact);
+    public Product update(@PathVariable Long id, @RequestBody Product product) {
+        product.setId(id);
+        return service.save(product);
     }
 
     // Delete

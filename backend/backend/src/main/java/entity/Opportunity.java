@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-@entity
+@Entity
 @Table(name = "opportunities")
 public class Opportunity {
 
@@ -34,13 +34,12 @@ public class Opportunity {
     private String salesPersonName;
 
     @Column(name = "opportunitycreated")
-    private LocalDateTime opportunityCreated;
+    private LocalDateTime createdat;
 
     @Column(name = "opportunityupdated")
-    private LocalDateTime opportunityUpdated;
+    private LocalDateTime updatedat;
 
     // Getter and Setter
-
     public Long getId() {
         return id;
     }
@@ -97,19 +96,19 @@ public class Opportunity {
         this.salesPersonName = salesPersonName;
     }
 
-    public LocalDateTime getOpportunityCreated() {
-        return opportunityCreated;
+    public LocalDateTime getCreatedat() {
+        return createdat;
     }
 
-    public void setOpportunityCreated(LocalDateTime opportunityCreated) {
-        this.opportunityCreated = opportunityCreated;
+    public void setCreatedat(LocalDateTime createdat) {
+        this.createdat = createdat;
     }
 
-    public LocalDateTime getOpportunityUpdated() {
-        return opportunityUpdated;
+    public LocalDateTime getUpdatedat() {
+        return updatedat;
     }
 
-    public void setOpportunityUpdated(LocalDateTime opportunityUpdated) {
-        this.opportunityUpdated = opportunityUpdated;
+    public void setUpdatedat(LocalDateTime updatedat) {
+        this.updatedat = updatedat;
     }
 }

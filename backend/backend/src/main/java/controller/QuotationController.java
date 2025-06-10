@@ -1,41 +1,42 @@
 package controller;
 
-import entity.Contact;
+
+import entity.Quotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import service.ContactService;
+import service.QuotationService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/contacts")
-public class ContactController {
+@RequestMapping("/api/quotations")
+public class QuotationController {
 
     @Autowired
-    private ContactService service;
+    private QuotationService service;
 
     // Read All
     @GetMapping
-    public List<Contact> getAll() {
+    public List<Quotation> getAll() {
         return service.findAll();
     }
     // Read By id
     @GetMapping("/{id}")
-    public Contact getById(@PathVariable Long id) {
+    public Quotation getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
     // Create
     @PostMapping
-    public Contact create(@RequestBody Contact contact) {
-        return service.save(contact);
+    public Quotation create(@RequestBody Quotation quotation) {
+        return service.save(quotation);
     }
 
     // Update
     @PutMapping("/{id}")
-    public Contact update(@PathVariable Long id, @RequestBody Contact contact) {
-        contact.setId(id);
-        return service.save(contact);
+    public Quotation update(@PathVariable Long id, @RequestBody Quotation quotation) {
+        quotation.setId(id);
+        return service.save(quotation);
     }
 
     // Delete

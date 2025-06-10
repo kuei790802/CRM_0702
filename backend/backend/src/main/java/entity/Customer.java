@@ -13,7 +13,7 @@ public class Customer {
     @Column(name = "customerid")
     private Long id;
 
-    @Column(name = "customername")
+    @Column(name = "customername", nullable = false)
     private String name;
 
     @Column(name = "industry")
@@ -37,15 +37,13 @@ public class Customer {
     @Column(name = "customeremail")
     private String email;
 
-    @Column(name = "customercreated")
-    private LocalDateTime customerCreated;
+    @Column(name = "customercreated", updatable = false)
+    private LocalDateTime createdAt;
 
     @Column(name = "customerupdated")
-    private LocalDateTime customerUpdated;
+    private LocalDateTime updatedAt;
 
     // Getter and Setter
-
-
     public Long getId() {
         return id;
     }
@@ -118,19 +116,19 @@ public class Customer {
         this.email = email;
     }
 
-    public LocalDateTime getCustomerCreated() {
-        return customerCreated;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCustomerCreated(LocalDateTime customerCreated) {
-        this.customerCreated = customerCreated;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public LocalDateTime getCustomerUpdated() {
-        return customerUpdated;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setCustomerUpdated(LocalDateTime customerUpdated) {
-        this.customerUpdated = customerUpdated;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

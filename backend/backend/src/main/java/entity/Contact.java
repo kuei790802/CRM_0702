@@ -2,9 +2,8 @@ package entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
 
-@entity
+@Entity
 @Table(name = "contacts")
 public class Contact {
     @Id
@@ -30,8 +29,12 @@ public class Contact {
     @Column(name = "contactaddress")
     private String address;
 
-    // Getter and Setter
+    // ----- Join -----
+    @ManyToOne
+    @JoinColumn(name = "customerid", insertable = false, updatable = false)
+    private Customer customer;
 
+    // Getter and Setter
     public Long getId() {
         return id;
     }

@@ -1,41 +1,41 @@
 package controller;
 
-import entity.Contact;
+import entity.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import service.ContactService;
+import service.EventService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/contacts")
-public class ContactController {
+@RequestMapping("/api/events")
+public class EventController {
 
     @Autowired
-    private ContactService service;
+    private EventService service;
 
     // Read All
-    @GetMapping
-    public List<Contact> getAll() {
+    private List<Event> getAll() {
         return service.findAll();
     }
+
     // Read By id
     @GetMapping("/{id}")
-    public Contact getById(@PathVariable Long id) {
+    public Event getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
     // Create
     @PostMapping
-    public Contact create(@RequestBody Contact contact) {
-        return service.save(contact);
+    public Event create(@RequestBody Event event) {
+        return service.save(event);
     }
 
     // Update
     @PutMapping("/{id}")
-    public Contact update(@PathVariable Long id, @RequestBody Contact contact) {
-        contact.setId(id);
-        return service.save(contact);
+    public Event update(@PathVariable Long id, @RequestBody Event event) {
+        event.setId(id);
+        return service.save(event);
     }
 
     // Delete
@@ -43,5 +43,4 @@ public class ContactController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
-
 }
