@@ -3,24 +3,25 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "product")
+@Table(name = "couponusage")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Product {
+public class CouponUsage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private Integer price;
+    @ManyToOne
+    private Customer customer;
 
-    @ManyToMany(mappedBy = "cart")
-    private List<Customer> customers = new ArrayList<>();
+    @ManyToOne
+    private Coupon coupon;
+
+    private LocalDateTime usedAt;
 }
