@@ -27,4 +27,15 @@ public class Cart {
     @OneToMany(mappedBy = "cart")
     private List<CartDetail> cartdetails;
 
+    // **重要**: 提供一個輔助方法來同步雙方的關係，避免資料不一致
+    public void addCartDetail(CartDetail cartDetail) {
+        cartdetails.add(cartDetail);
+        cartDetail.setCart(this);
+    }
+
+    public void removeCartDetail(CartDetail cartDetail) {
+        cartdetails.remove(cartDetail);
+        cartDetail.setCart(null);
+    }
+
 }

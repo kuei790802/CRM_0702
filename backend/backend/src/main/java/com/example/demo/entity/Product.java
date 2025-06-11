@@ -107,4 +107,16 @@ public class Product {
         this.inventories = inventories;
     }
 
+    //---------
+    @OneToMany(mappedBy = "product")
+    private List<CartDetail> cartdetails;
+
+    public List<CartDetail> getCartdetails() {
+        return cartdetails;
+    }
+
+    public void setCartdetails(List<CartDetail> cartdetails) {
+        this.cartdetails = cartdetails;
+    }
+
 }

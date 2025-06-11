@@ -25,6 +25,8 @@ public class User {
     private LocalDateTime createat;
     private LocalDateTime updateat;
 
-
+    //----------------
+    @OneToOne(mappedBy = "user")
+    private Cart cart;
 
 }
