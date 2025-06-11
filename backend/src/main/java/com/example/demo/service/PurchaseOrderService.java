@@ -10,10 +10,16 @@ import com.example.demo.dto.PurchaseOrderCreateDTO;
 import com.example.demo.dto.PurchaseOrderDetailCreateDTO;
 import com.example.demo.entity.PurchaseOrder;
 import com.example.demo.entity.PurchaseOrderDetail;
+<<<<<<< Updated upstream
 import com.example.demo.entity.Warehouse;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ProductRepository;
 
+=======
+import com.example.demo.enums.PurchaseOrderStatus;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.ProductRepository;
+>>>>>>> Stashed changes
 import com.example.demo.repository.PurchaseOrderRepository;
 import com.example.demo.repository.SupplierRepository;
 import com.example.demo.repository.WarehouseRepository;
@@ -48,7 +54,11 @@ public class PurchaseOrderService {
         newOrder.setCurrency(podto.getCurrency());
         newOrder.setRemarks(podto.getRemarks());
 
+<<<<<<< Updated upstream
         newOrder.setStatus("DRAFT");
+=======
+        newOrder.setStatus(PurchaseOrderStatus.DRAFT);
+>>>>>>> Stashed changes
 
         newOrder.setCreatedBy(userId);
         newOrder.setUpdatedBy(userId);
