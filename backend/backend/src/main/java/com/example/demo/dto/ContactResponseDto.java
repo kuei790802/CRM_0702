@@ -1,7 +1,7 @@
 package com.example.demo.dto;
 
 // 返回給前端的聯絡人資料格式
-public class ContactResponse {
+public class ContactResponseDto {
     private Long id;
     private Long customerId;
     private String customerName; // 所屬客戶的名稱
@@ -12,7 +12,7 @@ public class ContactResponse {
     private String notes;
 
 
-    public ContactResponse(Long id, Long customerId, String customerName, String name, String title, String phone, String email, String notes) {
+    public ContactResponseDto(Long id, Long customerId, String customerName, String name, String title, String phone, String email, String notes) {
         this.id = id;
         this.customerId = customerId;
         this.customerName = customerName;

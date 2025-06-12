@@ -51,9 +51,8 @@ public class CustomerController {
     @PutMapping("/{id}")
     public ResponseEntity<Customer> update(@PathVariable Long id, @RequestBody Customer customer) {
         customer.setId(id);
-        Customer updatedCustomer = customerService.save(customer); // 如果不存在，save 可能會建立新資源或拋出異常
+        Customer updatedCustomer = customerService.save(customer);
         if (updatedCustomer == null) {
-            // 假設 service.save 返回 null 如果資源不存在
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(updatedCustomer);

@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.APIResponse;
-import com.example.demo.dto.ContactRequest;
-import com.example.demo.dto.ContactResponse;
+import com.example.demo.dto.ContactRequestDto;
+import com.example.demo.dto.ContactResponseDto;
 import com.example.demo.entity.Contact;
 import com.example.demo.entity.Customer;
 import com.example.demo.service.CustomerService;
@@ -28,14 +28,14 @@ public class ContactController {
     }
 
     // ----- 將 Entity 轉換為 Response DTO -----
-    private ContactResponse convertToContactResponse(Contact contact) {
+    private ContactResponseDto convertToContactResponse(Contact contact) {
         String customerName = null;
         Long customerId = null;
         if (contact.getCustomer() != null) {
             customerId = contact.getCustomer().getId();
             customerName = contact.getCustomer().getName();
         }
-        return new ContactResponse(
+        return new ContactResponseDto(
                 contact.getId(),
                 customerId,
                 customerName,
@@ -49,32 +49,32 @@ public class ContactController {
 
     // Read All
     @GetMapping
-    public ResponseEntity<List<ContactResponse>> getAll() {
+    public ResponseEntity<List<ContactResponseDto>> getAll() {
         List<Contact> contacts = contactService.findAll();
-        List<ContactResponse> contactResponses = contacts.stream()
+        List<ContactResponseDto> contactResponsDtos = contacts.stream()
                 .map(this::convertToContactResponse)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(contactResponses);
+        return ResponseEntity.ok(contactResponsDtos);
     }
     // Read By id
     @GetMapping("/{id}")
-    public ResponseEntity<ContactResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<ContactResponseDto> getById(@PathVariable Long id) {
         Contact contact = contactService.findById(id);
         return ResponseEntity.ok(convertToContactResponse(contact));
     }
 
     // Create
     @PostMapping
-    public ResponseEntity<ContactResponse> create(@Valid @RequestBody ContactRequest contactRequest) {
+    public ResponseEntity<ContactResponseDto> create(@Valid @RequestBody ContactRequestDto contactRequestDto) {
         // 從 Request DTO 轉換為 Entity
         Contact contact = new Contact();
-        contact.setName(contactRequest.getName());
-        contact.setTitle(contactRequest.getTitle());
-        contact.setPhone(contactRequest.getPhone());
-        contact.setEmail(contactRequest.getEmail());
-        contact.setNotes(contactRequest.getNotes());
+        contact.setName(contactRequestDto.getName());
+        contact.setTitle(contactRequestDto.getTitle());
+        contact.setPhone(contactRequestDto.getPhone());
+        contact.setEmail(contactRequestDto.getEmail());
+        contact.setNotes(contactRequestDto.getNotes());
 
-        Customer customer = customerService.findById(contactRequest.getCustomerId());
+        Customer customer = customerService.findById(contactRequestDto.getCustomerId());
 
         contact.setCustomer(customer);
 
@@ -85,23 +85,23 @@ public class ContactController {
 
     // Update
     @PutMapping("/{id}")
-    public ResponseEntity<ContactResponse> update(@PathVariable Long id,
-                                                  @Valid @RequestBody ContactRequest contactRequest) {
+    public ResponseEntity<ContactResponseDto> update(@PathVariable Long id,
+                                                     @Valid @RequestBody ContactRequestDto contactRequestDto) {
 
         Contact existingContact = contactService.findById(id);
 
         // 更新屬性
-        existingContact.setName(contactRequest.getName());
-        existingContact.setTitle(contactRequest.getTitle());
-        existingContact.setPhone(contactRequest.getPhone());
-        existingContact.setEmail(contactRequest.getEmail());
-        existingContact.setNotes(contactRequest.getNotes());
+        existingContact.setName(contactRequestDto.getName());
+        existingContact.setTitle(contactRequestDto.getTitle());
+        existingContact.setPhone(contactRequestDto.getPhone());
+        existingContact.setEmail(contactRequestDto.getEmail());
+        existingContact.setNotes(contactRequestDto.getNotes());
 
         // 如果請求中提供了不同的客戶 ID，則更新所屬客戶
-        if (contactRequest.getCustomerId() != null &&
-                !contactRequest.getCustomerId().equals(existingContact.getCustomer().getId())) {
+        if (contactRequestDto.getCustomerId() != null &&
+                !contactRequestDto.getCustomerId().equals(existingContact.getCustomer().getId())) {
 
-            Customer newCustomer = customerService.findById(contactRequest.getCustomerId());
+            Customer newCustomer = customerService.findById(contactRequestDto.getCustomerId());
             existingContact.setCustomer(newCustomer);
         }
 
@@ -111,19 +111,19 @@ public class ContactController {
 
     // Delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<APIResponse> deleteContact(@PathVariable Long id) {
+    public ResponseEntity<APIResponse> delete(@PathVariable Long id) {
         contactService.delete(id);
         return ResponseEntity.ok(new APIResponse("Contact with ID " + id + " deleted successfully.", true));
     }
 
     // ----- 獲取特定客戶下的所有聯絡人 -----
     @GetMapping("/byCustomer/{customerId}")
-    public ResponseEntity<List<ContactResponse>> getContactsByCustomerId(@PathVariable Long customerId) {
+    public ResponseEntity<List<ContactResponseDto>> getContactsByCustomerId(@PathVariable Long customerId) {
         List<Contact> contacts = contactService.findContactsByCustomerId(customerId);
-        List<ContactResponse> contactResponses = contacts.stream()
+        List<ContactResponseDto> contactResponsDtos = contacts.stream()
                 .map(this::convertToContactResponse)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(contactResponses);
+        return ResponseEntity.ok(contactResponsDtos);
     }
 
 }

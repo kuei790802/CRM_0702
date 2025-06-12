@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 // 用於接收前端建立或更新聯絡人的請求
-public class ContactRequest {
+public class ContactRequestDto {
 
     @NotNull(message = "客戶 ID 必填") // 聯絡人必須屬於一個客戶
     private Long customerId;
@@ -21,7 +21,7 @@ public class ContactRequest {
 
     private String notes;
 
-    public ContactRequest() {}
+    public ContactRequestDto() {}
 
     // --- Getters and Setters ---
     public Long getCustomerId() {

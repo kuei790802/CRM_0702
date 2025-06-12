@@ -3,11 +3,17 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.Objects;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "opportunities")
+@EntityListeners(AuditingEntityListener.class)
 public class Opportunity {
 
     @Id
@@ -15,7 +21,7 @@ public class Opportunity {
     @Column(name = "opportunityid")
     private Long id;
 
-    @Column(name = "cutomerid")
+    @Column(name = "customerid", nullable = false)
     private Long customerId;
 
     @Column(name = "opportunitystage")
@@ -24,20 +30,32 @@ public class Opportunity {
     @Column(name = "opportunitystatus")
     private String status;
 
-    @Column(name = "opportunityclosedate")
-    private Date opportunityClosedate;
+    @Column(name = "opportunitydescription", columnDefinition = "TEXT") // 商機描述
+    private String description;
 
-    @Column(name = "opportunityamount")
+    @Column(name = "opportunityclosedate")
+    private LocalDate closeDate;
+
+    @Column(name = "opportunityamount", precision = 14, scale = 2)
     private BigDecimal amount;
 
     @Column(name = "salespersonname")
     private String salesPersonName;
 
-    @Column(name = "opportunitycreated")
-    private LocalDateTime createdat;
+    @CreatedDate
+    @Column(name = "opportunitycreated", updatable = false)
+    private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "opportunityupdated")
-    private LocalDateTime updatedat;
+    private LocalDateTime updatedAt;
+
+    // ----- 多對一 ------
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customerid", insertable = false, updatable = false)
+    private Customer customer;
+
+    public Opportunity() {}
 
     // Getter and Setter
     public Long getId() {
@@ -54,6 +72,9 @@ public class Opportunity {
 
     public void setCustomerId(Long customerId) {
         this.customerId = customerId;
+        if (this.customer != null && !Objects.equals(this.customer.getId(), customerId)) {
+            this.customer = null;
+        }
     }
 
     public String getStage() {
@@ -72,12 +93,20 @@ public class Opportunity {
         this.status = status;
     }
 
-    public Date getOpportunityClosedate() {
-        return opportunityClosedate;
+    public String getDescription() {
+        return description;
     }
 
-    public void setOpportunityClosedate(Date opportunityClosedate) {
-        this.opportunityClosedate = opportunityClosedate;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDate getCloseDate() {
+        return closeDate;
+    }
+
+    public void setCloseDate(LocalDate closeDate) {
+        this.closeDate = closeDate;
     }
 
     public BigDecimal getAmount() {
@@ -96,19 +125,60 @@ public class Opportunity {
         this.salesPersonName = salesPersonName;
     }
 
-    public LocalDateTime getCreatedat() {
-        return createdat;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreatedat(LocalDateTime createdat) {
-        this.createdat = createdat;
+//    public void setCreatedAt(LocalDateTime createdAt) {
+//        this.createdAt = createdAt;
+//    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public LocalDateTime getUpdatedat() {
-        return updatedat;
+//    public void setUpdatedAt(LocalDateTime updatedAt) {
+//        this.updatedAt = updatedAt;
+//    }
+
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setUpdatedat(LocalDateTime updatedat) {
-        this.updatedat = updatedat;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+        if (customer != null) {
+            this.customerId = customer.getId();
+        } else {
+            this.customerId = null;
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Opportunity that = (Opportunity) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? Objects.hash(id) : super.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Opportunity{" +
+                "id=" + id +
+                ", customerid=" + customerId +
+                ", stage='" + stage + '\'' +
+                ", status='" + status + '\'' +
+                ", closeDate=" + closeDate +
+                ", amount=" + amount +
+                ", salesPersonName='" + salesPersonName + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }

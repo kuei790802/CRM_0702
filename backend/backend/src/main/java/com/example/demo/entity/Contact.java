@@ -14,7 +14,7 @@ public class Contact {
     private Long id;
 
     @Column(name = "customerid", nullable = false)
-    private Long customerid;
+    private Long customerId;
 
     @Column(name = "contactname", nullable = false)
     private String name;
@@ -49,12 +49,12 @@ public class Contact {
         this.id = id;
     }
 
-    public Long getCustomerid() {
-        return customerid;
+    public Long getCustomerId() {
+        return customerId;
     }
 
-    public void setCustomerid(Long customerid) {
-        this.customerid = customerid;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
     public Customer getCustomer() {
@@ -63,11 +63,10 @@ public class Contact {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
-        // 當設定 Customer 物件時，同時更新 customerid 欄位
         if (customer != null) {
-            this.customerid = customer.getId();
+            this.customerId = customer.getId();
         } else {
-            this.customerid = null;
+            this.customerId = null;
         }
     }
 
@@ -128,7 +127,7 @@ public class Contact {
     public String toString() {
         return "Contact{" +
                 "id=" + id +
-                ", customerid=" + customerid +
+                ", customerid=" + customerId +
                 ", name='" + name + '\'' +
                 ", title='" + title + '\'' +
                 ", phone='" + phone + '\'' +

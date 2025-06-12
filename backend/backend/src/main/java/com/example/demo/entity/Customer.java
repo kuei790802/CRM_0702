@@ -30,7 +30,7 @@ public class Customer {
     private String type;
 
     @Column(name = "sourceid")
-    private Long sourceid;
+    private Long sourceId;
 
     @Column(name = "customerlevel")
     private String level;
@@ -101,12 +101,12 @@ public class Customer {
         this.type = type;
     }
 
-    public Long getSourceid() {
-        return sourceid;
+    public Long getSourceId() {
+        return sourceId;
     }
 
-    public void setSourceid(Long sourceid) {
-        this.sourceid = sourceid;
+    public void setSourceId(Long sourceid) {
+        this.sourceId = sourceId;
     }
 
     public String getLevel() {
@@ -195,7 +195,7 @@ public class Customer {
                 ", name='" + name + '\'' +
                 ", industry='" + industry + '\'' +
                 ", type='" + type + '\'' +
-                ", sourceid=" + sourceid +
+                ", sourceid=" + sourceId +
                 ", level='" + level + '\'' +
                 ", address='" + address + '\'' +
                 ", tel='" + tel + '\'' +
