@@ -24,6 +24,12 @@ public class OpportunityController {
         this.opportunityService = opportunityService;
     }
 
+    /**
+     * 獲取所有商機。
+     * GET /api/opportunities
+     *
+     * @return 包含所有商機回應 DTO 的列表，HTTP 狀態碼 200 OK
+     */
     @GetMapping
     public ResponseEntity<List<OpportunityResponseDto>> getAll() {
         List<OpportunityResponseDto> opportunities = opportunityService.findAll();

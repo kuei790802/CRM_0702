@@ -2,11 +2,15 @@ package com.example.demo.service;
 
 import com.example.demo.dto.OpportunityRequestDto;
 import com.example.demo.dto.OpportunityResponseDto;
+import com.example.demo.dto.report.RevenueForecastEntryDto;
+import com.example.demo.dto.report.SalesFunnelReportEntryDto;
+import com.example.demo.dto.report.SalespersonPerformanceDto;
 import com.example.demo.exception.CustomerNotFoundException;
 import com.example.demo.exception.OpportunityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -68,4 +72,30 @@ public interface OpportunityService {
      * @throws CustomerNotFoundException 如果客戶不存在
      */
     Page<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId, Pageable pageable) throws CustomerNotFoundException;
+
+    /**
+     * 獲取銷售漏斗報告數據。
+     * 根據商機階段聚合商機數量和總金額。
+     *
+     * @return 銷售漏斗報告條目列表
+     */
+    List<SalesFunnelReportEntryDto> getSalesFunnelReport();
+
+    /**
+     * 獲取業務員績效報告數據。
+     * 計算每個業務員的總商機數、贏單數、贏單金額、丟單數、丟單金額及贏率。
+     *
+     * @return 業務員績效報告 DTO 列表
+     */
+    List<SalespersonPerformanceDto> getSalespersonPerformanceReport();
+
+    /**
+     * 獲取營收預測報告數據。
+     * 根據預計結案日期按月聚合商機金額。
+     *
+     * @param startDate 預測開始日期
+     * @param endDate   預測結束日期
+     * @return 營收預測報告條目列表
+     */
+    List<RevenueForecastEntryDto> getRevenueForecastReport(LocalDate startDate, LocalDate endDate);
 }

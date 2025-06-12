@@ -2,6 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.dto.OpportunityRequestDto;
 import com.example.demo.dto.OpportunityResponseDto;
+import com.example.demo.dto.report.RevenueForecastEntryDto;
+import com.example.demo.dto.report.SalesFunnelReportEntryDto;
+import com.example.demo.dto.report.SalespersonPerformanceDto;
 import com.example.demo.entity.Customer;
 import com.example.demo.entity.Opportunity;
 import com.example.demo.exception.CustomerNotFoundException;
@@ -15,7 +18,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -189,5 +197,126 @@ public class OpportunityServiceImpl implements OpportunityService {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtoList, pageable, opportunitiesPage.getTotalElements());
+    }
+
+    /**
+     * 獲取銷售漏斗報告數據。
+     * 根據商機階段聚合商機數量和總金額。
+     *
+     * @return 銷售漏斗報告條目列表
+     */
+    @Override
+    public List<SalesFunnelReportEntryDto> getSalesFunnelReport() {
+        List<Opportunity> allOpportunities = opportunityRepository.findAll();
+
+        // 按階段分組，計算數量和總金額
+        Map<String, Map<String, Object>> groupedByStage = allOpportunities.stream()
+                .collect(Collectors.groupingBy(
+                        Opportunity::getStage,
+                        Collectors.teeing(
+                                Collectors.counting(), // 獲取數量
+                                Collectors.reducing(BigDecimal.ZERO, Opportunity::getAmount, BigDecimal::add), // 獲取總金額
+                                (count, sum) -> {
+                                    Map<String, Object> result = Map.of("count", count, "amount", sum);
+                                    return result;
+                                }
+                        )
+                ));
+
+        // 轉換為 DTO 列表
+        return groupedByStage.entrySet().stream()
+                .map(entry -> new SalesFunnelReportEntryDto(
+                        entry.getKey(),
+                        (Long) entry.getValue().get("count"),
+                        (BigDecimal) entry.getValue().get("amount")
+                ))
+                .sorted(Comparator.comparing(SalesFunnelReportEntryDto::getStageName)) // 可以選擇按階段名稱排序
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 獲取業務員績效報告數據。
+     * 計算每個業務員的總商機數、贏單數、贏單金額、丟單數、丟單金額及贏率。
+     *
+     * @return 業務員績效報告 DTO 列表
+     */
+    @Override
+    public List<SalespersonPerformanceDto> getSalespersonPerformanceReport() {
+        List<Opportunity> allOpportunities = opportunityRepository.findAll();
+
+        Map<String, List<Opportunity>> opportunitiesBySalesperson = allOpportunities.stream()
+                .collect(Collectors.groupingBy(Opportunity::getSalesPersonName));
+
+        return opportunitiesBySalesperson.entrySet().stream()
+                .map(entry -> {
+                    String salesPersonName = entry.getKey();
+                    List<Opportunity> salespersonOpportunities = entry.getValue();
+
+                    Long totalOpportunities = (long) salespersonOpportunities.size();
+                    Long wonOpportunities = salespersonOpportunities.stream()
+                            .filter(opp -> "Closed Won".equalsIgnoreCase(opp.getStatus())) // 假設 "Closed Won" 表示贏單
+                            .count();
+                    BigDecimal wonAmount = salespersonOpportunities.stream()
+                            .filter(opp -> "Closed Won".equalsIgnoreCase(opp.getStatus()))
+                            .map(Opportunity::getAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    Long lostOpportunities = salespersonOpportunities.stream()
+                            .filter(opp -> "Closed Lost".equalsIgnoreCase(opp.getStatus())) // 假設 "Closed Lost" 表示丟單
+                            .count();
+                    BigDecimal lostAmount = salespersonOpportunities.stream()
+                            .filter(opp -> "Closed Lost".equalsIgnoreCase(opp.getStatus()))
+                            .map(Opportunity::getAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    Double winRate = (totalOpportunities > 0) ?
+                            (double) wonOpportunities / totalOpportunities * 100 : 0.0;
+
+                    SalespersonPerformanceDto dto = new SalespersonPerformanceDto();
+                    dto.setSalesPersonName(salesPersonName);
+                    dto.setTotalOpportunities(totalOpportunities);
+                    dto.setWonOpportunities(wonOpportunities);
+                    dto.setWonAmount(wonAmount);
+                    dto.setLostOpportunities(lostOpportunities);
+                    dto.setLostAmount(lostAmount);
+                    dto.setWinRate(winRate);
+                    return dto;
+                })
+                .sorted(Comparator.comparing(SalespersonPerformanceDto::getSalesPersonName)) // 按業務員名稱排序
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 獲取營收預測報告數據。
+     * 根據預計結案日期按月聚合商機金額。
+     *
+     * @param startDate 預測開始日期
+     * @param endDate   預測結束日期
+     * @return 營收預測報告條目列表
+     */
+    @Override
+    public List<RevenueForecastEntryDto> getRevenueForecastReport(LocalDate startDate, LocalDate endDate) {
+        List<Opportunity> opportunities = opportunityRepository.findAll();
+
+        // 過濾掉已結束 (贏單/丟單) 的商機，或只包含特定狀態的商機 (例如: 僅開放中或談判中的商機)
+        // 只包含還未是「Closed Won」或「Closed Lost」的商機，且 closeDate 在預測範圍內
+        List<Opportunity> relevantOpportunities = opportunities.stream()
+                .filter(opp -> !"Closed Won".equalsIgnoreCase(opp.getStatus()) && !"Closed Lost".equalsIgnoreCase(opp.getStatus()))
+                .filter(opp -> opp.getCloseDate() != null) // 確保 closeDate 不為 null
+                .filter(opp -> (startDate == null || !opp.getCloseDate().isBefore(startDate))) // closeDate 晚於或等於開始日期
+                .filter(opp -> (endDate == null || !opp.getCloseDate().isAfter(endDate))) // closeDate 早於或等於結束日期
+                .collect(Collectors.toList());
+
+        // 按年月分組並匯總金額
+        Map<String, BigDecimal> forecastedAmountsByMonth = relevantOpportunities.stream()
+                .collect(Collectors.groupingBy(
+                        opp -> opp.getCloseDate().format(DateTimeFormatter.ofPattern("yyyy-MM")), // 按年月格式分組
+                        Collectors.reducing(BigDecimal.ZERO, Opportunity::getAmount, BigDecimal::add)
+                ));
+
+        return forecastedAmountsByMonth.entrySet().stream()
+                .map(entry -> new RevenueForecastEntryDto(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(RevenueForecastEntryDto::getPeriod)) // 按時間段排序
+                .collect(Collectors.toList());
     }
 }
