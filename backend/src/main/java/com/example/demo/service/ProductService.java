@@ -5,8 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.ProductCreateRequestDTO;
-import com.example.demo.dto.ProductUpdateRequestDTO;
+import com.example.demo.dto.ProductCreateDTO;
+import com.example.demo.dto.ProductUpdateDTO;
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.specification.ProductSpecification;
@@ -25,7 +25,7 @@ public class ProductService {
     }
 
     
-    public Product createProductFromDTO(ProductCreateRequestDTO dto, Long userId) {
+    public Product createProductFromDTO(ProductCreateDTO dto, Long userId) {
         Product product = new Product();
         product.setProductCode(dto.getProductCode());
         product.setName(dto.getName());
@@ -75,7 +75,7 @@ public class ProductService {
     }
     
     
-    public Product updateProductFromDTO(Long productId, ProductUpdateRequestDTO dto, Long userId) {
+    public Product updateProductFromDTO(Long productId, ProductUpdateDTO dto, Long userId) {
         Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("找不到 ID 為 " + productId + " 的產品"));
 

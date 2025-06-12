@@ -12,24 +12,29 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "warehouses")
+@Table(name = "suppliers")
 @Getter
 @Setter
-public class Warehouse {
+public class Supplier {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name="supplier_id")
+    private Long supplierId;
 
-    @Column(name = "name", nullable = false, unique = true, length = 100)
+    @Column(name = "supplier_code", nullable = false, unique = true, length = 50)
+    private String supplierCode;
+
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
-    
+
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+}
+
