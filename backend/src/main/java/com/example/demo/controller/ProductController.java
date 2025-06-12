@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dto.ProductCreateRequestDTO;
-import com.example.demo.dto.ProductUpdateRequestDTO;
+import com.example.demo.dto.ProductCreateDTO;
+import com.example.demo.dto.ProductUpdateDTO;
 import com.example.demo.entity.Product;
 import com.example.demo.service.ProductService;
 
@@ -30,7 +30,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductCreateRequestDTO productDTO) {
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductCreateDTO productDTO) {
         Long currentUserId = 1L;
 
         Product createdProduct = productService.createProductFromDTO(productDTO, currentUserId);
@@ -55,7 +55,7 @@ public class ProductController {
     @PutMapping("/{id}") // 處理 PUT /api/products/{id} 的請求
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long id, 
-            @Valid @RequestBody ProductUpdateRequestDTO productDTO) {
+            @Valid @RequestBody ProductUpdateDTO productDTO) {
         
         Long currentUserId = 1L;
         

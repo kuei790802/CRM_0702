@@ -10,10 +10,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProductCreateRequestDTO {
-    @NotEmpty(message = "商品代號不可為空")
-    private String productCode;
-
+public class ProductUpdateDTO {
+    
     @NotEmpty(message = "商品名稱不可為空")
     private String name;
 
@@ -32,6 +30,6 @@ public class ProductCreateRequestDTO {
     @NotEmpty(message = "稅別不可為空")
     private String taxType;
 
-    private String costMethod;
-    
+    @NotNull(message = "啟用狀態不可為空")
+    private Boolean isActive;
 }
