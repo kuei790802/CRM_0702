@@ -1,36 +1,17 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Contact;
-import org.springframework.stereotype.Service;
-import com.example.demo.repository.ContactRepository;
-
-
 import java.util.List;
 
-@Service
-public class ContactService {
+public interface ContactService {
 
-    private final ContactRepository contactRepository;
+    List<Contact> findAll();
 
-    public ContactService(ContactRepository contactRepository) {
-        this.contactRepository = contactRepository;
-    }
+    Contact findById(Long id);
 
-    public List<Contact> findAll() {
-        return contactRepository.findAll();
-    }
+    Contact save(Contact contact);
 
-    public Contact findById(Long id) {
-        return contactRepository.findById(id).orElse(null);
-    }
+    void delete(Long id);
 
-    public Contact save(Contact contact) {
-        return contactRepository.save(contact);
-    }
-
-    public void delete(Long id) {
-        contactRepository.deleteById(id);
-    }
-
+    List<Contact> findContactsByCustomerId(Long customerId);
 }
-

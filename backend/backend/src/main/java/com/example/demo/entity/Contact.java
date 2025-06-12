@@ -2,6 +2,8 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 
 @Entity
 @Table(name = "contacts")
@@ -11,10 +13,10 @@ public class Contact {
     @Column(name = "contactid")
     private Long id;
 
-    @Column(name = "customerid")
+    @Column(name = "customerid", nullable = false)
     private Long customerid;
 
-    @Column(name = "contactname")
+    @Column(name = "contactname", nullable = false)
     private String name;
 
     @Column(name = "contacttitle")
@@ -26,13 +28,17 @@ public class Contact {
     @Column(name = "contactemail")
     private String email;
 
-    @Column(name = "contactaddress")
-    private String address;
+    @Column(name = "contactnotes")
+    private String notes;
 
-    // ----- Join -----
-    @ManyToOne
+
+
+    // ----- 多對一 -----
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customerid", insertable = false, updatable = false)
     private Customer customer;
+
+    public Contact() {}
 
     // Getter and Setter
     public Long getId() {
@@ -49,6 +55,20 @@ public class Contact {
 
     public void setCustomerid(Long customerid) {
         this.customerid = customerid;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+        // 當設定 Customer 物件時，同時更新 customerid 欄位
+        if (customer != null) {
+            this.customerid = customer.getId();
+        } else {
+            this.customerid = null;
+        }
     }
 
     public String getName() {
@@ -83,11 +103,37 @@ public class Contact {
         this.email = email;
     }
 
-    public String getAddress() {
-        return address;
+    public String getNotes() {
+        return notes;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Contact contact = (Contact) o;
+        return id != null && Objects.equals(id, contact.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? Objects.hash(id) : super.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Contact{" +
+                "id=" + id +
+                ", customerid=" + customerid +
+                ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", notes='" + notes + '\'' +
+                '}';
     }
 }

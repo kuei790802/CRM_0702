@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.TagResponse;
+import com.example.demo.dto.APIResponse;
 import com.example.demo.entity.Customer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,17 +69,17 @@ public class CustomerController {
 
     // ----- 新增標籤至客戶 -----
     @PostMapping("/{id}/tags/{tagId}")
-    public ResponseEntity<TagResponse> addTag(@PathVariable Long id, @PathVariable Long tagId) {
+    public ResponseEntity<APIResponse> addTag(@PathVariable Long id, @PathVariable Long tagId) {
         customerService.addTag(id, tagId);
-        return ResponseEntity.ok(new TagResponse(
+        return ResponseEntity.ok(new APIResponse(
                 "Tag " + tagId + " added successfully for customer " + id, true));
     }
 
     // ----- 從客戶移除標籤 -----
     @DeleteMapping("/{id}/tags/{tagId}")
-    public ResponseEntity<TagResponse> removeTag(@PathVariable Long id, @PathVariable Long tagId) {
+    public ResponseEntity<APIResponse> removeTag(@PathVariable Long id, @PathVariable Long tagId) {
         customerService.removeTag(id, tagId);
-        return ResponseEntity.ok(new TagResponse(
+        return ResponseEntity.ok(new APIResponse(
                 "Tag " + tagId + " removed successfully from customer " + id, true));
     }
 

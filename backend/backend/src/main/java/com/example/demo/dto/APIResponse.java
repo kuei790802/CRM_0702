@@ -1,10 +1,10 @@
 package com.example.demo.dto;
 
-public class TagResponse {
+public class APIResponse {
     private String message;
     private boolean success;
 
-    public TagResponse(String message, boolean success) {
+    public APIResponse(String message, boolean success) {
         this.message = message;
         this.success = success;
     }
