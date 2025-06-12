@@ -1,6 +1,7 @@
 package com.example.demo.aspect;
 
-import com.example.demo.utils.JwtTool;
+import com.example.demo.security.JwtTool;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,17 +21,19 @@ public class JwtAspect {
                 ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes()).getRequest();
         String authHeader =  req.getHeader("Authorization");
         if (authHeader == null){
-            throw new JwtException("token format error");
+            throw new JwtException("Token format error: Missing");
 
         }
-        if (authHeader.startsWith("Bearer ")){
-            throw new JwtException("token format error");
+        if (!authHeader.startsWith("Bearer ")){
+            throw new JwtException("Token format error: invalid 'Bearer ' prefix");
         }
         String token = authHeader.substring(7);
-        String email = JwtTool.parseToken(token);
-        if (email == null){
-            throw new JwtException("token expired");
+        Claims claims = JwtTool.parseToken(token);
+
+        if (claims == null) {
+            throw new JwtException("Token expired");
         }
+
         System.out.println("Token ok");
         return joinPoint.proceed();
     }
