@@ -1,34 +1,32 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.Customer;
+import com.example.demo.entity.CCustomer;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
-import com.example.demo.repository.CustomerRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.repository.CCustomerRepo;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
-public class CustomerService {
-    private final CustomerRepo customerRepo;
+public class CCustomerService {
+    private final CCustomerRepo CCustomerRepo;
     private final BCryptPasswordEncoder encoder;
 
     // 建構自注入customerRepo、encoder
-    public CustomerService(CustomerRepo customerRepo) {
-        this.customerRepo = customerRepo;
+    public CCustomerService(CCustomerRepo CCustomerRepo) {
+        this.CCustomerRepo = CCustomerRepo;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
     }
 
     // 檢視帳號是否已存在
     public Boolean checkAccountExist(String account){
-        return customerRepo.findByAccount(account).isPresent();
+        return CCustomerRepo.findByAccount(account).isPresent();
     }
 
     // 註冊 + 加密
-    public Customer register(String account
+    public CCustomer register(String account
                             , String customerName
                             , String password
                             , String email
@@ -37,7 +35,7 @@ public class CustomerService {
             throw new AccountAlreadyExistsException(account);
         }
 
-        Customer newCustomer = Customer.builder()
+        CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
                 .customerName(customerName)
                 .password(encoder.encode(password))
@@ -47,24 +45,24 @@ public class CustomerService {
                 .isDeleted(false)
                 .build();
 
-        return customerRepo.save(newCustomer);
+        return CCustomerRepo.save(newCCustomer);
     }
 
 
 
     // 登入驗證 (JWT + OUATH2)+ 拋給別人我已經登入的資訊供後續開發
-    public Customer login(String account, String password){
+    public CCustomer login(String account, String password){
         // 測帳號 //暫時，之後要改成能有重設帳密功能，跳轉介面?發送EMAIL?顯示錯誤訊息?
-        Customer loginCustomer = customerRepo.findByAccount(account)
+        CCustomer loginCCustomer = CCustomerRepo.findByAccount(account)
                 .orElseThrow(() -> new ForgetAccountOrPasswordException(account, password));
 
         // 測密碼 //暫時，之後要改成能有重設帳密功能，跳轉介面?發送EMAIL?顯示錯誤訊息?
-        String dbPassword = loginCustomer.getPassword();
+        String dbPassword = loginCCustomer.getPassword();
         if(!encoder.matches(password, dbPassword)){
             throw new ForgetAccountOrPasswordException(account, password);
         }
 
-        return loginCustomer;
+        return loginCCustomer;
     }
 
 

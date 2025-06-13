@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class CustomerAuthController {
+public class CCustomerAuthController {
     @GetMapping("/test")
     @CheckJwt
     public String testEndpoint() {

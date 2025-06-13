@@ -22,5 +22,5 @@ public class Product {
     private Integer price;
 
     @ManyToMany(mappedBy = "cart")
-    private List<Customer> customers = new ArrayList<>();
+    private List<CCustomer> CCustomers = new ArrayList<>();
 }

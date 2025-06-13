@@ -44,5 +44,5 @@ public class Coupon {
     private VIPLevel targetVipLevel;
 
     @ManyToMany(mappedBy = "coupons")
-    private List<Customer> customers = new ArrayList<>();
+    private List<CCustomer> CCustomers = new ArrayList<>();
 }

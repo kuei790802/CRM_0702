@@ -18,7 +18,7 @@ public class CouponUsage {
     private Long id;
 
     @ManyToOne
-    private Customer customer;
+    private CCustomer CCustomer;
 
     @ManyToOne
     private Coupon coupon;
