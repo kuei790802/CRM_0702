@@ -43,7 +43,7 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Boolean isSalable,
             @RequestParam(required = false) String keyword,
-            @PageableDefault(size = 10, sort = "productId") Pageable pageable) {
+            @PageableDefault(size = 10, sort = "product_id") Pageable pageable) {
         
         
         
