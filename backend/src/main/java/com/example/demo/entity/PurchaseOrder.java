@@ -6,11 +6,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-<<<<<<< Updated upstream
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-=======
 import com.example.demo.enums.PurchaseOrderStatus;
 
 import jakarta.persistence.CascadeType;
@@ -18,7 +13,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
->>>>>>> Stashed changes
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -47,14 +41,9 @@ public class PurchaseOrder {
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
     
-<<<<<<< Updated upstream
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
-=======
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private PurchaseOrderStatus status;
->>>>>>> Stashed changes
 
     @Column(name = "currency", nullable = false, length = 10)
     private String currency;
