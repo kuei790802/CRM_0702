@@ -53,7 +53,7 @@ public class BCustomer {
     private LocalDateTime updatedAt;
 
     // ----- 多對多 -----
-   @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "tagmaps",
             joinColumns = @JoinColumn(name = "customerid"),

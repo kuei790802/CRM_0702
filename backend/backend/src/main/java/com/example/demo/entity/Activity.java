@@ -5,9 +5,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(name = "activities")
@@ -31,7 +30,7 @@ public class Activity {
     private LocalDateTime activityDate;
 
     @Column(name = "activitydescription", columnDefinition = "TEXT")
-    private String description;
+    private String activityDescription;
 
     @Column(name = "activitynotes", columnDefinition = "TEXT")
     private String notes;
@@ -49,6 +48,19 @@ public class Activity {
     @LastModifiedDate
     @Column(name = "activityupdated")
     private LocalDateTime updatedAt;
+
+    // ----- 多對ㄧ 活動與客戶 -----
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "relatedid", referencedColumnName = "customerid", insertable = false, updatable = false)
+    private BCustomer BCustomer;
+
+    // ----- 多對一 活動與商機 -----
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "relatedid", referencedColumnName = "opportunityid", insertable = false, updatable = false)
+    private Opportunity opportunity;
+
+    public Activity() {}
+
 
     // Getter and Setter
 
@@ -74,6 +86,8 @@ public class Activity {
 
     public void setRelatedId(Long relatedId) {
         this.relatedId = relatedId;
+        this.BCustomer = null;
+        this.opportunity = null;
     }
 
     public String getType() {
@@ -92,12 +106,12 @@ public class Activity {
         this.activityDate = activityDate;
     }
 
-    public String getDescription() {
-        return description;
+    public String getActivityDescription() {
+        return activityDescription;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setActivityDescription(String activityDescription) {
+        this.activityDescription = activityDescription;
     }
 
     public String getNotes() {
@@ -128,15 +142,76 @@ public class Activity {
         return createdAt;
     }
 
-//    public void setCreatedAt(LocalDateTime createdAt) {
-//        this.createdAt = createdAt;
-//    }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-//    public void setUpdatedAt(LocalDateTime updatedAt) {
-//        this.updatedAt = updatedAt;
-//    }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public BCustomer getBCustomer() {
+        return BCustomer;
+    }
+
+    public void setBCustomer(BCustomer BCustomer) {
+        this.BCustomer = BCustomer;
+        if (BCustomer != null) {
+            this.relatedId = BCustomer.getId();
+            this.relatedType = "Customer"; // 自動設定 relatedType
+        } else {
+            this.relatedId = null;
+            this.relatedType = null;
+        }
+    }
+
+    public Opportunity getOpportunity() {
+        return opportunity;
+    }
+
+    public void setOpportunity(Opportunity opportunity) {
+        this.opportunity = opportunity;
+        if (opportunity != null) {
+            this.relatedId = opportunity.getId();
+            this.relatedType = "Opportunity";
+        } else {
+            this.relatedId = null;
+            this.relatedType = null;
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Activity activity = (Activity) o;
+        return id != null && Objects.equals(id, activity.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? Objects.hash(id) : super.hashCode();
+    }
+
+
+    @Override
+    public String toString() {
+        return "Activity{" +
+                "id=" + id +
+                ", relatedType='" + relatedType + '\'' +
+                ", relatedId=" + relatedId +
+                ", type='" + type + '\'' +
+                ", activityDate=" + activityDate +
+                ", notes='" + notes + '\'' +
+                ", activityDescription='" + activityDescription + '\'' +
+                ", salesPersonName='" + salesPersonName + '\'' +
+                ", status='" + status + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
