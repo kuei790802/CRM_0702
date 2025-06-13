@@ -13,7 +13,7 @@ import java.util.Set;
 @Entity
 @Table(name = "customers")
 @EntityListeners(AuditingEntityListener.class)
-public class Customer {
+public class BCustomer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,8 +61,8 @@ public class Customer {
     )
     private Set<Tag> tags = new HashSet<>();
 
-    public Customer() {}
-    public Customer(String name) {
+    public BCustomer() {}
+    public BCustomer(String name) {
         this.name = name;
     }
 
@@ -171,10 +171,10 @@ public class Customer {
         if (this == o) return true;
         // 檢查物件是否為 null 或類別是否不一致
         if (o == null || getClass() != o.getClass()) return false;
-        Customer customer = (Customer) o;
+        BCustomer BCustomer = (BCustomer) o;
         // 如果 ID 已生成，則使用 ID 進行比較；如果 ID 尚未生成（即為新實體），則使用物件引用比較 (super.equals(o))
         // 這種做法可以避免在 ID 未生成時，兩個不同的新實體被誤判為相同。
-        return id != null && Objects.equals(id, customer.id);
+        return id != null && Objects.equals(id, BCustomer.id);
     }
 
     @Override

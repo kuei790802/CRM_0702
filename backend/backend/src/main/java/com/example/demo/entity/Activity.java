@@ -1,15 +1,21 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "activities")
+@EntityListeners(AuditingEntityListener.class)
 public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "activtyid")
+    @Column(name = "activity")
     private Long id;
 
     @Column(name = "relatedtype")
@@ -18,20 +24,31 @@ public class Activity {
     @Column(name = "relatedid")
     private Long relatedId;
 
-    @Column(name = "activtytype")
+    @Column(name = "activitytype", nullable = false)
     private String type;
 
-    @Column(name = "activtydate")
-    private Date date;
+    @Column(name = "activitydate", nullable = false)
+    private LocalDateTime activityDate;
 
-    @Column(name = "activtynotes")
+    @Column(name = "activitydescription", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "activitynotes", columnDefinition = "TEXT")
     private String notes;
 
     @Column(name = "salespersonname")
-    private String sales;
+    private String salesPersonName;
 
-    @Column(name = "activtystatus")
+    @Column(name = "activitystatus", nullable = false)
     private String status;
+
+    @CreatedDate
+    @Column(name = "activitycreated", updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "activityupdated")
+    private LocalDateTime updatedAt;
 
     // Getter and Setter
 
@@ -67,12 +84,20 @@ public class Activity {
         this.type = type;
     }
 
-    public Date getDate() {
-        return date;
+    public LocalDateTime getActivityDate() {
+        return activityDate;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setActivityDate(LocalDateTime activityDate) {
+        this.activityDate = activityDate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getNotes() {
@@ -83,12 +108,12 @@ public class Activity {
         this.notes = notes;
     }
 
-    public String getSales() {
-        return sales;
+    public String getSalesPersonName() {
+        return salesPersonName;
     }
 
-    public void setSales(String sales) {
-        this.sales = sales;
+    public void setSalesPersonName(String salesPersonName) {
+        this.salesPersonName = salesPersonName;
     }
 
     public String getStatus() {
@@ -98,4 +123,20 @@ public class Activity {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+//    public void setCreatedAt(LocalDateTime createdAt) {
+//        this.createdAt = createdAt;
+//    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+//    public void setUpdatedAt(LocalDateTime updatedAt) {
+//        this.updatedAt = updatedAt;
+//    }
 }

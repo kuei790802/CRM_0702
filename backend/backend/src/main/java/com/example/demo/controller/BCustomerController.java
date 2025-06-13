@@ -1,22 +1,22 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.APIResponse;
-import com.example.demo.entity.Customer;
+import com.example.demo.entity.BCustomer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.service.CustomerServiceImpl;
+import com.example.demo.service.BCustomerServiceImpl;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/customers")
-public class CustomerController {
+public class BCustomerController {
 
 
-    private final CustomerServiceImpl customerService;
+    private final BCustomerServiceImpl customerService;
 
-    public CustomerController(CustomerServiceImpl customerService) {
+    public BCustomerController(BCustomerServiceImpl customerService) {
         this.customerService = customerService;
     }
 
@@ -24,38 +24,38 @@ public class CustomerController {
 
     // Read All
     @GetMapping
-    public ResponseEntity<List<Customer>> getAll() {
+    public ResponseEntity<List<BCustomer>> getAll() {
         return ResponseEntity.ok(customerService.findAll());
     }
     // Read By id
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getById(@PathVariable Long id) {
-        Customer customer = customerService.findById(id);
-        if (customer == null) {
+    public ResponseEntity<BCustomer> getById(@PathVariable Long id) {
+        BCustomer BCustomer = customerService.findById(id);
+        if (BCustomer == null) {
             // null -> 404 Not Found
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(customer);
+        return ResponseEntity.ok(BCustomer);
     }
 
     // Create
     @PostMapping
-    public ResponseEntity<Customer> create(@RequestBody Customer customer) {
+    public ResponseEntity<BCustomer> create(@RequestBody BCustomer BCustomer) {
         // 201
-        Customer savedCustomer = customerService.save(customer);
+        BCustomer savedBCustomer = customerService.save(BCustomer);
         // 200
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCustomer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedBCustomer);
     }
 
     // Update
     @PutMapping("/{id}")
-    public ResponseEntity<Customer> update(@PathVariable Long id, @RequestBody Customer customer) {
-        customer.setId(id);
-        Customer updatedCustomer = customerService.save(customer);
-        if (updatedCustomer == null) {
+    public ResponseEntity<BCustomer> update(@PathVariable Long id, @RequestBody BCustomer BCustomer) {
+        BCustomer.setId(id);
+        BCustomer updatedBCustomer = customerService.save(BCustomer);
+        if (updatedBCustomer == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(updatedCustomer);
+        return ResponseEntity.ok(updatedBCustomer);
     }
 
     // Delete

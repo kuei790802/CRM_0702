@@ -1,30 +1,30 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.Customer;
+import com.example.demo.entity.BCustomer;
 import java.util.List;
 
-public interface CustomerService {
+public interface BCustomerService {
 
     /**
      * 獲取所有客戶。
      * @return 客戶列表
      */
-    List<Customer> findAll();
+    List<BCustomer> findAll();
 
     /**
      * 根據 ID 獲取客戶。
      * @param id 客戶 ID
      * @return 匹配的客戶實體，如果找不到則返回 null
      */
-    Customer findById(Long id);
+    BCustomer findById(Long id);
 
     /**
      * 儲存或更新客戶。
      * 如果客戶 ID 存在且客戶存在，則為更新；否則為建立。
-     * @param customer 要儲存的客戶實體
+     * @param BCustomer 要儲存的客戶實體
      * @return 儲存後的客戶實體
      */
-    Customer save(Customer customer);
+    BCustomer save(BCustomer BCustomer);
 
     /**
      * 根據 ID 刪除客戶。

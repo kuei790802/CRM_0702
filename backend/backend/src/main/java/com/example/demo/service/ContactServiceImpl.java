@@ -1,11 +1,11 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Contact;
-import com.example.demo.entity.Customer;
+import com.example.demo.entity.BCustomer;
 import com.example.demo.exception.ContactNotFoundException;
-import com.example.demo.exception.CustomerNotFoundException;
+import com.example.demo.exception.BCustomerNotFoundException;
 import com.example.demo.repository.ContactRepository;
-import com.example.demo.repository.CustomerRepository;
+import com.example.demo.repository.BCustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +15,11 @@ import java.util.List;
 public class ContactServiceImpl implements ContactService {
 
     private final ContactRepository contactRepository;
-    private final CustomerRepository customerRepository;
+    private final BCustomerRepository BCustomerRepository;
 
-    public ContactServiceImpl(ContactRepository contactRepository, CustomerRepository customerRepository) {
+    public ContactServiceImpl(ContactRepository contactRepository, BCustomerRepository BCustomerRepository) {
         this.contactRepository = contactRepository;
-        this.customerRepository = customerRepository;
+        this.BCustomerRepository = BCustomerRepository;
     }
 
     @Override
@@ -40,11 +40,11 @@ public class ContactServiceImpl implements ContactService {
             throw new IllegalArgumentException("Contact must be associated with an existing Customer ID.");
         }
 
-        Customer customer = customerRepository.findById(contact.getCustomer().getId())
-                .orElseThrow(() -> new CustomerNotFoundException(
+        BCustomer BCustomer = BCustomerRepository.findById(contact.getCustomer().getId())
+                .orElseThrow(() -> new BCustomerNotFoundException(
                         "Customer not found with ID: " + contact.getCustomer().getId()));
 
-        contact.setCustomer(customer);
+        contact.setCustomer(BCustomer);
 
         return contactRepository.save(contact);
     }
@@ -60,8 +60,8 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public List<Contact> findContactsByCustomerId(Long customerId) {
-        if (!customerRepository.existsById(customerId)) {
-            throw new CustomerNotFoundException("Customer not found with ID: " + customerId);
+        if (!BCustomerRepository.existsById(customerId)) {
+            throw new BCustomerNotFoundException("Customer not found with ID: " + customerId);
         }
         return contactRepository.findByCustomerId(customerId);
     }

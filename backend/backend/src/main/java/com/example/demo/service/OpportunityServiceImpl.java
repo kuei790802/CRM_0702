@@ -5,13 +5,12 @@ import com.example.demo.dto.OpportunityResponseDto;
 import com.example.demo.dto.report.RevenueForecastEntryDto;
 import com.example.demo.dto.report.SalesFunnelReportEntryDto;
 import com.example.demo.dto.report.SalespersonPerformanceDto;
-import com.example.demo.entity.Customer;
+import com.example.demo.entity.BCustomer;
 import com.example.demo.entity.Opportunity;
-import com.example.demo.exception.CustomerNotFoundException;
+import com.example.demo.exception.BCustomerNotFoundException;
 import com.example.demo.exception.OpportunityNotFoundException;
-import com.example.demo.repository.CustomerRepository;
+import com.example.demo.repository.BCustomerRepository;
 import com.example.demo.repository.OpportunityRepository;
-import com.example.demo.service.OpportunityService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -31,11 +30,11 @@ import java.util.stream.Collectors;
 public class OpportunityServiceImpl implements OpportunityService {
 
     private final OpportunityRepository opportunityRepository;
-    private final CustomerRepository customerRepository;
+    private final BCustomerRepository BCustomerRepository;
 
-    public OpportunityServiceImpl(OpportunityRepository opportunityRepository, CustomerRepository customerRepository) {
+    public OpportunityServiceImpl(OpportunityRepository opportunityRepository, BCustomerRepository BCustomerRepository) {
         this.opportunityRepository = opportunityRepository;
-        this.customerRepository = customerRepository;
+        this.BCustomerRepository = BCustomerRepository;
     }
 
     /**
@@ -69,7 +68,7 @@ public class OpportunityServiceImpl implements OpportunityService {
      *
      * @param opportunityRequestDto 商機請求 DTO
      * @param opportunity           要更新的商機實體
-     * @throws CustomerNotFoundException 如果指定的客戶 ID 不存在
+     * @throws BCustomerNotFoundException 如果指定的客戶 ID 不存在
      */
     private void updateOpportunityFromDto(OpportunityRequestDto opportunityRequestDto, Opportunity opportunity) {
         opportunity.setStage(opportunityRequestDto.getStage());
@@ -83,9 +82,9 @@ public class OpportunityServiceImpl implements OpportunityService {
         if (opportunityRequestDto.getCustomerId() != null) {
             // 如果實體中的 customerId 與 DTO 中的不同，或者實體的 customer 物件為空，則重新查找並設定
             if (!Objects.equals(opportunity.getCustomerId(), opportunityRequestDto.getCustomerId()) || opportunity.getCustomer() == null) {
-                Customer customer = customerRepository.findById(opportunityRequestDto.getCustomerId())
-                        .orElseThrow(() -> new CustomerNotFoundException("客戶 ID: " + opportunityRequestDto.getCustomerId() + " 不存在。"));
-                opportunity.setCustomer(customer);
+                BCustomer BCustomer = BCustomerRepository.findById(opportunityRequestDto.getCustomerId())
+                        .orElseThrow(() -> new BCustomerNotFoundException("客戶 ID: " + opportunityRequestDto.getCustomerId() + " 不存在。"));
+                opportunity.setCustomer(BCustomer);
             }
         } else {
             opportunity.setCustomer(null);
@@ -125,12 +124,12 @@ public class OpportunityServiceImpl implements OpportunityService {
      *
      * @param opportunityRequestDto 要儲存的商機請求 DTO
      * @return 儲存後的商機回應 DTO
-     * @throws CustomerNotFoundException 如果指定的客戶 ID 不存在
+     * @throws BCustomerNotFoundException 如果指定的客戶 ID 不存在
      * @throws OpportunityNotFoundException 如果要更新的商機不存在 (當 DTO 包含 ID 但找不到商機時)
      */
     @Override
     @Transactional
-    public OpportunityResponseDto save(OpportunityRequestDto opportunityRequestDto) throws CustomerNotFoundException, OpportunityNotFoundException {
+    public OpportunityResponseDto save(OpportunityRequestDto opportunityRequestDto) throws BCustomerNotFoundException, OpportunityNotFoundException {
         Opportunity opportunity;
         if (opportunityRequestDto.getId() != null) {
             // 更新現有商機
@@ -166,12 +165,12 @@ public class OpportunityServiceImpl implements OpportunityService {
      *
      * @param customerId 客戶 ID
      * @return 屬於該客戶的商機回應 DTO 列表
-     * @throws CustomerNotFoundException 如果客戶不存在
+     * @throws BCustomerNotFoundException 如果客戶不存在
      */
     @Override
-    public List<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId) throws CustomerNotFoundException {
-        customerRepository.findById(customerId)
-                .orElseThrow(() -> new CustomerNotFoundException("客戶 ID: " + customerId + " 不存在"));
+    public List<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId) throws BCustomerNotFoundException {
+        BCustomerRepository.findById(customerId)
+                .orElseThrow(() -> new BCustomerNotFoundException("客戶 ID: " + customerId + " 不存在"));
 
         return opportunityRepository.findByCustomerId(customerId).stream()
                 .map(this::convertToDto)
@@ -184,12 +183,12 @@ public class OpportunityServiceImpl implements OpportunityService {
      * @param customerId 客戶 ID
      * @param pageable   分頁和排序資訊
      * @return 屬於該客戶的商機回應 DTO 分頁結果
-     * @throws CustomerNotFoundException 如果客戶不存在
+     * @throws BCustomerNotFoundException 如果客戶不存在
      */
     @Override
-    public Page<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId, Pageable pageable) throws CustomerNotFoundException {
-        customerRepository.findById(customerId)
-                .orElseThrow(() -> new CustomerNotFoundException("客戶 ID: " + customerId + " 不存在"));
+    public Page<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId, Pageable pageable) throws BCustomerNotFoundException {
+        BCustomerRepository.findById(customerId)
+                .orElseThrow(() -> new BCustomerNotFoundException("客戶 ID: " + customerId + " 不存在"));
 
         Page<Opportunity> opportunitiesPage = opportunityRepository.findByCustomerId(customerId, pageable);
         List<OpportunityResponseDto> dtoList = opportunitiesPage.getContent().stream()

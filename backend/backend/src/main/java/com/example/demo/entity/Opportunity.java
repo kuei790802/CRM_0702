@@ -53,7 +53,7 @@ public class Opportunity {
     // ----- 多對一 ------
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customerid", insertable = false, updatable = false)
-    private Customer customer;
+    private BCustomer BCustomer;
 
     public Opportunity() {}
 
@@ -72,8 +72,8 @@ public class Opportunity {
 
     public void setCustomerId(Long customerId) {
         this.customerId = customerId;
-        if (this.customer != null && !Objects.equals(this.customer.getId(), customerId)) {
-            this.customer = null;
+        if (this.BCustomer != null && !Objects.equals(this.BCustomer.getId(), customerId)) {
+            this.BCustomer = null;
         }
     }
 
@@ -141,14 +141,14 @@ public class Opportunity {
 //        this.updatedAt = updatedAt;
 //    }
 
-    public Customer getCustomer() {
-        return customer;
+    public BCustomer getCustomer() {
+        return BCustomer;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-        if (customer != null) {
-            this.customerId = customer.getId();
+    public void setCustomer(BCustomer BCustomer) {
+        this.BCustomer = BCustomer;
+        if (BCustomer != null) {
+            this.customerId = BCustomer.getId();
         } else {
             this.customerId = null;
         }

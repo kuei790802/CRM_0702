@@ -1,7 +1,7 @@
 package com.example.demo.handler;
 
 import com.example.demo.dto.ErrorResponse;
-import com.example.demo.exception.CustomerNotFoundException;
+import com.example.demo.exception.BCustomerNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -9,16 +9,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest; // 用於獲取更多請求資訊
 
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     // 處理自定義的 CustomerNotFoundException
-    @ExceptionHandler(CustomerNotFoundException.class)
+    @ExceptionHandler(BCustomerNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCustomerNotFoundException(
-            CustomerNotFoundException cnfEx, HttpServletRequest request) {
+            BCustomerNotFoundException cnfEx, HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(), // 404
                 HttpStatus.NOT_FOUND.getReasonPhrase(), // "Not Found"

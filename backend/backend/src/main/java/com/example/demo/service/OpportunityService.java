@@ -5,7 +5,7 @@ import com.example.demo.dto.OpportunityResponseDto;
 import com.example.demo.dto.report.RevenueForecastEntryDto;
 import com.example.demo.dto.report.SalesFunnelReportEntryDto;
 import com.example.demo.dto.report.SalespersonPerformanceDto;
-import com.example.demo.exception.CustomerNotFoundException;
+import com.example.demo.exception.BCustomerNotFoundException;
 import com.example.demo.exception.OpportunityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,10 +41,10 @@ public interface OpportunityService {
      *
      * @param opportunityRequestDto 要儲存的商機請求 DTO
      * @return 儲存後的商機回應 DTO
-     * @throws CustomerNotFoundException 如果指定的客戶 ID 不存在
+     * @throws BCustomerNotFoundException 如果指定的客戶 ID 不存在
      * @throws OpportunityNotFoundException 如果要更新的商機不存在 (當 DTO 包含 ID 但找不到商機時)
      */
-    OpportunityResponseDto save(OpportunityRequestDto opportunityRequestDto) throws CustomerNotFoundException, OpportunityNotFoundException;
+    OpportunityResponseDto save(OpportunityRequestDto opportunityRequestDto) throws BCustomerNotFoundException, OpportunityNotFoundException;
 
     /**
      * 根據 ID 刪除商機。
@@ -59,9 +59,9 @@ public interface OpportunityService {
      *
      * @param customerId 客戶 ID
      * @return 屬於該客戶的商機回應 DTO 列表
-     * @throws CustomerNotFoundException 如果客戶不存在
+     * @throws BCustomerNotFoundException 如果客戶不存在
      */
-    List<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId) throws CustomerNotFoundException;
+    List<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId) throws BCustomerNotFoundException;
 
     /**
      * 根據客戶 ID 獲取該客戶下的所有商機的回應 DTO 分頁結果，支援分頁和排序。
@@ -69,9 +69,9 @@ public interface OpportunityService {
      * @param customerId 客戶 ID
      * @param pageable   分頁和排序資訊
      * @return 屬於該客戶的商機回應 DTO 分頁結果
-     * @throws CustomerNotFoundException 如果客戶不存在
+     * @throws BCustomerNotFoundException 如果客戶不存在
      */
-    Page<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId, Pageable pageable) throws CustomerNotFoundException;
+    Page<OpportunityResponseDto> findOpportunitiesByCustomerId(Long customerId, Pageable pageable) throws BCustomerNotFoundException;
 
     /**
      * 獲取銷售漏斗報告數據。

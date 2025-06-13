@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.OpportunityRequestDto;
 import com.example.demo.dto.OpportunityResponseDto;
-import com.example.demo.exception.CustomerNotFoundException;
+import com.example.demo.exception.BCustomerNotFoundException;
 import com.example.demo.exception.OpportunityNotFoundException;
 import com.example.demo.service.OpportunityService;
 import jakarta.validation.Valid;
@@ -56,7 +56,7 @@ public class OpportunityController {
      *
      * @param opportunityRequestDto 包含新商機資料的 DTO (會自動進行驗證)
      * @return 建立後的商機回應 DTO，HTTP 狀態碼 201 CREATED
-     * @throws CustomerNotFoundException 如果指定的客戶 ID 不存在
+     * @throws BCustomerNotFoundException 如果指定的客戶 ID 不存在
      */
     @PostMapping
     public ResponseEntity<OpportunityResponseDto> create(@Valid @RequestBody OpportunityRequestDto opportunityRequestDto) {
@@ -72,7 +72,7 @@ public class OpportunityController {
      * @param opportunityRequestDto 包含更新資料的 DTO (會自動進行驗證)
      * @return 更新後的商機回應 DTO，HTTP 狀態碼 200 OK
      * @throws OpportunityNotFoundException 如果找不到要更新的商機
-     * @throws CustomerNotFoundException    如果指定的客戶 ID 不存在
+     * @throws BCustomerNotFoundException    如果指定的客戶 ID 不存在
      */
     @PutMapping("/{id}")
     public ResponseEntity<OpportunityResponseDto> update(@PathVariable Long id, @Valid @RequestBody OpportunityRequestDto opportunityRequestDto) {
@@ -102,7 +102,7 @@ public class OpportunityController {
      *
      * @param customerId 客戶 ID
      * @return 屬於該客戶的商機回應 DTO 列表，HTTP 狀態碼 200 OK
-     * @throws CustomerNotFoundException 如果客戶不存在
+     * @throws BCustomerNotFoundException 如果客戶不存在
      */
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<OpportunityResponseDto>> getOpportunitiesByCustomerId(@PathVariable Long customerId) {
@@ -117,7 +117,7 @@ public class OpportunityController {
      * @param customerId 客戶 ID
      * @param pageable   分頁和排序資訊 (例如: ?page=0&size=10&sort=closeDate,desc)
      * @return 屬於該客戶的商機分頁結果，HTTP 狀態碼 200 OK
-     * @throws CustomerNotFoundException 如果客戶不存在
+     * @throws BCustomerNotFoundException 如果客戶不存在
      */
     @GetMapping("/customer/{customerId}/paged")
     public ResponseEntity<Page<OpportunityResponseDto>> getPagedOpportunitiesByCustomerId(

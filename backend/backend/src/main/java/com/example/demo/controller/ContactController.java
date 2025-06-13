@@ -4,8 +4,8 @@ import com.example.demo.dto.APIResponse;
 import com.example.demo.dto.ContactRequestDto;
 import com.example.demo.dto.ContactResponseDto;
 import com.example.demo.entity.Contact;
-import com.example.demo.entity.Customer;
-import com.example.demo.service.CustomerService;
+import com.example.demo.entity.BCustomer;
+import com.example.demo.service.BCustomerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 public class ContactController {
 
     private final ContactService contactService;
-    private final CustomerService customerService;
+    private final BCustomerService BCustomerService;
 
-    public ContactController(ContactService contactService, CustomerService customerService) {
+    public ContactController(ContactService contactService, BCustomerService BCustomerService) {
         this.contactService = contactService;
-        this.customerService = customerService;
+        this.BCustomerService = BCustomerService;
     }
 
     // ----- 將 Entity 轉換為 Response DTO -----
@@ -74,9 +74,9 @@ public class ContactController {
         contact.setEmail(contactRequestDto.getEmail());
         contact.setNotes(contactRequestDto.getNotes());
 
-        Customer customer = customerService.findById(contactRequestDto.getCustomerId());
+        BCustomer BCustomer = BCustomerService.findById(contactRequestDto.getCustomerId());
 
-        contact.setCustomer(customer);
+        contact.setCustomer(BCustomer);
 
         Contact savedContact = contactService.save(contact);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -101,8 +101,8 @@ public class ContactController {
         if (contactRequestDto.getCustomerId() != null &&
                 !contactRequestDto.getCustomerId().equals(existingContact.getCustomer().getId())) {
 
-            Customer newCustomer = customerService.findById(contactRequestDto.getCustomerId());
-            existingContact.setCustomer(newCustomer);
+            BCustomer newBCustomer = BCustomerService.findById(contactRequestDto.getCustomerId());
+            existingContact.setCustomer(newBCustomer);
         }
 
         Contact updatedContact = contactService.save(existingContact);

@@ -36,7 +36,7 @@ public class Contact {
     // ----- 多對一 -----
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customerid", insertable = false, updatable = false)
-    private Customer customer;
+    private BCustomer BCustomer;
 
     public Contact() {}
 
@@ -57,14 +57,14 @@ public class Contact {
         this.customerId = customerId;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public BCustomer getCustomer() {
+        return BCustomer;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-        if (customer != null) {
-            this.customerId = customer.getId();
+    public void setCustomer(BCustomer BCustomer) {
+        this.BCustomer = BCustomer;
+        if (BCustomer != null) {
+            this.customerId = BCustomer.getId();
         } else {
             this.customerId = null;
         }

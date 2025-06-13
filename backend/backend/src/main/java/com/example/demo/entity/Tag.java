@@ -19,7 +19,7 @@ public class Tag {
 
     // -----
     @ManyToMany(mappedBy = "tags")
-    private Set<Customer> customers = new HashSet<>();
+    private Set<BCustomer> BCustomers = new HashSet<>();
 
     public Tag() {}
 
@@ -44,12 +44,12 @@ public class Tag {
         this.name = name;
     }
 
-    public Set<Customer> getCustomers() {
-        return customers;
+    public Set<BCustomer> getCustomers() {
+        return BCustomers;
     }
 
-    public void setCustomers(Set<Customer> customers) {
-        this.customers = customers;
+    public void setCustomers(Set<BCustomer> BCustomers) {
+        this.BCustomers = BCustomers;
     }
 
     @Override
