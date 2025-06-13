@@ -140,15 +140,25 @@ public class CartService {
     //----------以下為拉出來撰寫的方法
     private CartViewDto mapToCartViewDto(Cart cart) {
         List<CartDetailDto> detailDtosDtos = cart.getCartdetails().stream()
-                .map(detail -> CartDetailDto.builder()
-                        .cartdetailid(detail.getCartdetailid())
-                        .productid(detail.getProduct().getProductid())
-                        .productname(detail.getProduct().getProductname())
-                        .productimgurl(detail.getProduct().getProductimgs().getFirst().getImgurl())
-                        .unitprice(detail.getProduct().getUnitprice())
-                        .quantity(detail.getQuantity())
-                        .totalprice(detail.getProduct().getUnitprice() * detail.getQuantity())
-                        .build())
+                .map(detail -> {
+                    List<ProductImg> imgs = detail.getProduct().getProductimgs();
+                    String ImgUrl;
+                    if (imgs != null && !imgs.isEmpty()) {
+                        ImgUrl = imgs.get(0).getImgurl();
+                    } else {
+                        ImgUrl = "/images/default_product.jpg";
+                    }
+
+                    return CartDetailDto.builder()
+                            .cartdetailid(detail.getCartdetailid())
+                            .productid(detail.getProduct().getProductid())
+                            .productname(detail.getProduct().getProductname())
+                            .productimgurl(ImgUrl)
+                            .unitprice(detail.getProduct().getUnitprice())
+                            .quantity(detail.getQuantity())
+                            .totalprice(detail.getProduct().getUnitprice() * detail.getQuantity())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         double grandTotal = detailDtosDtos.stream().mapToDouble(CartDetailDto::getTotalprice).sum();
