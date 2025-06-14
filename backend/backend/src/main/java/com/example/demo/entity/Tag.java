@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -11,37 +12,36 @@ public class Tag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "tagid")
-    private Long id;
+    private Long tagId;
 
-    @Column(name = "tagname")
-    private String name;
+    @Column(nullable = false, unique = true, length = 50)
+    private String tagName;
 
-    // -----
+    // ----- 多對多 -----
     @ManyToMany(mappedBy = "tags")
     private Set<Customer> customers = new HashSet<>();
 
     public Tag() {}
 
-    public Tag(String name) {
-        this.name = name;
+    public Tag(String tagName) {
+        this.tagName = tagName;
     }
 
     // Getter and Setter
-    public Long getId() {
-        return id;
+    public Long getTagId() {
+        return tagId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setTagId(Long tagId) {
+        this.tagId = tagId;
     }
 
-    public String getName() {
-        return name;
+    public String getTagName() {
+        return tagName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
     }
 
     public Set<Customer> getCustomers() {
@@ -55,15 +55,22 @@ public class Tag {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Tag)) return false;
         Tag tag = (Tag) o;
-        return id != null && id.equals(tag.id);
+        return tagId != null && Objects.equals(tagId, tag.getTagId());
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        return getClass().hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "tagId=" + tagId +
+                ", tagName='" + tagName + '\'' +
+                '}';
+    }
 
 }

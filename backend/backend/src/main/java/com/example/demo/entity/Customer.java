@@ -17,72 +17,71 @@ public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "customerid")
-    private Long id;
+    private Long customerId;
 
-    @Column(name = "customername", nullable = false)
-    private String name;
+    @Column(nullable = false, length = 100)
+    private String customerName;
 
-    @Column(name = "industry")
+    @Column(length = 100)
     private String industry;
 
-    @Column(name = "customertype")
-    private String type;
+    @Column(length = 50)
+    private String customerType;
 
-    @Column(name = "sourceid")
-    private Long sourceId;
+    // ----- 多對一 -----
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_id")
+    private Source source;
 
-    @Column(name = "customerlevel")
-    private String level;
+    @Column(length = 50)
+    private String customerLevel;
 
-    @Column(name = "customeraddress")
-    private String address;
+    @Column(length = 255)
+    private String customerAddress;
 
-    @Column(name = "customertel")
-    private String tel;
+    @Column(length = 30)
+    private String customerTel;
 
-    @Column(name = "customeremail")
-    private String email;
+    @Column(length = 150)
+    private String customerEmail;
 
     @CreatedDate
-    @Column(name = "customercreated", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "customerupdated")
     private LocalDateTime updatedAt;
 
     // ----- 多對多 -----
-   @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "tagmaps",
-            joinColumns = @JoinColumn(name = "customerid"),
-            inverseJoinColumns = @JoinColumn(name = "tagid")
+            joinColumns = @JoinColumn(name = "customer_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags = new HashSet<>();
 
     public Customer() {}
-    public Customer(String name) {
-        this.name = name;
+    public Customer(String customerName) {
+        this.customerName = customerName;
     }
-
 
 
     // Getter and Setter
-    public Long getId() {
-        return id;
+    public Long getCustomerId() {
+        return customerId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
-    public String getName() {
-        return name;
+    public String getCustomerName() {
+        return customerName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
     public String getIndustry() {
@@ -93,95 +92,91 @@ public class Customer {
         this.industry = industry;
     }
 
-    public String getType() {
-        return type;
+    public String getCustomerType() {
+        return customerType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setCustomerType(String customerType) {
+        this.customerType = customerType;
     }
 
-    public Long getSourceId() {
-        return sourceId;
+    public Source getSource() {
+        return source;
     }
 
-    public void setSourceId(Long sourceid) {
-        this.sourceId = sourceId;
+    public void setSource(Source source) {
+        this.source = source;
     }
 
-    public String getLevel() {
-        return level;
+    public String getCustomerLevel() {
+        return customerLevel;
     }
 
-    public void setLevel(String level) {
-        this.level = level;
+    public void setCustomerLevel(String customerLevel) {
+        this.customerLevel = customerLevel;
     }
 
-    public String getAddress() {
-        return address;
+    public String getCustomerAddress() {
+        return customerAddress;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCustomerAddress(String customerAddress) {
+        this.customerAddress = customerAddress;
     }
 
-    public String getTel() {
-        return tel;
+    public String getCustomerTel() {
+        return customerTel;
     }
 
-    public void setTel(String tel) {
-        this.tel = tel;
+    public void setCustomerTel(String customerTel) {
+        this.customerTel = customerTel;
     }
 
-    public String getEmail() {
-        return email;
+    public String getCustomerEmail() {
+        return customerEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-//    public void setCreatedAt(LocalDateTime createdAt) {
-//        this.createdAt = createdAt;
-//    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-//    public void setUpdatedAt(LocalDateTime updatedAt) {
-//        this.updatedAt = updatedAt;
-//    }
+    public Set<Tag> getTags() {
+        return tags;
+    }
 
-    // -----
+    // ----- 關聯管理輔助方法 -----
     public void addTag(Tag tag) {
         this.tags.add(tag);
+        tag.getCustomers().add(this);
     }
 
     public void removeTag(Tag tag) {
         this.tags.remove(tag);
+        tag.getCustomers().remove(this);
     }
 
+    // --- equals, hashCode, toString ---
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        // 檢查物件是否為 null 或類別是否不一致
-        if (o == null || getClass() != o.getClass()) return false;
+        // 使用 instanceof 檢查，可以處理代理物件 (Proxy) 的情況
+        if (!(o instanceof Customer)) return false;
         Customer customer = (Customer) o;
-        // 如果 ID 已生成，則使用 ID 進行比較；如果 ID 尚未生成（即為新實體），則使用物件引用比較 (super.equals(o))
-        // 這種做法可以避免在 ID 未生成時，兩個不同的新實體被誤判為相同。
-        return id != null && Objects.equals(id, customer.id);
+        // 確保 id 不為 null，才用 id 比較
+        return customerId != null && Objects.equals(customerId, customer.getCustomerId());
     }
 
     @Override
     public int hashCode() {
-        // 如果 ID 已生成，則使用 ID 的 hashCode；如果 ID 尚未生成，則返回 Objects.hash(super.hashCode()) 或一個常數。
-        // 與 equals() 方法保持一致性是關鍵。
-        return id != null ? Objects.hash(id) : super.hashCode();
+        return getClass().hashCode();
     }
 
     // --- 覆寫 toString() 方法 (方便除錯) ---
@@ -191,17 +186,10 @@ public class Customer {
     @Override
     public String toString() {
         return "Customer{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "customerId=" + customerId +
+                ", customerName='" + customerName + '\'' +
                 ", industry='" + industry + '\'' +
-                ", type='" + type + '\'' +
-                ", sourceid=" + sourceId +
-                ", level='" + level + '\'' +
-                ", address='" + address + '\'' +
-                ", tel='" + tel + '\'' +
-                ", email='" + email + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                ", customerType='" + customerType + '\'' +
                 '}';
     }
 

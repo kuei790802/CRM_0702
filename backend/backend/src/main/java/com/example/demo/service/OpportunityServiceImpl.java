@@ -50,7 +50,7 @@ public class OpportunityServiceImpl implements OpportunityService {
         dto.setCustomerId(opportunity.getCustomerId());
 
         if (opportunity.getCustomer() != null) {
-            dto.setCustomerName(opportunity.getCustomer().getName());
+            dto.setCustomerName(opportunity.getCustomer().getS());
         }
         dto.setStage(opportunity.getStage());
         dto.setStatus(opportunity.getStatus());
