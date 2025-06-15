@@ -46,14 +46,14 @@ class InventoryServiceTest {
     private Warehouse sampleWarehouse;
     private PurchaseOrder samplePurchaseOrder;
     private Product sampleProduct;
-    private Users sampleUser;
+    private Users receivingUser;
 
 
     @BeforeEach
     void setUp() {
-        
-        sampleUser = new Users();
-        sampleUser.setUserId(1L);
+
+        receivingUser = new Users();
+        receivingUser.setUserId(1L);
 
         sampleProduct = new Product();
         sampleProduct.setProductId(1L);

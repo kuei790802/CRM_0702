@@ -34,10 +34,6 @@ public class Warehouse {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public Warehouse(LocalDateTime createdAt, Long createdBy, String name, Long warehouseId) {
-        this.createdAt = createdAt;
-        this.createdBy = createdBy;
-        this.name = name;
-        this.warehouseId = warehouseId;
-    }
+
+
 }
