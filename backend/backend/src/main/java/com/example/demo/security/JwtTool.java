@@ -16,12 +16,11 @@ public class JwtTool {
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
 
-    public static String createToken(String password,String customerName, String account, Long customerId, VIPLevel vipLevel){
+    public static String createToken(String customerName, String account, Long customerId, VIPLevel vipLevel){
         return Jwts.builder()
-                .setSubject(password)
+                .setSubject(account)
                 .claim("customerId", customerId)
                 .claim("customerName", customerName)
-                .claim("account", account)
                 .claim("viplevel", vipLevel)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
