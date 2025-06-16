@@ -16,12 +16,11 @@ public class JwtTool {
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
 
-    public static String createToken(String password,String customerName, String account, Long customerId, VIPLevel vipLevel){
+    public static String createToken(String customerName, String account, Long customerId, VIPLevel vipLevel){
         return Jwts.builder()
-                .setSubject(password)
+                .setSubject(account)
                 .claim("customerId", customerId)
                 .claim("customerName", customerName)
-                .claim("account", account)
                 .claim("viplevel", vipLevel)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
@@ -46,6 +45,6 @@ public class JwtTool {
     // 回傳指定欄位account
     public static String parseTokenToAccount(String token) {
         Claims claims = parseToken(token);
-        return claims != null ? claims.get("account", String.class) : null;
+        return claims != null ? claims.getSubject() : null;
     }
 }

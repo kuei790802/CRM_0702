@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
@@ -30,6 +31,7 @@ public class CCustomerService {
                             , String customerName
                             , String password
                             , String email
+                            , String address
                             , LocalDate birthday){
         if(checkAccountExist(account)){
             throw new AccountAlreadyExistsException(account);
@@ -40,6 +42,7 @@ public class CCustomerService {
                 .customerName(customerName)
                 .password(encoder.encode(password))
                 .email(email)
+                .address(address)
                 .birthday(birthday)
                 .isActive(true)
                 .isDeleted(false)
@@ -65,6 +68,23 @@ public class CCustomerService {
         return loginCCustomer;
     }
 
+    // 檢視顧客資料: 顯示用戶個人基本資訊（帳號、姓名、電話、地址等）資料查詢、權限驗證（只能看自己的資料）
+    public CCustomerProfileResponse getProfile(String account) {
+        CCustomer customer = CCustomerRepo.findByAccount(account)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return new CCustomerProfileResponse(
+                customer.getAccount(),
+                customer.getCustomerName(),
+                customer.getEmail(),
+                customer.getAddress(),
+                customer.getBirthday()
+        );
+    }
+
+
+    // 更改基本資料: 讓用戶更新個人資訊（含忘記密碼、密碼更改）資料驗證、密碼加密更新、資料一致性
+
 
 
 
@@ -73,15 +93,18 @@ public class CCustomerService {
 
 
 
-    // 拉回別人開發的購物下單資訊 -> 累積消費金額、VIP等級升降
 
-    // 更改基本資料
 
-    // 註冊時紀錄註冊時間、修改實紀錄修改時間、下單時紀錄下單時間
 
-    // 忘記密碼
+    // 留言給課服: 前台用戶對商品、客服、社區的留言與回覆，留言CRUD，留言屬性包含userId, productId等，防止惡意留言
 
-    // 留言給課服
+    // (購物邏輯是別人負責的，所以這部分可以晚點做嗎?)拉回別人開發的購物下單資訊 -> 我要做的事更新累積消費金額、VIP等級升降，如下
+    // VIP互動: 針對VIP用戶提供額外功能（專屬優惠、積分），VIP等級判斷、積分管理、VIP專屬訊息提醒
+
+    // 開api給系統管理者: 註冊時紀錄註冊時間、修改實紀錄修改時間、下單時紀錄下單時間
+
+
+
 
 
 

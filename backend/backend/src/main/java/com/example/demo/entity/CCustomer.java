@@ -21,10 +21,16 @@ public class CCustomer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long customerId;
 
+    @Column(nullable = false)
     private String customerName;
+    @Column(nullable = false, unique = true)
     private String account;
+    @Column(nullable = false)
     private String password;
+    @Column(nullable = false, unique = true)
     private String email;
+
+    private String address;
     private LocalDate birthday;
 
     private LocalDateTime createdAt;

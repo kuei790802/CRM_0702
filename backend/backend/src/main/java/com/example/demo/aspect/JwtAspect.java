@@ -17,6 +17,7 @@ public class JwtAspect {
 
     @Around("@annotation(com.example.demo.security.CheckJwt)")
     public Object checkJwt(ProceedingJoinPoint joinPoint) throws Throwable{
+        System.out.println("JwtAspect checkJwt START");
         HttpServletRequest req =
                 ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes()).getRequest();
         String authHeader =  req.getHeader("Authorization");
@@ -34,7 +35,13 @@ public class JwtAspect {
             throw new JwtException("Token expired");
         }
 
-        System.out.println("Token ok");
+        // ✅ 把帳號資訊放進 request scope，給 controller 用
+        String account = claims.getSubject(); // 或 claims.get("account", String.class)
+        req.setAttribute("account", account);
+        System.out.println("Set request attribute 'account' = " + account);
+
+        System.out.println("Token ok, account = " + account);
+        System.out.println("JwtAspect checkJwt END");
         return joinPoint.proceed();
     }
 
