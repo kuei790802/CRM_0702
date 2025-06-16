@@ -33,6 +33,10 @@ public class PurchaseOrderDetail {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    private Product product;
+
     @Column(name = "quantity", nullable = false, precision = 18, scale = 2)
     private BigDecimal quantity;
 
@@ -41,13 +45,13 @@ public class PurchaseOrderDetail {
 
     @Column(name = "warehouse_id", nullable = false)
     private Long warehouseId;
-    
+
     @Column(name = "item_amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal itemAmount;
 
     @Column(name = "item_tax_amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal itemTaxAmount;
-    
+
     @Column(name = "item_net_amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal itemNetAmount;
 
@@ -59,10 +63,14 @@ public class PurchaseOrderDetail {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(name = "updated_by", nullable = false)
     private Long updatedBy;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public String getProductName() {
+        return product != null ? product.getName() : null;
+    }
 }

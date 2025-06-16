@@ -38,7 +38,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
-    @GetMapping // 當收到 HTTP GET 請求時，會執行此方法
+    @GetMapping
     public ResponseEntity<Page<Product>> searchProducts(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Boolean isSalable,
@@ -52,7 +52,7 @@ public class ProductController {
         return ResponseEntity.ok(productPage);
     }
 
-    @PutMapping("/{id}") // 處理 PUT /api/products/{id} 的請求
+    @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long id, 
             @Valid @RequestBody ProductUpdateDTO productDTO) {
@@ -64,7 +64,7 @@ public class ProductController {
         return ResponseEntity.ok(updatedProduct);
     }
 
-    @DeleteMapping("/{id}") // 處理 DELETE /api/products/{id} 的請求
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         Long currentUserId = 1L;
         
@@ -74,7 +74,7 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/restore") // 處理 POST /api/products/{id}/restore 的請求
+    @PostMapping("/{id}/restore")
     public ResponseEntity<Product> restoreProduct(@PathVariable Long id) {
         Long currentUserId = 1L;
 

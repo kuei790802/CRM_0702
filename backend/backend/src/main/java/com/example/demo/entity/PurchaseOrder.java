@@ -38,6 +38,9 @@ public class PurchaseOrder {
     @Column(name = "supplier_id", nullable = false)
     private Long supplierId;
 
+    @Column(name = "warehouse_id", nullable = true)
+    private Long warehouseId;
+
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
     
