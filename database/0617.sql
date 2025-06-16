@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： localhost:3306
--- 產生時間： 2025-06-11 08:16:48
+-- 產生時間： 2025-06-16 18:46:36
 -- 伺服器版本： 5.7.24
 -- PHP 版本： 8.3.1
 
@@ -83,7 +83,7 @@ INSERT INTO `cartdetails` (`cartdetailid`, `cartid`, `productid`, `quantity`, `a
 
 CREATE TABLE `carts` (
   `cartid` int(10) UNSIGNED NOT NULL,
-  `userid` int(10) UNSIGNED NOT NULL,
+  `ccustomerid` int(10) UNSIGNED NOT NULL,
   `createat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -92,7 +92,7 @@ CREATE TABLE `carts` (
 -- 傾印資料表的資料 `carts`
 --
 
-INSERT INTO `carts` (`cartid`, `userid`, `createat`, `updateat`) VALUES
+INSERT INTO `carts` (`cartid`, `ccustomerid`, `createat`, `updateat`) VALUES
 (101, 101, '2025-06-09 10:00:00', '2025-06-09 10:00:00'),
 (102, 102, '2025-06-09 11:00:00', '2025-06-09 11:00:00'),
 (103, 103, '2025-06-09 12:00:00', '2025-06-09 12:00:00'),
@@ -123,6 +123,130 @@ INSERT INTO `carts` (`cartid`, `userid`, `createat`, `updateat`) VALUES
 (128, 128, '2025-05-29 22:00:00', '2025-05-29 22:00:00'),
 (129, 129, '2025-05-28 23:00:00', '2025-05-28 23:00:00'),
 (130, 130, '2025-05-28 08:00:00', '2025-05-28 08:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `ccustomeraddress`
+--
+
+CREATE TABLE `ccustomeraddress` (
+  `addressid` int(10) UNSIGNED NOT NULL,
+  `ccustomerid` int(10) UNSIGNED NOT NULL,
+  `name` varchar(100) NOT NULL COMMENT '收件人姓名',
+  `phone` varchar(100) NOT NULL COMMENT '收件人電話',
+  `street` varchar(100) NOT NULL COMMENT '街道地址',
+  `city` varchar(100) NOT NULL COMMENT '城市',
+  `district` varchar(100) NOT NULL COMMENT '行政區',
+  `zipcode` varchar(50) NOT NULL COMMENT '郵遞區號',
+  `isdefault` tinyint(1) NOT NULL COMMENT '是否為默認地址',
+  `createat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateat` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- 傾印資料表的資料 `ccustomeraddress`
+--
+
+INSERT INTO `ccustomeraddress` (`addressid`, `ccustomerid`, `name`, `phone`, `street`, `city`, `district`, `zipcode`, `isdefault`, `createat`, `updateat`) VALUES
+(1, 1, '張小華', '0912-111-222', '忠孝東路四段200號12樓', '台北市', '大安區', '106', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(2, 2, '李大偉', '0923-333-444', '中正路123號5樓', '新北市', '板橋區', '220', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(3, 3, '王美玲', '0934-555-666', '中山路456號', '桃園市', '中壢區', '320', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(4, 4, '陳志豪', '0945-777-888', '逢甲路789號3樓', '台中市', '西屯區', '407', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(5, 5, '林雅琪', '0956-999-000', '夢時代購物中心1樓', '高雄市', '前鎮區', '806', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(6, 1, '張小華', '0912-111-222', '信義路五段150號', '台北市', '信義區', '110', 0, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(7, 2, '李大偉', '0923-333-444', '公司地址-民權東路300號', '台北市', '中山區', '104', 0, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(101, 101, '王小明', '0911-222-333', '新生南路一段1號', '台北市', '大安區', '106', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(102, 101, '王小明', '0911-222-333', '羅斯福路三段2號', '台北市', '中正區', '100', 0, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(103, 102, '陳美玲', '0912-333-444', '文德路3號', '新北市', '新店區', '231', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(104, 103, '林志傑', '0913-444-555', '中和路4號', '新北市', '中和區', '235', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(105, 104, '吳淑貞', '0914-555-666', '景安路5號', '新北市', '永和區', '234', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(106, 105, '黃國華', '0915-666-777', '光復路6號', '桃園市', '龜山區', '333', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(107, 106, '蔡依林', '0916-777-888', '藝文特區7號', '桃園市', '桃園區', '330', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(108, 107, '鄭成功', '0917-888-999', '延平路8號', '新竹市', '東區', '300', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(109, 108, '楊丞琳', '0918-999-000', '竹北交流道9號', '新竹縣', '竹北市', '302', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(110, 109, '劉德華', '0919-000-111', '英才路10號', '台中市', '西區', '403', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(111, 109, '劉德華', '0919-000-111', '公益路11號', '台中市', '南屯區', '408', 0, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(112, 110, '高圓圓', '0920-111-222', '向上路12號', '台中市', '南屯區', '408', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(113, 111, '周杰倫', '0921-222-333', '民族路13號', '台南市', '中西區', '700', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(114, 112, '孫燕姿', '0922-333-444', '大學路14號', '台南市', '東區', '701', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(115, 113, '王力宏', '0923-444-555', '成功路15號', '台南市', '北區', '704', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(116, 114, '李榮浩', '0924-555-666', '自強路16號', '高雄市', '苓雅區', '802', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(117, 115, '鄧紫棋', '0925-666-777', '博愛路17號', '高雄市', '左營區', '813', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(118, 116, '羅志祥', '0926-777-888', '中華路18號', '高雄市', '前金區', '801', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(119, 117, '林俊傑', '0927-888-999', '中央路19號', '花蓮縣', '花蓮市', '970', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(120, 118, '蕭敬騰', '0928-999-000', '和平路20號', '台東縣', '台東市', '950', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(121, 119, '田馥甄', '0929-000-111', '中正路21號', '宜蘭縣', '宜蘭市', '260', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(122, 120, '阿信', '0930-111-222', '復興路22號', '新竹縣', '竹東鎮', '310', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(123, 121, '光頭王', '0987-654-321', '市民大道一段100號', '台北市', '大同區', '103', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(124, 122, '劉阿嬤', '0988-765-432', '板橋車站附近', '新北市', '板橋區', '220', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(125, 123, '張老師', '0989-876-543', '中壢市區', '桃園市', '中壢區', '320', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(126, 124, '李同學', '0990-987-654', '東海大學旁', '台中市', '龍井區', '434', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(127, 125, '趙老闆', '0991-098-765', '美術館特區', '台中市', '西區', '403', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(128, 126, '錢經理', '0992-123-456', '信義區辦公室', '台北市', '信義區', '110', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(129, 127, '孫先生', '0993-234-567', '內湖科學園區', '台北市', '內湖區', '114', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(130, 128, '周小姐', '0994-345-678', '三峽老街', '新北市', '三峽區', '237', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `ccustomers`
+--
+
+CREATE TABLE `ccustomers` (
+  `ccustomerid` int(10) UNSIGNED NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `phone` varchar(100) NOT NULL,
+  `password` varchar(255) DEFAULT NULL COMMENT '沒註冊就沒有',
+  `registrationdate` date DEFAULT NULL COMMENT '沒註冊就沒有',
+  `lastlogindate` date DEFAULT NULL,
+  `isactive` tinyint(1) NOT NULL,
+  `createat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- 傾印資料表的資料 `ccustomers`
+--
+
+INSERT INTO `ccustomers` (`ccustomerid`, `name`, `email`, `phone`, `password`, `registrationdate`, `lastlogindate`, `isactive`, `createat`, `updateat`) VALUES
+(1, '張小華', 'zhang.xiaohua@gmail.com', '0912-111-222', '$2y$10$example1hash', '2024-01-15', '2025-06-08', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(2, '李大偉', 'li.dawei@yahoo.com', '0923-333-444', '$2y$10$example2hash', '2024-02-20', '2025-06-07', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(3, '王美玲', 'wang.meiling@hotmail.com', '0934-555-666', '$2y$10$example3hash', '2024-03-10', '2025-06-06', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(4, '陳志豪', 'chen.zhihao@gmail.com', '0945-777-888', '$2y$10$example4hash', '2024-04-25', '2025-06-05', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(5, '林雅琪', 'lin.yaqi@gmail.com', '0956-999-000', '$2y$10$example5hash', '2024-05-30', '2025-06-08', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(6, '黃建明', 'huang.jianming@gmail.com', '0967-123-456', NULL, NULL, '2025-06-01', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
+(101, '王小明', 'wang.xiaoming@email.com', '0911-222-333', '482c811da5d5b4bc6d497ffa98491e38', '2024-06-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(102, '陳美玲', 'chen.meiling@email.com', '0912-333-444', '96b33694c4bb7dbd07391e0be54745fb', '2024-07-10', '2025-06-08', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(103, '林志傑', 'lin.zhijie@email.com', '0913-444-555', '7d347cf0ee68174a3588f6cba31b8a67', '2024-08-15', '2025-06-07', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(104, '吳淑貞', 'wu.shuzhen@email.com', '0914-555-666', 'bb77d0d3b3f239fa5db73bdf27b8d29a', '2024-09-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(105, '黃國華', 'huang.guohua@email.com', '0915-666-777', '34819d7beeabb9260a5c854bc85b3e44', '2024-10-20', '2025-06-05', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(106, '蔡依林', 'tsai.yilin@email.com', '0916-777-888', 'e9e57370723e5c1b735ddbda3e81e0a7', '2024-11-05', '2025-06-06', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(107, '鄭成功', 'zheng.chenggong@email.com', '0917-888-999', 'f04af61b3f332afa0ceec786a42cd365', '2024-12-12', '2025-06-03', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(108, '楊丞琳', 'yang.chenglin@email.com', '0918-999-000', '05011fc72802a0682d39fbe330224b60', '2025-01-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(109, '劉德華', 'liu.dehua@email.com', '0919-000-111', '8e62561c3ac6d3fb0016e9a34a2caa5d', '2025-02-14', '2025-06-02', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(110, '高圓圓', 'gao.yuanyuan@email.com', '0920-111-222', 'd109f71f89b98e6f3990a0adbfaeb913', '2025-03-20', '2025-06-01', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(111, '周杰倫', 'jay.chou@email.com', '0921-222-333', '075f74ae2b8989ab2c7e3c8c91bcf62a', '2024-01-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(112, '孫燕姿', 'stef.sun@email.com', '0922-333-444', 'c71994ec8cbfb65796480d0567974d46', '2024-02-02', '2025-06-08', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(113, '王力宏', 'wang.lihong@email.com', '0923-444-555', 'd952924cb83b7b06910be50dda8fe6ec', '2024-03-03', '2025-06-07', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(114, '李榮浩', 'li.ronghao@email.com', '0924-555-666', '858012b9bfc596763b85914d298f9bee', '2024-04-04', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(115, '鄧紫棋', 'g.e.m@email.com', '0925-666-777', '65283d8df2d4f596f092c54864cad922', '2024-05-05', '2025-06-05', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(116, '羅志祥', 'show.lo@email.com', '0926-777-888', '6b19beeaedade171ecc320ddd87f7ae6', '2024-06-06', '2025-06-06', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(117, '林俊傑', 'jj.lin@email.com', '0927-888-999', 'f3a99ccc1d3d7b7304aec4eb3617a710', '2024-07-07', '2025-06-03', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(118, '蕭敬騰', 'jam.hsiao@email.com', '0928-999-000', '6b42d00c4ca6ddc33a604c54b8ce4adc', '2024-08-08', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(119, '田馥甄', 'hebe.tien@email.com', '0929-000-111', '9820da2cacb782026943db4db6110d69', '2024-09-09', '2025-06-02', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(120, '阿信', 'ashin@email.com', '0930-111-222', 'd0684cfe844d7353619932ef26fa6e90', '2024-10-10', '2025-06-01', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(121, '光頭王', 'david.wang@email.com', '0987-654-321', NULL, NULL, '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(122, '劉阿嬤', 'grandma.liu@email.com', '0988-765-432', NULL, NULL, '2025-06-08', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(123, '張老師', 'teacher.chang@email.com', '0989-876-543', NULL, NULL, '2025-06-07', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(124, '李同學', 'student.li@email.com', '0990-987-654', NULL, NULL, '2025-06-06', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(125, '趙老闆', 'boss.zhao@email.com', '0991-098-765', NULL, NULL, '2025-06-05', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(126, '錢經理', 'manager.qian@email.com', '0992-123-456', NULL, NULL, '2025-06-04', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(127, '孫先生', 'mr.sun@email.com', '0993-234-567', NULL, NULL, '2025-06-03', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(128, '周小姐', 'ms.zhou@email.com', '0994-345-678', NULL, NULL, '2025-06-02', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(129, '吳太太', 'mrs.wu@email.com', '0995-456-789', NULL, NULL, '2025-06-01', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
+(130, '鄭先生', 'mr.zheng@email.com', '0996-567-890', NULL, NULL, '2025-05-30', 0, '2025-06-11 00:14:30', '2025-06-11 00:14:30');
 
 -- --------------------------------------------------------
 
@@ -318,7 +442,7 @@ INSERT INTO `orderdetails` (`orderid`, `productid`, `quantity`, `unitprice`, `cr
 CREATE TABLE `orders` (
   `orderid` int(10) UNSIGNED NOT NULL,
   `platformid` int(10) UNSIGNED NOT NULL,
-  `userid` int(10) UNSIGNED NOT NULL,
+  `ccustomerid` int(10) UNSIGNED NOT NULL,
   `orderdate` date NOT NULL,
   `orderstatus` varchar(100) NOT NULL COMMENT '訂單狀態',
   `paymethod` varchar(100) NOT NULL COMMENT '付款方式',
@@ -332,7 +456,7 @@ CREATE TABLE `orders` (
 -- 傾印資料表的資料 `orders`
 --
 
-INSERT INTO `orders` (`orderid`, `platformid`, `userid`, `orderdate`, `orderstatus`, `paymethod`, `paystatus`, `addressid`, `createat`, `updateat`) VALUES
+INSERT INTO `orders` (`orderid`, `platformid`, `ccustomerid`, `orderdate`, `orderstatus`, `paymethod`, `paystatus`, `addressid`, `createat`, `updateat`) VALUES
 (1, 1, 1, '2025-06-08', '已完成', '信用卡', '已付款', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
 (2, 1, 2, '2025-06-08', '配送中', '現金', '已付款', 2, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
 (3, 2, 3, '2025-06-07', '已完成', 'LINE Pay', '已付款', 3, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
@@ -498,130 +622,6 @@ INSERT INTO `products` (`productid`, `productname`, `description`, `quantityperu
 (129, '桂圓紅棗冰棒', '滋補桂圓紅棗，溫潤養生', '1支/包', 36, 0, '2025-06-11 00:14:31', '2025-06-11 00:14:31'),
 (130, '酒釀櫻桃冰棒', '酒釀與櫻桃，獨特風味', '1支/包', 48, 0, '2025-06-11 00:14:31', '2025-06-11 00:14:31');
 
--- --------------------------------------------------------
-
---
--- 資料表結構 `useraddress`
---
-
-CREATE TABLE `useraddress` (
-  `addressid` int(10) UNSIGNED NOT NULL,
-  `userid` int(10) UNSIGNED NOT NULL,
-  `name` varchar(100) NOT NULL COMMENT '收件人姓名',
-  `phone` varchar(100) NOT NULL COMMENT '收件人電話',
-  `street` varchar(100) NOT NULL COMMENT '街道地址',
-  `city` varchar(100) NOT NULL COMMENT '城市',
-  `district` varchar(100) NOT NULL COMMENT '行政區',
-  `zipcode` varchar(50) NOT NULL COMMENT '郵遞區號',
-  `isdefault` tinyint(1) NOT NULL COMMENT '是否為默認地址',
-  `createat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updateat` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- 傾印資料表的資料 `useraddress`
---
-
-INSERT INTO `useraddress` (`addressid`, `userid`, `name`, `phone`, `street`, `city`, `district`, `zipcode`, `isdefault`, `createat`, `updateat`) VALUES
-(1, 1, '張小華', '0912-111-222', '忠孝東路四段200號12樓', '台北市', '大安區', '106', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(2, 2, '李大偉', '0923-333-444', '中正路123號5樓', '新北市', '板橋區', '220', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(3, 3, '王美玲', '0934-555-666', '中山路456號', '桃園市', '中壢區', '320', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(4, 4, '陳志豪', '0945-777-888', '逢甲路789號3樓', '台中市', '西屯區', '407', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(5, 5, '林雅琪', '0956-999-000', '夢時代購物中心1樓', '高雄市', '前鎮區', '806', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(6, 1, '張小華', '0912-111-222', '信義路五段150號', '台北市', '信義區', '110', 0, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(7, 2, '李大偉', '0923-333-444', '公司地址-民權東路300號', '台北市', '中山區', '104', 0, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(101, 101, '王小明', '0911-222-333', '新生南路一段1號', '台北市', '大安區', '106', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(102, 101, '王小明', '0911-222-333', '羅斯福路三段2號', '台北市', '中正區', '100', 0, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(103, 102, '陳美玲', '0912-333-444', '文德路3號', '新北市', '新店區', '231', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(104, 103, '林志傑', '0913-444-555', '中和路4號', '新北市', '中和區', '235', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(105, 104, '吳淑貞', '0914-555-666', '景安路5號', '新北市', '永和區', '234', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(106, 105, '黃國華', '0915-666-777', '光復路6號', '桃園市', '龜山區', '333', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(107, 106, '蔡依林', '0916-777-888', '藝文特區7號', '桃園市', '桃園區', '330', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(108, 107, '鄭成功', '0917-888-999', '延平路8號', '新竹市', '東區', '300', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(109, 108, '楊丞琳', '0918-999-000', '竹北交流道9號', '新竹縣', '竹北市', '302', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(110, 109, '劉德華', '0919-000-111', '英才路10號', '台中市', '西區', '403', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(111, 109, '劉德華', '0919-000-111', '公益路11號', '台中市', '南屯區', '408', 0, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(112, 110, '高圓圓', '0920-111-222', '向上路12號', '台中市', '南屯區', '408', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(113, 111, '周杰倫', '0921-222-333', '民族路13號', '台南市', '中西區', '700', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(114, 112, '孫燕姿', '0922-333-444', '大學路14號', '台南市', '東區', '701', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(115, 113, '王力宏', '0923-444-555', '成功路15號', '台南市', '北區', '704', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(116, 114, '李榮浩', '0924-555-666', '自強路16號', '高雄市', '苓雅區', '802', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(117, 115, '鄧紫棋', '0925-666-777', '博愛路17號', '高雄市', '左營區', '813', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(118, 116, '羅志祥', '0926-777-888', '中華路18號', '高雄市', '前金區', '801', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(119, 117, '林俊傑', '0927-888-999', '中央路19號', '花蓮縣', '花蓮市', '970', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(120, 118, '蕭敬騰', '0928-999-000', '和平路20號', '台東縣', '台東市', '950', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(121, 119, '田馥甄', '0929-000-111', '中正路21號', '宜蘭縣', '宜蘭市', '260', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(122, 120, '阿信', '0930-111-222', '復興路22號', '新竹縣', '竹東鎮', '310', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(123, 121, '光頭王', '0987-654-321', '市民大道一段100號', '台北市', '大同區', '103', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(124, 122, '劉阿嬤', '0988-765-432', '板橋車站附近', '新北市', '板橋區', '220', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(125, 123, '張老師', '0989-876-543', '中壢市區', '桃園市', '中壢區', '320', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(126, 124, '李同學', '0990-987-654', '東海大學旁', '台中市', '龍井區', '434', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(127, 125, '趙老闆', '0991-098-765', '美術館特區', '台中市', '西區', '403', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(128, 126, '錢經理', '0992-123-456', '信義區辦公室', '台北市', '信義區', '110', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(129, 127, '孫先生', '0993-234-567', '內湖科學園區', '台北市', '內湖區', '114', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(130, 128, '周小姐', '0994-345-678', '三峽老街', '新北市', '三峽區', '237', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30');
-
--- --------------------------------------------------------
-
---
--- 資料表結構 `users`
---
-
-CREATE TABLE `users` (
-  `userid` int(10) UNSIGNED NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `phone` varchar(100) NOT NULL,
-  `password` varchar(255) DEFAULT NULL COMMENT '沒註冊就沒有',
-  `registrationdate` date DEFAULT NULL COMMENT '沒註冊就沒有',
-  `lastlogindate` date DEFAULT NULL,
-  `isactive` tinyint(1) NOT NULL,
-  `createat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updateat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- 傾印資料表的資料 `users`
---
-
-INSERT INTO `users` (`userid`, `name`, `email`, `phone`, `password`, `registrationdate`, `lastlogindate`, `isactive`, `createat`, `updateat`) VALUES
-(1, '張小華', 'zhang.xiaohua@gmail.com', '0912-111-222', '$2y$10$example1hash', '2024-01-15', '2025-06-08', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(2, '李大偉', 'li.dawei@yahoo.com', '0923-333-444', '$2y$10$example2hash', '2024-02-20', '2025-06-07', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(3, '王美玲', 'wang.meiling@hotmail.com', '0934-555-666', '$2y$10$example3hash', '2024-03-10', '2025-06-06', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(4, '陳志豪', 'chen.zhihao@gmail.com', '0945-777-888', '$2y$10$example4hash', '2024-04-25', '2025-06-05', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(5, '林雅琪', 'lin.yaqi@gmail.com', '0956-999-000', '$2y$10$example5hash', '2024-05-30', '2025-06-08', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(6, '黃建明', 'huang.jianming@gmail.com', '0967-123-456', NULL, NULL, '2025-06-01', 1, '2025-06-08 22:35:32', '2025-06-08 22:35:32'),
-(101, '王小明', 'wang.xiaoming@email.com', '0911-222-333', '482c811da5d5b4bc6d497ffa98491e38', '2024-06-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(102, '陳美玲', 'chen.meiling@email.com', '0912-333-444', '96b33694c4bb7dbd07391e0be54745fb', '2024-07-10', '2025-06-08', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(103, '林志傑', 'lin.zhijie@email.com', '0913-444-555', '7d347cf0ee68174a3588f6cba31b8a67', '2024-08-15', '2025-06-07', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(104, '吳淑貞', 'wu.shuzhen@email.com', '0914-555-666', 'bb77d0d3b3f239fa5db73bdf27b8d29a', '2024-09-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(105, '黃國華', 'huang.guohua@email.com', '0915-666-777', '34819d7beeabb9260a5c854bc85b3e44', '2024-10-20', '2025-06-05', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(106, '蔡依林', 'tsai.yilin@email.com', '0916-777-888', 'e9e57370723e5c1b735ddbda3e81e0a7', '2024-11-05', '2025-06-06', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(107, '鄭成功', 'zheng.chenggong@email.com', '0917-888-999', 'f04af61b3f332afa0ceec786a42cd365', '2024-12-12', '2025-06-03', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(108, '楊丞琳', 'yang.chenglin@email.com', '0918-999-000', '05011fc72802a0682d39fbe330224b60', '2025-01-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(109, '劉德華', 'liu.dehua@email.com', '0919-000-111', '8e62561c3ac6d3fb0016e9a34a2caa5d', '2025-02-14', '2025-06-02', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(110, '高圓圓', 'gao.yuanyuan@email.com', '0920-111-222', 'd109f71f89b98e6f3990a0adbfaeb913', '2025-03-20', '2025-06-01', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(111, '周杰倫', 'jay.chou@email.com', '0921-222-333', '075f74ae2b8989ab2c7e3c8c91bcf62a', '2024-01-01', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(112, '孫燕姿', 'stef.sun@email.com', '0922-333-444', 'c71994ec8cbfb65796480d0567974d46', '2024-02-02', '2025-06-08', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(113, '王力宏', 'wang.lihong@email.com', '0923-444-555', 'd952924cb83b7b06910be50dda8fe6ec', '2024-03-03', '2025-06-07', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(114, '李榮浩', 'li.ronghao@email.com', '0924-555-666', '858012b9bfc596763b85914d298f9bee', '2024-04-04', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(115, '鄧紫棋', 'g.e.m@email.com', '0925-666-777', '65283d8df2d4f596f092c54864cad922', '2024-05-05', '2025-06-05', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(116, '羅志祥', 'show.lo@email.com', '0926-777-888', '6b19beeaedade171ecc320ddd87f7ae6', '2024-06-06', '2025-06-06', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(117, '林俊傑', 'jj.lin@email.com', '0927-888-999', 'f3a99ccc1d3d7b7304aec4eb3617a710', '2024-07-07', '2025-06-03', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(118, '蕭敬騰', 'jam.hsiao@email.com', '0928-999-000', '6b42d00c4ca6ddc33a604c54b8ce4adc', '2024-08-08', '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(119, '田馥甄', 'hebe.tien@email.com', '0929-000-111', '9820da2cacb782026943db4db6110d69', '2024-09-09', '2025-06-02', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(120, '阿信', 'ashin@email.com', '0930-111-222', 'd0684cfe844d7353619932ef26fa6e90', '2024-10-10', '2025-06-01', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(121, '光頭王', 'david.wang@email.com', '0987-654-321', NULL, NULL, '2025-06-09', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(122, '劉阿嬤', 'grandma.liu@email.com', '0988-765-432', NULL, NULL, '2025-06-08', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(123, '張老師', 'teacher.chang@email.com', '0989-876-543', NULL, NULL, '2025-06-07', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(124, '李同學', 'student.li@email.com', '0990-987-654', NULL, NULL, '2025-06-06', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(125, '趙老闆', 'boss.zhao@email.com', '0991-098-765', NULL, NULL, '2025-06-05', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(126, '錢經理', 'manager.qian@email.com', '0992-123-456', NULL, NULL, '2025-06-04', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(127, '孫先生', 'mr.sun@email.com', '0993-234-567', NULL, NULL, '2025-06-03', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(128, '周小姐', 'ms.zhou@email.com', '0994-345-678', NULL, NULL, '2025-06-02', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(129, '吳太太', 'mrs.wu@email.com', '0995-456-789', NULL, NULL, '2025-06-01', 1, '2025-06-11 00:14:30', '2025-06-11 00:14:30'),
-(130, '鄭先生', 'mr.zheng@email.com', '0996-567-890', NULL, NULL, '2025-05-30', 0, '2025-06-11 00:14:30', '2025-06-11 00:14:30');
-
 --
 -- 已傾印資料表的索引
 --
@@ -639,7 +639,22 @@ ALTER TABLE `cartdetails`
 --
 ALTER TABLE `carts`
   ADD PRIMARY KEY (`cartid`),
-  ADD KEY `fk_carts_userid` (`userid`);
+  ADD KEY `fk_carts_ccustomerid` (`ccustomerid`);
+
+--
+-- 資料表索引 `ccustomeraddress`
+--
+ALTER TABLE `ccustomeraddress`
+  ADD PRIMARY KEY (`addressid`),
+  ADD KEY `fk_ccustomeraddress_ccustomerid` (`ccustomerid`);
+
+--
+-- 資料表索引 `ccustomers`
+--
+ALTER TABLE `ccustomers`
+  ADD PRIMARY KEY (`ccustomerid`),
+  ADD KEY `name` (`name`),
+  ADD KEY `email_phone` (`email`,`phone`);
 
 --
 -- 資料表索引 `employees`
@@ -667,7 +682,7 @@ ALTER TABLE `orderdetails`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`orderid`),
-  ADD KEY `fk_orders_userid` (`userid`),
+  ADD KEY `fk_orders_ccustomerid` (`ccustomerid`),
   ADD KEY `fk_orders_addressid` (`addressid`),
   ADD KEY `fk_orders_platformid` (`platformid`);
 
@@ -676,15 +691,15 @@ ALTER TABLE `orders`
 --
 ALTER TABLE `platforms`
   ADD PRIMARY KEY (`platformid`),
-  ADD KEY `shopname` (`platformname`),
-  ADD KEY `fk_shops_employeeid` (`employeeid`);
+  ADD KEY `platformname` (`platformname`),
+  ADD KEY `fk_platforms_employeeid` (`employeeid`);
 
 --
 -- 資料表索引 `productimgs`
 --
 ALTER TABLE `productimgs`
   ADD PRIMARY KEY (`imgid`),
-  ADD KEY `fk_productsimg_productid` (`productid`);
+  ADD KEY `fk_productimgs_productid` (`productid`);
 
 --
 -- 資料表索引 `products`
@@ -692,21 +707,6 @@ ALTER TABLE `productimgs`
 ALTER TABLE `products`
   ADD PRIMARY KEY (`productid`),
   ADD KEY `productname` (`productname`);
-
---
--- 資料表索引 `useraddress`
---
-ALTER TABLE `useraddress`
-  ADD PRIMARY KEY (`addressid`),
-  ADD KEY `fk_useraddress_userid` (`userid`);
-
---
--- 資料表索引 `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`userid`),
-  ADD KEY `name` (`name`),
-  ADD KEY `email` (`email`,`phone`);
 
 --
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
@@ -723,6 +723,18 @@ ALTER TABLE `cartdetails`
 --
 ALTER TABLE `carts`
   MODIFY `cartid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `ccustomeraddress`
+--
+ALTER TABLE `ccustomeraddress`
+  MODIFY `addressid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `ccustomers`
+--
+ALTER TABLE `ccustomers`
+  MODIFY `ccustomerid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `employees`
@@ -761,18 +773,6 @@ ALTER TABLE `products`
   MODIFY `productid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `useraddress`
---
-ALTER TABLE `useraddress`
-  MODIFY `addressid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
-
---
--- 使用資料表自動遞增(AUTO_INCREMENT) `users`
---
-ALTER TABLE `users`
-  MODIFY `userid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
-
---
 -- 已傾印資料表的限制式
 --
 
@@ -787,13 +787,19 @@ ALTER TABLE `cartdetails`
 -- 資料表的限制式 `carts`
 --
 ALTER TABLE `carts`
-  ADD CONSTRAINT `fk_carts_userid` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_carts_ccustomerid` FOREIGN KEY (`ccustomerid`) REFERENCES `ccustomers` (`ccustomerid`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- 資料表的限制式 `ccustomeraddress`
+--
+ALTER TABLE `ccustomeraddress`
+  ADD CONSTRAINT `fk_ccustomeraddress_ccustomerid` FOREIGN KEY (`ccustomerid`) REFERENCES `ccustomers` (`ccustomerid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- 資料表的限制式 `inventory`
 --
 ALTER TABLE `inventory`
-  ADD CONSTRAINT `fk_inventory_productid` FOREIGN KEY (`productid`) REFERENCES `products` (`productid`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_inventory_productid` FOREIGN KEY (`productid`) REFERENCES `products` (`productid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- 資料表的限制式 `orderdetails`
@@ -806,27 +812,21 @@ ALTER TABLE `orderdetails`
 -- 資料表的限制式 `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `fk_orders_addressid` FOREIGN KEY (`addressid`) REFERENCES `useraddress` (`addressid`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_orders_platformid` FOREIGN KEY (`platformid`) REFERENCES `platforms` (`platformid`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_orders_userid` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_orders_addressid` FOREIGN KEY (`addressid`) REFERENCES `ccustomeraddress` (`addressid`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_orders_ccustomerid` FOREIGN KEY (`ccustomerid`) REFERENCES `ccustomers` (`ccustomerid`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_orders_platformid` FOREIGN KEY (`platformid`) REFERENCES `platforms` (`platformid`) ON UPDATE CASCADE;
 
 --
 -- 資料表的限制式 `platforms`
 --
 ALTER TABLE `platforms`
-  ADD CONSTRAINT `fk_shops_employeeid` FOREIGN KEY (`employeeid`) REFERENCES `employees` (`employeeid`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_platforms_employeeid` FOREIGN KEY (`employeeid`) REFERENCES `employees` (`employeeid`) ON UPDATE CASCADE;
 
 --
 -- 資料表的限制式 `productimgs`
 --
 ALTER TABLE `productimgs`
-  ADD CONSTRAINT `fk_productsimg_productid` FOREIGN KEY (`productid`) REFERENCES `products` (`productid`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- 資料表的限制式 `useraddress`
---
-ALTER TABLE `useraddress`
-  ADD CONSTRAINT `fk_useraddress_userid` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_productimgs_productid` FOREIGN KEY (`productid`) REFERENCES `products` (`productid`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
