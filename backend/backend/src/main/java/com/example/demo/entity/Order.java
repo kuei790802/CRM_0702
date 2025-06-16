@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,28 +26,30 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "userid")
-    private User user;
+    private CCustomer CCustomer;
 
     private LocalDate orderdate;
 
     private String paymethod;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "orderstatus")
     private OrderStatus orderStatus;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "paystatus")
     private PaymentStatus paymentStatus;
 
     @ManyToOne
     @JoinColumn(name = "addressid")
-    private UserAddress userAddress;
+    private CCustomerAddress CCustomerAddress;
 
     private LocalDateTime createat;
     private LocalDateTime updateat;
 
     //--------
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderDetail> orderDetails;
+    private List<OrderDetail> orderDetails = new ArrayList<>();
 
     //-------------雙向關聯輔助方法
     public void addOrderDetail(OrderDetail orderDetail) {

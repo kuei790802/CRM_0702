@@ -10,22 +10,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "employees")
+@Table(name = "users")
 @Getter
 @Setter
-public class Employee {
+public class CCustomer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long employeeid;
+    @Column(name = "userid")
+    private Long userid;
     private String name;
     private String email;
     private String phone;
-    private String title;
-    private LocalDate hiredate;
-    private LocalDate leavedate;
+    private String password;
+    private LocalDate registrationdate;
+    private LocalDate lastlogindate;
+    private Boolean isactive;
     private LocalDateTime createat;
     private LocalDateTime updateat;
 
-    @OneToMany(mappedBy = "employee")
-    private List<Platform> platform = new ArrayList<>();
+    //----------------
+    @OneToOne(mappedBy = "CCustomer")
+    private Cart cart;
+
+    @OneToMany(mappedBy = "CCustomer")
+    private List<CCustomerAddress> CCustomerAddress = new ArrayList<>();
+
 }

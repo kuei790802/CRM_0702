@@ -1,16 +1,21 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.AddItemRequestDto;
-import com.example.demo.dto.CartDetailDto;
-import com.example.demo.dto.CartViewDto;
+import com.example.demo.dto.request.AddItemRequestDto;
+import com.example.demo.dto.response.CartDetailDto;
+import com.example.demo.dto.response.CartViewDto;
 import com.example.demo.entity.*;
+import com.example.demo.repository.CartDetailRepository;
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.CCsutomerRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -20,14 +25,21 @@ import java.util.stream.Collectors;
 public class CartService {
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private CartDetailRepository cartDetailRepository;
+    @Autowired
     private ProductRepository productRepository;
-    private UserRepository userRepository;
+    @Autowired
+    private CCsutomerRepository CCsutomerRepository;
+    @Autowired
+    private EntityManager entityManager;
 
     /**
      * 檢查此 userid 有無購物車，若有則呈現出對應的 CartViewDto；若無則呈現空的 CartViewDto
      */
-    public CartViewDto getCartByUserId(Long userid) {
-        return cartRepository.findByUser_Userid(userid)
+    @Transactional
+    public CartViewDto getCartByCCustomerId(Long CCustomerId) {
+        return cartRepository.findByCCustomer_Userid(CCustomerId)
                 .map(this::mapToCartViewDto) // 如果找到購物車，則轉換成 DTO
                 .orElse(getEmptyCart());   // 如果找不到，則回傳一個空購物車 DTO
     }
@@ -35,7 +47,8 @@ public class CartService {
     /**
      * 新增商品到購物車
      */
-    public CartViewDto addItemToCart(Integer userId, AddItemRequestDto requestDto) {
+    @Transactional
+    public CartViewDto addItemToCart(Long userId, AddItemRequestDto requestDto) {
         Cart cart = findOrCreateCartByUser(userId);
 
         Product product = productRepository.findById(requestDto.getProductid())
@@ -50,9 +63,15 @@ public class CartService {
                 .mapToInt(Inventory::getUnitsinstock) // 將每個 Inventory 物件轉換成它的庫存數量(int)
                 .sum(); // 將所有的 int 數字加總
 
+        int reservedStock = inventories.stream()
+                .mapToInt(Inventory::getUnitsinreserved)
+                .sum();
+
+        int usableStock = totalStock - reservedStock;
+
         // 3. 用計算出來的總庫存進行比較
-        if (totalStock < requestDto.getQuantity()) {
-            throw new IllegalStateException("商品庫存不足，目前總庫存為: " + totalStock);
+        if (usableStock < requestDto.getQuantity()) {
+            throw new IllegalStateException("商品庫存不足，目前可下訂庫存為: " + usableStock);
         }
 
         // 如果您在 Product Entity 中新增了 getTotalStock() 方法，這裡也可以簡化為：
@@ -68,23 +87,33 @@ public class CartService {
         if (existingDetailOpt.isPresent()) {
             // 如果存在，則更新數量
             CartDetail existingDetail = existingDetailOpt.get();
-            existingDetail.setQuantity(existingDetail.getQuantity() + requestDto.getQuantity());
+            int newQuantity = existingDetail.getQuantity() + requestDto.getQuantity();
+            if (newQuantity > usableStock) {
+                throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + usableStock);
+            }
+            existingDetail.setQuantity(newQuantity);
+            cartRepository.saveAndFlush(cart);
         } else {
             // 如果不存在，則新增一個 CartDetail
             CartDetail newDetail = new CartDetail();
             newDetail.setProduct(product);
             newDetail.setQuantity(requestDto.getQuantity());
-            cart.addCartDetail(newDetail); // 使用輔助方法加入
+            newDetail.setAddat(LocalDateTime.now());
+            newDetail.setCart(cart); // 明確設定它屬於哪個 cart
+            cartDetailRepository.saveAndFlush(newDetail);
         }
 
-        Cart updatedCart = cartRepository.save(cart);
-        return mapToCartViewDto(updatedCart);
+        entityManager.refresh(cart);
+
+
+        return mapToCartViewDto(cart);
     }
 
     /**
      * 更新購物車項目數量
      */
-    public CartViewDto updateItemQuantity(Integer userId, Integer cartDetailId, int newQuantity) {
+    @Transactional
+    public CartViewDto updateItemQuantity(Long userId, Long cartDetailId, int newQuantity) {
         Cart cart = findCartByUser(userId);
         CartDetail detail = findCartDetailInCart(cart, cartDetailId);
 
@@ -118,11 +147,13 @@ public class CartService {
     /**
      * 從購物車移除單一項目
      */
-    public CartViewDto removeItemFromCart(Integer userId, Integer cartDetailId) {
+    @Transactional
+    public CartViewDto removeItemFromCart(Long userId, Long cartDetailId) {
         Cart cart = findCartByUser(userId);
         CartDetail detail = findCartDetailInCart(cart, cartDetailId);
 
-        removeItemFromCartInternal(cart, detail);
+        // 現在這個操作會觸發 orphanRemoval，直接刪除資料庫紀錄
+        cart.getCartdetails().remove(detail);
 
         Cart updatedCart = cartRepository.save(cart);
         return mapToCartViewDto(updatedCart);
@@ -131,7 +162,8 @@ public class CartService {
     /**
      * 清空購物車
      */
-    public void clearCart(Integer userId) {
+    @Transactional
+    public void clearCart(Long userId) {
         Cart cart = findCartByUser(userId);
         cart.getCartdetails().clear(); // 因為 orphanRemoval=true，這會刪除所有關聯的 CartDetail
         cartRepository.save(cart);
@@ -180,23 +212,25 @@ public class CartService {
                 .build();
     }
 
-    private Cart findOrCreateCartByUser(Integer userId) {
-        return cartRepository.findByUser_Userid((long)userId)
+    private Cart findOrCreateCartByUser(Long userId) {
+        return cartRepository.findByCCustomer_Userid(userId)
                 .orElseGet(() -> {
-                    User user = userRepository.findById((long)userId)
+                    CCustomer CCustomer = CCsutomerRepository.findById(userId)
                             .orElseThrow(() -> new EntityNotFoundException("找不到使用者 ID: " + userId));
                     Cart newCart = new Cart();
-                    newCart.setUser(user);
+                    newCart.setCCustomer(CCustomer);
+                    newCart.setCreateat(LocalDateTime.now());
+                    newCart.setUpdateat(LocalDateTime.now());
                     return cartRepository.save(newCart);
                 });
     }
 
-    private Cart findCartByUser(Integer userId) {
-        return cartRepository.findByUser_Userid((long)userId)
+    private Cart findCartByUser(Long userId) {
+        return cartRepository.findByCCustomer_Userid((long)userId)
                 .orElseThrow(() -> new EntityNotFoundException("使用者 " + userId + " 尚無購物車"));
     }
 
-    private CartDetail findCartDetailInCart(Cart cart, Integer cartDetailId) {
+    private CartDetail findCartDetailInCart(Cart cart, Long cartDetailId) {
         return cart.getCartdetails().stream()
                 .filter(d -> d.getCartdetailid().equals(cartDetailId))
                 .findFirst()
@@ -208,3 +242,4 @@ public class CartService {
     }
 
 }
+

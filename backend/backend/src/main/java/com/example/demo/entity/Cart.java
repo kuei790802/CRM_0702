@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -21,11 +22,11 @@ public class Cart {
     //------------
     @OneToOne
     @JoinColumn(name = "userid")
-    private User user;
+    private CCustomer CCustomer;
 
     //------------
-    @OneToMany(mappedBy = "cart")
-    private List<CartDetail> cartdetails;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartDetail> cartdetails = new ArrayList<>();
 
     // **重要**: 提供一個輔助方法來同步雙方的關係，避免資料不一致
     public void addCartDetail(CartDetail cartDetail) {

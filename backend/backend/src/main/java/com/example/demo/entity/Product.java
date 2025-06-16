@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -85,7 +86,7 @@ public class Product {
 
     //--------------
     @OneToMany(mappedBy = "product")
-    private List<ProductImg> productimgs;
+    private List<ProductImg> productimgs = new ArrayList<>();
 
     public List<ProductImg> getProductimgs() {
         return productimgs;
@@ -97,7 +98,7 @@ public class Product {
 
     //-------------
     @OneToMany(mappedBy = "product")
-    private List<Inventory> inventories;
+    private List<Inventory> inventories = new ArrayList<>();
 
     public List<Inventory> getInventories() {
         return inventories;
@@ -109,7 +110,7 @@ public class Product {
 
     //---------
     @OneToMany(mappedBy = "product")
-    private List<CartDetail> cartdetails;
+    private List<CartDetail> cartdetails = new ArrayList<>();
 
     public List<CartDetail> getCartdetails() {
         return cartdetails;
