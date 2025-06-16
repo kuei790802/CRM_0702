@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.example.demo.enums.PurchaseOrderStatus;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -68,6 +69,7 @@ public class PurchaseOrder {
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
+    @JsonManagedReference
     private List<PurchaseOrderDetail> details = new ArrayList<>();
 
     @Column(name = "created_by", nullable = false)

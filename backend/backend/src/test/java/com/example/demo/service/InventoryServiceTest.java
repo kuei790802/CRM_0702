@@ -81,7 +81,7 @@ class InventoryServiceTest {
         samplePurchaseOrder.setOrderNumber("PO-001");
         samplePurchaseOrder.setStatus(PurchaseOrderStatus.CONFIRMED);
         samplePurchaseOrder.setWarehouseId(1L);
-        samplePurchaseOrder.addDetail(new PurchaseOrderDetail());
+//        samplePurchaseOrder.addDetail(new PurchaseOrderDetail());
 
         PurchaseOrderDetail detail1 = new PurchaseOrderDetail();
         detail1.setItemId(10L);

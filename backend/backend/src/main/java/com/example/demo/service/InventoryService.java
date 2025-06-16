@@ -36,8 +36,8 @@ public class InventoryService {
     private final InventoryMovementRepository inventoryMovementRepository;
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
-    private final PurchaseOrderRepository purchaseOrderRepository; // 新增依賴
-    private final UserRepository userRepository; // 新增依賴
+    private final PurchaseOrderRepository purchaseOrderRepository;
+    private final UserRepository userRepository;
 
     
     @Transactional
@@ -58,7 +58,7 @@ public class InventoryService {
         
         for (PurchaseOrderDetail detail : purchaseOrder.getDetails()) {
             this.adjustInventory(
-                    detail.getProductId(),
+                    detail.getProduct().getProductId(),
                     detail.getWarehouseId(),
                     detail.getQuantity().intValue(),
                     MovementType.PURCHASE_IN,
@@ -77,7 +77,7 @@ public class InventoryService {
 
     
     public List<Inventory> getInventoryByProductId(Long productId) {
-        return inventoryRepository.findByProductId(productId);
+        return inventoryRepository.findByProduct_ProductId(productId);
     }
 
    

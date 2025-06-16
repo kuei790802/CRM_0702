@@ -13,8 +13,8 @@ import com.example.demo.entity.Warehouse;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long>{
 
-    Optional<Inventory> findByProductIdAndWarehouseId(Long productId, Long warehouseId);
-    List<Inventory> findByProductId(Long productId);
+    Optional<Inventory> findByProduct_ProductIdAndWarehouse_WarehouseId(Long productId, Long warehouseId);
+    List<Inventory> findByProduct_ProductId(Long productId);
     Optional<Inventory> findByProductAndWarehouse(Product product, Warehouse warehouse);
 }
 

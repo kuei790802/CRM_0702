@@ -3,8 +3,6 @@ package com.example.demo.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.apache.catalina.User;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -56,7 +54,7 @@ public class InventoryMovement {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recorded_by", nullable = false)
-    private User recordedBy;
+    private Users recordedBy;
 
     @Column(name = "movement_date", nullable = false)
     private LocalDateTime movementDate;
