@@ -1,20 +1,22 @@
 package com.example.demo;
 
+import com.example.demo.entity.Contact;
 import com.example.demo.entity.Customer;
-import com.example.demo.enums.CustomerIndustry; // 導入客戶行業 Enum
-import com.example.demo.enums.CustomerLevel;    // 導入客戶等級 Enum
-import com.example.demo.enums.CustomerType;     // 導入客戶類型 Enum
+import com.example.demo.enums.CustomerIndustry;
+import com.example.demo.enums.CustomerLevel;
+import com.example.demo.enums.CustomerType;
+import com.example.demo.repository.ContactRepository;
 import com.example.demo.repository.CustomerRepository;
-import com.github.javafaker.Faker; // 導入 Faker 類別
+import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile; // 用於控制數據填充只在特定環境運行
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import java.util.Locale; // 導入 Locale 以指定 Faker 語言
-import java.util.Random; // 用於隨機選擇 Enum 值
+import java.util.Locale;
+import java.util.Random;
 
 @EnableJpaAuditing
 @SpringBootApplication
@@ -31,10 +33,11 @@ public class DemoApplication {
 	 */
 	@Bean
 	@Profile("dev") // 建議只在開發環境激活此功能，避免污染生產數據
-	public CommandLineRunner demoDataSeeder(CustomerRepository customerRepository) {
+	public CommandLineRunner demoDataSeeder(CustomerRepository customerRepository,
+											ContactRepository contactRepository) {
 		return args -> {
 			// 初始化 Faker，可以指定語言環境，讓數據更具地域性
-			Faker faker = new Faker(new Locale("en-US")); // 例如：new Faker(new Locale("zh-TW"))
+			Faker faker = new Faker(new Locale("zh-TW")); // 例如：new Faker(new Locale("zh-TW"))
 
 			// 獲取所有 Enum 值的陣列，以便隨機選擇
 			CustomerIndustry[] industries = CustomerIndustry.values();
@@ -42,7 +45,7 @@ public class DemoApplication {
 			CustomerLevel[] customerLevels = CustomerLevel.values();
 			Random random = new Random();
 
-			System.out.println("開始生成假客戶數據...");
+			System.out.println("開始生成假客戶和聯絡人數據...");
 
 			// 檢查資料庫中是否已有數據，避免重複生成
 			// 這個檢查確保只有在客戶表為空時才執行數據生成
@@ -60,13 +63,39 @@ public class DemoApplication {
 					customer.setCustomerLevel(customerLevels[random.nextInt(customerLevels.length)]);
 
 					customerRepository.save(customer); // 保存到資料庫
-					System.out.println("生成客戶: " + customer.getCustomerName());
+					// 為每個客戶生成 1-3 個聯絡人
+					int numberOfContacts = random.nextInt(3) + 1; // 1 到 3 個聯絡人
+					for (int j = 0; j < numberOfContacts; j++) {
+						Contact contact = new Contact();
+						contact.setContactName(faker.name().fullName());
+						contact.setContactTitle(faker.job().title());
+						contact.setEmail(faker.internet().emailAddress());
+						contact.setContactPhone(faker.phoneNumber().phoneNumber());
+						contact.setContactNotes(faker.lorem().sentence());
+
+						// 將聯絡人關聯到當前客戶
+						// 使用 Customer 實體中的 addContact 輔助方法來維護雙向關聯
+						customer.addContact(contact); // 這會自動設定 contact.setCustomer(customer);
+
+						// 因為 Customer 實體的 contacts 集合上設置了 cascade = CascadeType.ALL，
+						// 當 customer 被保存時，其關聯的 contacts 也會自動被持久化。
+						// 所以這裡不需要單獨的 contactRepository.save(contact);
+						// 但為了明確，如果您不確定級聯設置，可以加上。
+						// contactRepository.save(contact); // 如果沒有級聯設定，則需要這行
+						System.out.println("  > 生成聯絡人: " + contact.getContactName() + " (屬於客戶: " + customer.getCustomerName() + ")");
+					}
+					// 再次保存客戶，以確保所有級聯操作被觸發（如果 contacts 集合被修改）。
+					// 在此情境下，由於 addContact() 已經修改了 contact 的 customer 屬性，
+					// 並且 Customer 對 Contact 是 @OneToMany(cascade=ALL)，
+					// 重新保存 customer 會確保聯絡人被持久化。
+					customerRepository.save(customer); // 保存客戶和所有關聯的聯絡人
+					System.out.println("生成客戶: " + customer.getCustomerName() + " 完成。");
 				}
 			} else {
 				System.out.println("資料庫中已有客戶數據，跳過數據生成。");
 			}
 
-			System.out.println("假客戶數據生成完成！");
+			System.out.println("假客戶和聯絡人數據生成完成！");
 		};
 	}
 }
