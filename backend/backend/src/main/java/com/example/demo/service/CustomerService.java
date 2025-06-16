@@ -1,8 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.request.CreateOrUpdateCustomerRequest;
-import com.example.demo.dto.request.UpdateTagsRequest;
-import com.example.demo.dto.response.CustomerDTO;
+import com.example.demo.dto.request.CustomerRequest;
+import com.example.demo.dto.response.CustomerDto;
+import com.example.demo.enums.CustomerIndustry;
+import com.example.demo.enums.CustomerLevel;
+import com.example.demo.enums.CustomerType;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,63 +17,69 @@ public interface CustomerService {
      * @param pageable 包含分頁和排序資訊的請求物件。
      * @return 包含客戶 DTO 列表和分頁資訊的 Page 物件。
      */
-    Page<CustomerDTO> findAll(Pageable pageable);
+    Page<CustomerDto> findAll(Pageable pageable);
 
     /**
      * 根據客戶的唯一 ID 尋找客戶。
      * @param id 要尋找的客戶 ID。
      * @return 包含客戶詳細資訊的 DTO。
-     * @throws jakarta.persistence.EntityNotFoundException 如果找不到對應 ID 的客戶。
+     * @throws EntityNotFoundException 如果找不到對應 ID 的客戶。
      */
-    CustomerDTO findById(Long id);
+    CustomerDto findById(Long id);
 
     /**
      * 根據請求資料建立一個新的客戶。
      * @param request 包含新客戶所有必要資訊的請求 DTO。
      * @return 建立成功後，包含新客戶完整資訊（含 ID）的 DTO。
      */
-    CustomerDTO create(CreateOrUpdateCustomerRequest request);
+    CustomerDto create(CustomerRequest request);
 
     /**
      * 根據 ID 更新一個已存在的客戶資訊。
      * @param id 要更新的客戶 ID。
      * @param request 包含要更新欄位的請求 DTO。
      * @return 更新成功後，包含最新客戶資訊的 DTO。
-     * @throws jakarta.persistence.EntityNotFoundException 如果找不到對應 ID 的客戶。
+     * @throws EntityNotFoundException 如果找不到對應 ID 的客戶。
      */
-    CustomerDTO update(Long id, CreateOrUpdateCustomerRequest request);
+    CustomerDto update(Long id, CustomerRequest request);
 
     /**
      * 根據 ID 刪除一個客戶。
      * @param id 要刪除的客戶 ID。
-     * @throws jakarta.persistence.EntityNotFoundException 如果找不到對應 ID 的客戶。
+     * @throws EntityNotFoundException 如果找不到對應 ID 的客戶。
      */
     void delete(Long id);
 
     /**
-     * 為指定的客戶新增一個標籤。
-     * @param customerId 客戶的 ID。
-     * @param tagId 要新增的標籤 ID。
-     * @return 操作完成後，包含最新標籤資訊的客戶 DTO。
-     * @throws jakarta.persistence.EntityNotFoundException 如果客戶或標籤不存在。
+     * 根據客戶名稱進行模糊查詢（不區分大小寫）。
+     * @param name 客戶名稱的部分字串。
+     * @param pageable 分頁和排序資訊。
+     * @return 符合條件的客戶 DTO 分頁列表。
      */
-    CustomerDTO addTag(Long customerId, Long tagId);
+    Page<CustomerDto> findCustomersByNameContaining(String name, Pageable pageable);
 
     /**
-     * 從指定的客戶移除一個標籤。
-     * @param customerId 客戶的 ID。
-     * @param tagId 要移除的標籤 ID。
-     * @return 操作完成後，包含最新標籤資訊的客戶 DTO。
-     * @throws jakarta.persistence.EntityNotFoundException 如果客戶或標籤不存在。
+     * 根據行業查詢客戶。
+     * @param industry 行業名稱 Enum。
+     * @param pageable 分頁和排序資訊。
+     * @return 符合條件的客戶 DTO 分頁列表。
      */
-    CustomerDTO removeTag(Long customerId, Long tagId);
+    Page<CustomerDto> findCustomersByIndustry(CustomerIndustry industry, Pageable pageable);
 
     /**
-     * 同步（完全替換）指定客戶的所有標籤。
-     * @param customerId 客戶的 ID。
-     * @param request 包含客戶應具備的完整標籤 ID 列表。
-     * @return 操作完成後，包含最新標籤資訊的客戶 DTO。
-     * @throws jakarta.persistence.EntityNotFoundException 如果客戶不存在。
+     * 根據客戶類型查詢客戶。
+     * @param customerType 客戶類型 Enum。
+     * @param pageable 分頁和排序資訊。
+     * @return 符合條件的客戶 DTO 分頁列表。
      */
-    CustomerDTO updateTags(Long customerId, UpdateTagsRequest request);
+    Page<CustomerDto> findCustomersByCustomerType(CustomerType customerType, Pageable pageable);
+
+    /**
+     * 根據客戶等級查詢客戶。
+     * @param customerLevel 客戶等級 Enum。
+     * @param pageable 分頁和排序資訊。
+     * @return 符合條件的客戶 DTO 分頁列表。
+     */
+    Page<CustomerDto> findCustomersByCustomerLevel(CustomerLevel customerLevel, Pageable pageable);
+
 }

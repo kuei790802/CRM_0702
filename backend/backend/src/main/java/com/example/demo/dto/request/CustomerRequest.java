@@ -1,6 +1,6 @@
 package com.example.demo.dto.request;
 
-public class CreateOrUpdateCustomerRequest {
+public class CustomerRequest {
 
     /**
      * 用於接收「建立」或「更新」客戶時的請求資料。

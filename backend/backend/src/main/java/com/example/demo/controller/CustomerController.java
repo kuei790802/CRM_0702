@@ -1,8 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.request.CreateOrUpdateCustomerRequest;
-import com.example.demo.dto.request.UpdateTagsRequest;
-import com.example.demo.dto.response.CustomerDTO;
+import com.example.demo.dto.request.CustomerRequest;
+import com.example.demo.dto.response.CustomerDto;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,8 +28,8 @@ public class CustomerController {
      * @return 客戶分頁資料
      */
     @GetMapping
-    public ResponseEntity<Page<CustomerDTO>> getAll(Pageable pageable) {
-        Page<CustomerDTO> customers = customerService.findAll(pageable);
+    public ResponseEntity<Page<CustomerDto>> getAll(Pageable pageable) {
+        Page<CustomerDto> customers = customerService.findAll(pageable);
         return ResponseEntity.ok(customers);
     }
 
@@ -41,8 +40,8 @@ public class CustomerController {
      * @return 找到的客戶 DTO
      */
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerDTO> getById(@PathVariable Long id) {
-        CustomerDTO customerDto = customerService.findById(id);
+    public ResponseEntity<CustomerDto> getById(@PathVariable Long id) {
+        CustomerDto customerDto = customerService.findById(id);
         return ResponseEntity.ok(customerDto);
     }
 
@@ -53,8 +52,8 @@ public class CustomerController {
      * @return 建立成功後的新客戶 DTO，HTTP 狀態為 201 Created
      */
     @PostMapping
-    public ResponseEntity<CustomerDTO> create(@Valid @RequestBody CreateOrUpdateCustomerRequest request) {
-        CustomerDTO createdCustomer = customerService.create(request);
+    public ResponseEntity<CustomerDto> create(@Valid @RequestBody CustomerRequest request) {
+        CustomerDto createdCustomer = customerService.create(request);
         return new ResponseEntity<>(createdCustomer, HttpStatus.CREATED);
     }
 
@@ -66,8 +65,8 @@ public class CustomerController {
      * @return 更新成功後的客戶 DTO
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerDTO> update(@PathVariable Long id, @Valid @RequestBody CreateOrUpdateCustomerRequest request) {
-        CustomerDTO updatedCustomer = customerService.update(id, request);
+    public ResponseEntity<CustomerDto> update(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
+        CustomerDto updatedCustomer = customerService.update(id, request);
         return ResponseEntity.ok(updatedCustomer);
     }
 
@@ -81,45 +80,6 @@ public class CustomerController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * 更新指定客戶的所有標籤
-     * PUT /api/customers/{customerId}/tags
-     * @param customerId 客戶 ID
-     * @param request 包含新的標籤 ID 列表
-     * @return 更新後的客戶 DTO
-     */
-    @PutMapping("/{customerId}/tags")
-    public ResponseEntity<CustomerDTO> updateTags(@PathVariable Long customerId, @RequestBody UpdateTagsRequest request) {
-        CustomerDTO updatedCustomer = customerService.updateTags(customerId, request);
-        return ResponseEntity.ok(updatedCustomer);
-    }
-
-    /**
-     * 為客戶新增一個標籤 (雖然上面有批次更新，但也可以保留單一操作)
-     * POST /api/customers/{customerId}/tags/{tagId}
-     * @param customerId 客戶 ID
-     * @param tagId 要新增的標籤 ID
-     * @return 更新後的客戶 DTO
-     */
-    @PostMapping("/{customerId}/tags/{tagId}")
-    public ResponseEntity<CustomerDTO> addTag(@PathVariable Long customerId, @PathVariable Long tagId) {
-        CustomerDTO customer = customerService.addTag(customerId, tagId);
-        return ResponseEntity.ok(customer);
-    }
-
-    /**
-     * 從客戶移除一個標籤
-     * DELETE /api/customers/{customerId}/tags/{tagId}
-     * @param customerId 客戶 ID
-     * @param tagId 要移除的標籤 ID
-     * @return 更新後的客戶 DTO
-     */
-    @DeleteMapping("/{customerId}/tags/{tagId}")
-    public ResponseEntity<CustomerDTO> removeTag(@PathVariable Long customerId, @PathVariable Long tagId) {
-        CustomerDTO customer = customerService.removeTag(customerId, tagId);
-        return ResponseEntity.ok(customer);
     }
 
 }
