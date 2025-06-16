@@ -13,5 +13,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CCustomerRegisterRequest extends RegisterRequest {
     private String customerName;
+    private String address;
     private LocalDate birthday;
 }

@@ -7,6 +7,7 @@ import com.example.demo.entity.VIPLevel;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
 import com.example.demo.service.CCustomerService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,12 +21,12 @@ import java.time.LocalDateTime;
 public class CCustomerAuthController {
 
     private final CCustomerService cCustomerService;
-
     public CCustomerAuthController(CCustomerService cCustomerService) {
         this.cCustomerService = cCustomerService;
     }
+
     @PostMapping("/login")
-    public CCustomerLoginResponse login(@RequestBody LoginRequest req){
+    public ResponseEntity<CCustomerLoginResponse> login(@RequestBody LoginRequest req){
         CCustomer cCustomer = cCustomerService.login(
                 req.getAccount(),
                 req.getPassword()
@@ -38,7 +39,7 @@ public class CCustomerAuthController {
                 cCustomer.getVipLevel()
         );
 
-        return  CCustomerLoginResponse.builder()
+        CCustomerLoginResponse res = CCustomerLoginResponse.builder()
                 .token(token)
                 .account(cCustomer.getAccount())
                 .customerName(cCustomer.getCustomerName())
@@ -47,8 +48,7 @@ public class CCustomerAuthController {
                 .createdAt(cCustomer.getCreatedAt())
                 .spending(cCustomer.getSpending())
                 .build();
-
-
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/test")
@@ -57,6 +57,7 @@ public class CCustomerAuthController {
         return "Token 驗證成功，你進來了！";
     }
 
+    // /forget-password
 
 
 }

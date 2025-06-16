@@ -1,26 +1,16 @@
 package com.example.demo.dto.response;
 
-
-import jakarta.persistence.Column;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class CCustomerLoginResponse{
-    private String token;
+public class CCustomerProfileResponse {
     private String account;
     private String customerName;
     private String email;
     private String address;
     private LocalDate birthday;
-    private LocalDateTime createdAt;
-    private Long spending;
-
-
 }

@@ -45,6 +45,6 @@ public class JwtTool {
     // 回傳指定欄位account
     public static String parseTokenToAccount(String token) {
         Claims claims = parseToken(token);
-        return claims != null ? claims.get("account", String.class) : null;
+        return claims != null ? claims.getSubject() : null;
     }
 }

@@ -30,6 +30,7 @@ public class CCustomer {
     @Column(nullable = false, unique = true)
     private String email;
 
+    private String address;
     private LocalDate birthday;
 
     private LocalDateTime createdAt;
