@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     // 查詢某個使用者的所有歷史訂單，並按日期降序排列
-    List<Order> findByCCustomer_UseridOrderByOrderdateDesc(Long userId);
+    List<Order> findByCCustomer_CustomerIdOrderByOrderdateDesc(Long userId);
 
     // (給後台管理用) 根據訂單狀態查詢，並支援分頁
     Page<Order> findByOrderStatus(OrderStatus status, Pageable pageable);

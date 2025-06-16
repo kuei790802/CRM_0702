@@ -42,7 +42,7 @@ public class OrderService {
     @Transactional
     public OrderDto createOrderFromCart(Long userId, CreateOrderRequestDto requestDto) {
         // 1. 找到使用者的購物車
-        Cart cart = cartRepository.findByCCustomer_Userid(userId)
+        Cart cart = cartRepository.findByCCustomer_CustomerId(userId)
                 .orElseThrow(() -> new IllegalStateException("找不到使用者的購物車"));
 
         if (cart.getCartdetails() == null || cart.getCartdetails().isEmpty()) {
@@ -51,7 +51,7 @@ public class OrderService {
 
         // 2. 驗證收貨地址是否屬於該使用者
         CCustomerAddress address = CCustomerAddressRepository.findById(requestDto.getAddressId().longValue())
-                .filter(addr -> addr.getCCustomer().getUserid().equals(userId))
+                .filter(addr -> addr.getCCustomer().getCustomerId().equals(userId))
                 .orElseThrow(() -> new EntityNotFoundException("無效的地址 ID"));
 
         // 3. 檢查所有商品的庫存 (這是關鍵步驟！)
@@ -125,7 +125,7 @@ public class OrderService {
      * 查詢特定使用者的歷史訂單 (包含使用者查詢自己的歷史訂單)
      */
     public List<OrderDto> getOrdersByUserId(Long userId) {
-        return orderRepository.findByCCustomer_UseridOrderByOrderdateDesc(userId).stream()
+        return orderRepository.findByCCustomer_CustomerIdOrderByOrderdateDesc(userId).stream()
                 .map(this::mapToOrderDto)
                 .collect(Collectors.toList());
     }

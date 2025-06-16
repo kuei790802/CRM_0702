@@ -39,7 +39,7 @@ public class CartService {
      */
     @Transactional
     public CartViewDto getCartByCCustomerId(Long CCustomerId) {
-        return cartRepository.findByCCustomer_Userid(CCustomerId)
+        return cartRepository.findByCCustomer_CustomerId(CCustomerId)
                 .map(this::mapToCartViewDto) // 如果找到購物車，則轉換成 DTO
                 .orElse(getEmptyCart());   // 如果找不到，則回傳一個空購物車 DTO
     }
@@ -213,7 +213,7 @@ public class CartService {
     }
 
     private Cart findOrCreateCartByUser(Long userId) {
-        return cartRepository.findByCCustomer_Userid(userId)
+        return cartRepository.findByCCustomer_CustomerId(userId)
                 .orElseGet(() -> {
                     CCustomer CCustomer = CCsutomerRepository.findById(userId)
                             .orElseThrow(() -> new EntityNotFoundException("找不到使用者 ID: " + userId));
@@ -226,7 +226,7 @@ public class CartService {
     }
 
     private Cart findCartByUser(Long userId) {
-        return cartRepository.findByCCustomer_Userid((long)userId)
+        return cartRepository.findByCCustomer_CustomerId((long)userId)
                 .orElseThrow(() -> new EntityNotFoundException("使用者 " + userId + " 尚無購物車"));
     }
 
