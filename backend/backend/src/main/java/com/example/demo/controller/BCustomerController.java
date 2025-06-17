@@ -1,23 +1,23 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.request.CustomerRequest;
-import com.example.demo.dto.response.CustomerDto;
+import com.example.demo.dto.request.BCustomerRequest;
+import com.example.demo.dto.response.BCustomerDto;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.service.impl.CustomerServiceImpl;
+import com.example.demo.service.impl.BCustomerServiceImpl;
 
 
 @RestController
 @RequestMapping("/api/customers")
-public class CustomerController {
+public class BCustomerController {
 
-    private final CustomerServiceImpl customerService;
+    private final BCustomerServiceImpl customerService;
 
-    public CustomerController(CustomerServiceImpl customerService) {
+    public BCustomerController(BCustomerServiceImpl customerService) {
         this.customerService = customerService;
     }
 
@@ -28,8 +28,8 @@ public class CustomerController {
      * @return 客戶分頁資料
      */
     @GetMapping
-    public ResponseEntity<Page<CustomerDto>> getAll(Pageable pageable) {
-        Page<CustomerDto> customers = customerService.findAll(pageable);
+    public ResponseEntity<Page<BCustomerDto>> getAll(Pageable pageable) {
+        Page<BCustomerDto> customers = customerService.findAll(pageable);
         return ResponseEntity.ok(customers);
     }
 
@@ -40,9 +40,9 @@ public class CustomerController {
      * @return 找到的客戶 DTO
      */
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerDto> getById(@PathVariable Long id) {
-        CustomerDto customerDto = customerService.findById(id);
-        return ResponseEntity.ok(customerDto);
+    public ResponseEntity<BCustomerDto> getById(@PathVariable Long id) {
+        BCustomerDto BCustomerDto = customerService.findById(id);
+        return ResponseEntity.ok(BCustomerDto);
     }
 
     /**
@@ -52,8 +52,8 @@ public class CustomerController {
      * @return 建立成功後的新客戶 DTO，HTTP 狀態為 201 Created
      */
     @PostMapping
-    public ResponseEntity<CustomerDto> create(@Valid @RequestBody CustomerRequest request) {
-        CustomerDto createdCustomer = customerService.create(request);
+    public ResponseEntity<BCustomerDto> create(@Valid @RequestBody BCustomerRequest request) {
+        BCustomerDto createdCustomer = customerService.create(request);
         return new ResponseEntity<>(createdCustomer, HttpStatus.CREATED);
     }
 
@@ -65,8 +65,8 @@ public class CustomerController {
      * @return 更新成功後的客戶 DTO
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerDto> update(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
-        CustomerDto updatedCustomer = customerService.update(id, request);
+    public ResponseEntity<BCustomerDto> update(@PathVariable Long id, @Valid @RequestBody BCustomerRequest request) {
+        BCustomerDto updatedCustomer = customerService.update(id, request);
         return ResponseEntity.ok(updatedCustomer);
     }
 

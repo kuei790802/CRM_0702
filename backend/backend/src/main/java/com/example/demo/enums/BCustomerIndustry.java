@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public enum CustomerIndustry {
+public enum BCustomerIndustry {
     TECHNOLOGY("科技業"),
     FINANCE("金融業"),
     RETAIL("零售業"),
@@ -24,10 +24,10 @@ public enum CustomerIndustry {
 
     private final String displayName;
 
-    private static final Map<String, CustomerIndustry> NAMES_TO_INDUSTRIES =
-            Arrays.stream(values()).collect(Collectors.toMap(CustomerIndustry::getDisplayName, Function.identity()));
+    private static final Map<String, BCustomerIndustry> NAMES_TO_INDUSTRIES =
+            Arrays.stream(values()).collect(Collectors.toMap(BCustomerIndustry::getDisplayName, Function.identity()));
 
-    CustomerIndustry(String displayName) {
+    BCustomerIndustry(String displayName) {
         this.displayName = displayName;
     }
 
@@ -37,10 +37,10 @@ public enum CustomerIndustry {
     }
 
     @JsonCreator
-    public static CustomerIndustry fromDisplayName(String input) {
-        CustomerIndustry customerIndustry = NAMES_TO_INDUSTRIES.get(input);
-        if (customerIndustry != null) {
-            return customerIndustry;
+    public static BCustomerIndustry fromDisplayName(String input) {
+        BCustomerIndustry BCustomerIndustry = NAMES_TO_INDUSTRIES.get(input);
+        if (BCustomerIndustry != null) {
+            return BCustomerIndustry;
         }
         return Arrays.stream(values())
                 .filter(e -> e.name().equalsIgnoreCase(input))
@@ -50,7 +50,7 @@ public enum CustomerIndustry {
                 ));
     }
 
-    public static CustomerIndustry fromStringName(String name) {
+    public static BCustomerIndustry fromStringName(String name) {
         return Arrays.stream(values())
                 .filter(e -> e.name().equalsIgnoreCase(name))
                 .findFirst()
@@ -59,7 +59,7 @@ public enum CustomerIndustry {
 
     public static List<String> getAllDisplayNames() {
         return Arrays.stream(values())
-                .map(CustomerIndustry::getDisplayName)
+                .map(BCustomerIndustry::getDisplayName)
                 .collect(Collectors.toList());
     }
 }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"customer"})
+@ToString(exclude = {"bCustomer"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Contact {
 
@@ -48,6 +48,6 @@ public class Contact {
     // ----- 多對一關聯：聯絡人所屬的客戶 -----
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    private BCustomer bCustomer;
 
 }

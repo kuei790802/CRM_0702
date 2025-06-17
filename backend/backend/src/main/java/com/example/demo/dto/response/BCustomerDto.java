@@ -1,8 +1,8 @@
 package com.example.demo.dto.response;
 
-import com.example.demo.enums.CustomerIndustry;
-import com.example.demo.enums.CustomerLevel;
-import com.example.demo.enums.CustomerType;
+import com.example.demo.enums.BCustomerIndustry;
+import com.example.demo.enums.BCustomerLevel;
+import com.example.demo.enums.BCustomerType;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class CustomerDto {
+public class BCustomerDto {
     /**
      * 用於 API 回應，提供客戶的詳細資訊。
      * 只包含想給外部系統或前端的欄位。
@@ -26,9 +26,9 @@ public class CustomerDto {
     private Long customerId;
     private String customerName;
 
-    private CustomerIndustry industry;
-    private CustomerType customerType;
-    private CustomerLevel customerLevel;
+    private BCustomerIndustry industry;
+    private BCustomerType BCustomerType;
+    private BCustomerLevel BCustomerLevel;
 
     private String customerAddress;
     private String customerTel;

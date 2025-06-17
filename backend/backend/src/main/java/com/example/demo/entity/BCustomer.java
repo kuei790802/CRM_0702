@@ -1,8 +1,8 @@
 package com.example.demo.entity;
 
-import com.example.demo.enums.CustomerIndustry;
-import com.example.demo.enums.CustomerLevel;
-import com.example.demo.enums.CustomerType;
+import com.example.demo.enums.BCustomerIndustry;
+import com.example.demo.enums.BCustomerLevel;
+import com.example.demo.enums.BCustomerType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -15,14 +15,14 @@ import java.util.Set;
 
 
 @Entity
-@Table(name = "customers")
+@Table(name = "b_customers")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Customer {
+public class BCustomer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,15 +34,15 @@ public class Customer {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 100)
-    private CustomerIndustry industry;
+    private BCustomerIndustry industry;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private CustomerType customerType;
+    private BCustomerType BCustomerType;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private CustomerLevel customerLevel;
+    private BCustomerLevel BCustomerLevel;
 
     @Column(length = 255)
     private String customerAddress;
@@ -61,7 +61,7 @@ public class Customer {
     private LocalDateTime updatedAt;
 
     // ----- 一對多關聯：客戶擁有的聯絡人集合 -----
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "bCustomer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Contact> contacts = new HashSet<>();
 
     // ----- 關聯管理輔助方法 -----
@@ -72,7 +72,7 @@ public class Customer {
      */
     public void addContact(Contact contact) {
         contacts.add(contact);
-        contact.setCustomer(this); // 設定聯絡人所屬的客戶
+        contact.setBCustomer(this); // 設定聯絡人所屬的客戶
     }
 
     /**
@@ -82,6 +82,6 @@ public class Customer {
      */
     public void removeContact(Contact contact) {
         contacts.remove(contact);
-        contact.setCustomer(null); // 清除聯絡人所屬的客戶
+        contact.setBCustomer(null); // 清除聯絡人所屬的客戶
     }
 }

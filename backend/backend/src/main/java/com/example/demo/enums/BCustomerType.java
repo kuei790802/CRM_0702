@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public enum CustomerType {
+public enum BCustomerType {
     PROSPECT("潛在客戶"),       // 尚未建立業務關係的客戶
     PARTNER("合作夥伴"),       // 與公司有合作關係的實體
     VENDOR("供應商"),         // 為公司提供產品或服務的供應商
@@ -21,10 +21,10 @@ public enum CustomerType {
 
     private final String displayName;
 
-    private static final Map<String, CustomerType> NAMES_TO_TYPES =
-            Arrays.stream(values()).collect(Collectors.toMap(CustomerType::getDisplayName, Function.identity()));
+    private static final Map<String, BCustomerType> NAMES_TO_TYPES =
+            Arrays.stream(values()).collect(Collectors.toMap(BCustomerType::getDisplayName, Function.identity()));
 
-    CustomerType(String displayName) {
+    BCustomerType(String displayName) {
         this.displayName = displayName;
     }
 
@@ -34,8 +34,8 @@ public enum CustomerType {
     }
 
     @JsonCreator
-    public static CustomerType fromDisplayName(String input) {
-        CustomerType type = NAMES_TO_TYPES.get(input);
+    public static BCustomerType fromDisplayName(String input) {
+        BCustomerType type = NAMES_TO_TYPES.get(input);
         if (type != null) {
             return type;
         }
@@ -47,7 +47,7 @@ public enum CustomerType {
                 ));
     }
 
-    public static CustomerType fromStringName(String name) {
+    public static BCustomerType fromStringName(String name) {
         return Arrays.stream(values())
                 .filter(e -> e.name().equalsIgnoreCase(name))
                 .findFirst()
@@ -56,7 +56,7 @@ public enum CustomerType {
 
     public static List<String> getAllDisplayNames() {
         return Arrays.stream(values())
-                .map(CustomerType::getDisplayName)
+                .map(BCustomerType::getDisplayName)
                 .collect(Collectors.toList());
     }
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public enum CustomerLevel {
+public enum BCustomerLevel {
     DIAMOND("鑽石級"),   // 極高價值客戶，高於白金級
     PLATINUM("白金級"), // 最高等級客戶
     GOLD("黃金級"),     // 次高級客戶
@@ -18,10 +18,10 @@ public enum CustomerLevel {
 
     private final String displayName;
 
-    private static final Map<String, CustomerLevel> NAMES_TO_LEVELS =
-            Arrays.stream(values()).collect(Collectors.toMap(CustomerLevel::getDisplayName, Function.identity()));
+    private static final Map<String, BCustomerLevel> NAMES_TO_LEVELS =
+            Arrays.stream(values()).collect(Collectors.toMap(BCustomerLevel::getDisplayName, Function.identity()));
 
-    CustomerLevel(String displayName) {
+    BCustomerLevel(String displayName) {
         this.displayName = displayName;
     }
 
@@ -31,10 +31,10 @@ public enum CustomerLevel {
     }
 
     @JsonCreator
-    public static CustomerLevel fromDisplayName(String input) {
-        CustomerLevel customerLevel = NAMES_TO_LEVELS.get(input);
-        if (customerLevel != null) {
-            return customerLevel;
+    public static BCustomerLevel fromDisplayName(String input) {
+        BCustomerLevel BCustomerLevel = NAMES_TO_LEVELS.get(input);
+        if (BCustomerLevel != null) {
+            return BCustomerLevel;
         }
         return Arrays.stream(values())
                 .filter(e -> e.name().equalsIgnoreCase(input))
@@ -44,7 +44,7 @@ public enum CustomerLevel {
                 ));
     }
 
-    public static CustomerLevel fromStringName(String name) {
+    public static BCustomerLevel fromStringName(String name) {
         return Arrays.stream(values())
                 .filter(e -> e.name().equalsIgnoreCase(name))
                 .findFirst()
@@ -53,7 +53,7 @@ public enum CustomerLevel {
 
     public static List<String> getAllDisplayNames() {
         return Arrays.stream(values())
-                .map(CustomerLevel::getDisplayName)
+                .map(BCustomerLevel::getDisplayName)
                 .collect(Collectors.toList());
     }
 }

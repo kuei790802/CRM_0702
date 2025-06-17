@@ -3,9 +3,9 @@ package com.example.demo.service.impl;
 import com.example.demo.dto.request.ContactRequest;
 import com.example.demo.dto.response.ContactDto;
 import com.example.demo.entity.Contact;
-import com.example.demo.entity.Customer;
+import com.example.demo.entity.BCustomer;
 import com.example.demo.repository.ContactRepository;
-import com.example.demo.repository.CustomerRepository;
+import com.example.demo.repository.BCustomerRepository;
 import com.example.demo.service.ContactService;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -18,11 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class ContactServiceImpl implements ContactService {
 
     private final ContactRepository contactRepository;
-    private final CustomerRepository customerRepository;
+    private final BCustomerRepository BCustomerRepository;
 
-    public ContactServiceImpl(ContactRepository contactRepository, CustomerRepository customerRepository) {
+    public ContactServiceImpl(ContactRepository contactRepository, BCustomerRepository BCustomerRepository) {
         this.contactRepository = contactRepository;
-        this.customerRepository = customerRepository;
+        this.BCustomerRepository = BCustomerRepository;
     }
 
     /**
@@ -60,12 +60,12 @@ public class ContactServiceImpl implements ContactService {
     @Override
     @Transactional // 寫入操作需確保事務完整性
     public ContactDto create(ContactRequest request) {
-        Customer customer = customerRepository.findById(request.getCustomerId())
+        BCustomer BCustomer = BCustomerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + request.getCustomerId()));
 
         Contact contact = new Contact();
         mapRequestToEntity(request, contact); // 將請求 DTO 中的基礎屬性映射到實體
-        contact.setCustomer(customer); // 設定聯絡人所屬的客戶實體
+        contact.setBCustomer(BCustomer); // 設定聯絡人所屬的客戶實體
 
         Contact savedContact = contactRepository.save(contact);
         return convertToDto(savedContact);
@@ -84,9 +84,9 @@ public class ContactServiceImpl implements ContactService {
         Contact contact = contactRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("找不到聯絡人，ID: " + id));
 
-        Customer customer = customerRepository.findById(request.getCustomerId())
+        BCustomer BCustomer = BCustomerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + request.getCustomerId()));
-        contact.setCustomer(customer); // 設定聯絡人所屬的客戶實體
+        contact.setBCustomer(BCustomer); // 設定聯絡人所屬的客戶實體
 
         mapRequestToEntity(request, contact);
 
@@ -157,10 +157,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     @Transactional(readOnly = true)
     public Page<ContactDto> findContactsByCustomerId(Long customerId, Pageable pageable) {
-        if (!customerRepository.existsById(customerId)) {
+        if (!BCustomerRepository.existsById(customerId)) {
             throw new EntityNotFoundException("找不到客戶，ID: " + customerId);
         }
-        return contactRepository.findByCustomer_CustomerId(customerId, pageable)
+        return contactRepository.findByBCustomer_CustomerId(customerId, pageable)
                 .map(this::convertToDto);
     }
 
@@ -176,9 +176,9 @@ public class ContactServiceImpl implements ContactService {
         dto.setCreatedAt(contact.getCreatedAt());
         dto.setUpdatedAt(contact.getUpdatedAt());
 
-        if (contact.getCustomer() != null) {
-            dto.setCustomerId(contact.getCustomer().getCustomerId());
-            dto.setCustomerName(contact.getCustomer().getCustomerName());
+        if (contact.getBCustomer() != null) {
+            dto.setCustomerId(contact.getBCustomer().getCustomerId());
+            dto.setCustomerName(contact.getBCustomer().getCustomerName());
         }
 
         return dto;

@@ -37,5 +37,5 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
      * @param pageable 分頁和排序資訊。
      * @return 屬於指定客戶的聯絡人分頁列表。
      */
-    Page<Contact> findByCustomer_CustomerId(Long customerId, Pageable pageable);
+    Page<Contact> findByBCustomer_CustomerId(Long customerId, Pageable pageable);
 }
