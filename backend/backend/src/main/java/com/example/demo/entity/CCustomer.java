@@ -56,13 +56,11 @@ public class CCustomer {
     }
 
 
-    @ManyToMany
-    @JoinTable(
-            name = "customer_cart",
-            joinColumns = @JoinColumn(name = "customer_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> cart = new ArrayList<>();
+    @OneToOne(mappedBy = "CCustomer")
+    private Cart cart;
+
+    @OneToMany(mappedBy = "CCustomer")
+    private List<CCustomerAddress> CCustomerAddress = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "vip_level")

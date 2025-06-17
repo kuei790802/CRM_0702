@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 
 import com.example.demo.dto.request.CCustomerRegisterRequest;
+import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
 import com.example.demo.security.CheckJwt;
@@ -53,5 +54,18 @@ public class CCustomerController {
         String account = (String) request.getAttribute("account");
         System.out.println("profile endpoint account = " + account);
         return cCustomerService.getProfile(account);
+    }
+
+    @CheckJwt
+    @PutMapping("/profile/update")
+    public ResponseEntity<CCustomerProfileResponse> updateProfile(
+            HttpServletRequest request,
+            @RequestBody UpdateCCustomerProfileRequest updateRequest) {
+
+        String account = (String) request.getAttribute("account");
+
+        CCustomerProfileResponse updatedProfile = cCustomerService.updateProfile(account, updateRequest);
+
+        return ResponseEntity.ok(updatedProfile);
     }
 }

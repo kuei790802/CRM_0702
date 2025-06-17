@@ -1,10 +1,12 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.repository.CCustomerRepo;
+import com.example.demo.security.CheckJwt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,29 @@ public class CCustomerService {
         return CCustomerRepo.findByAccount(account).isPresent();
     }
 
+    // 密碼強度規範
+    private void validatePasswordStrength(String password) {
+        if (password.length() < 12) {
+            throw new IllegalArgumentException("密碼長度需至少12碼");
+        }
+
+        if (!password.matches(".*[A-Z].*")) {
+            throw new IllegalArgumentException("密碼需包含至少一個大寫英文字母");
+        }
+
+        if (!password.matches(".*[a-z].*")) {
+            throw new IllegalArgumentException("密碼需包含至少一個小寫英文字母");
+        }
+
+        if (!password.matches(".*\\d.*")) {
+            throw new IllegalArgumentException("密碼需包含至少一個數字");
+        }
+
+        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
+            throw new IllegalArgumentException("密碼需包含至少一個特殊符號");
+        }
+    }
+
     // 註冊 + 加密
     public CCustomer register(String account
                             , String customerName
@@ -36,6 +61,8 @@ public class CCustomerService {
         if(checkAccountExist(account)){
             throw new AccountAlreadyExistsException(account);
         }
+
+        validatePasswordStrength(password);
 
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
@@ -78,12 +105,58 @@ public class CCustomerService {
                 customer.getCustomerName(),
                 customer.getEmail(),
                 customer.getAddress(),
-                customer.getBirthday()
+                customer.getBirthday(),
+                customer.getCoupons(),
+                customer.getSpending(),
+                customer.getVipLevel()
         );
     }
 
 
     // 更改基本資料: 讓用戶更新個人資訊（含忘記密碼、密碼更改）資料驗證、密碼加密更新、資料一致性
+
+    public CCustomerProfileResponse updateProfile(String account, UpdateCCustomerProfileRequest request) {
+        CCustomer customer = CCustomerRepo.findByAccount(account)
+                .orElseThrow(() -> new RuntimeException("帳號不存在"));
+
+        // 更新基本資料，並防止為空值
+        if (request.getCustomerName() != null) {
+            customer.setCustomerName(request.getCustomerName());
+        }
+        if (request.getEmail() != null) {
+            customer.setEmail(request.getEmail());
+        }
+        if (request.getAddress() != null) {
+            customer.setAddress(request.getAddress());
+        }
+
+        // 如果 newPassword 不是空的，執行密碼修改流程
+        if (request.getNewPassword() != null && !request.getNewPassword().isEmpty()) {
+            // 驗證舊密碼正確
+            if (!encoder.matches(request.getOldPassword(), customer.getPassword())) {
+                throw new IllegalArgumentException("舊密碼錯誤");
+            }
+
+            // 驗證新密碼強度
+            validatePasswordStrength(request.getNewPassword());
+
+            // 加密新密碼
+            customer.setPassword(encoder.encode(request.getNewPassword()));
+        }
+
+        CCustomer savedCustomer = CCustomerRepo.save(customer);
+
+        return new CCustomerProfileResponse(
+                savedCustomer.getAccount(),
+                savedCustomer.getCustomerName(),
+                savedCustomer.getEmail(),
+                savedCustomer.getAddress(),
+                savedCustomer.getBirthday(),
+                savedCustomer.getCoupons(),
+                savedCustomer.getSpending(),
+                savedCustomer.getVipLevel()
+        );
+    }
 
 
 
