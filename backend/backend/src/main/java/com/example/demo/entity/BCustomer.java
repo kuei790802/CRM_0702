@@ -20,6 +20,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BCustomer {

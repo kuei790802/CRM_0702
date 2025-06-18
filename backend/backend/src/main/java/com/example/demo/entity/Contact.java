@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @ToString(exclude = {"bCustomer"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Contact {

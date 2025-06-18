@@ -160,7 +160,7 @@ public class ContactServiceImpl implements ContactService {
         if (!BCustomerRepository.existsById(customerId)) {
             throw new EntityNotFoundException("找不到客戶，ID: " + customerId);
         }
-        return contactRepository.findByBCustomer_CustomerId(customerId, pageable)
+        return contactRepository.findBybCustomer_CustomerId(customerId, pageable)
                 .map(this::convertToDto);
     }
 

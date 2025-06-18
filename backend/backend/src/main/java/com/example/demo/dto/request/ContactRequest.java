@@ -27,4 +27,6 @@ public class ContactRequest {
     @NotNull(message = "客戶ID不能為空")
     private Long customerId; // 關聯客戶的 ID
 
+
+
 }
