@@ -10,7 +10,7 @@ export default {
         logo: {
           lightBlue: '#9DCCF3', // 淺藍色
           blue: '#6DA1CD',      // 較深藍色
-          tan: '#DDB675',       // 淡棕黃色
+          tan: '#f5f5f7',       // 淡棕黃色
         },
       },
     },

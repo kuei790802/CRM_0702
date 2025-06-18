@@ -10,7 +10,7 @@ function TopCarouselBar() {
   ];
 
   return (
-    <div className="w-full bg-yellow-100 overflow-hidden py-1 px-4">
+    <div className="w-full bg-white overflow-hidden py-1 px-4">
       <Swiper
         direction="vertical"
         modules={[Autoplay]}
@@ -28,9 +28,11 @@ function TopCarouselBar() {
           <SwiperSlide
             key={index}
           >
-            <p className="text-sm text-gray-800 font-medium text-center leading-[33px]">
-              {msg}
-            </p>
+           <div className="flex items-center justify-center h-[40px]">
+              <p className="text-sm text-gray-800 font-medium text-center">
+                {msg}
+              </p>
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>
