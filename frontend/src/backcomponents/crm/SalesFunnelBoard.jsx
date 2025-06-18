@@ -1,3 +1,4 @@
+// SalesFunnelBoard.jsx
 import React, { useState } from "react";
 import {
   DndContext,
@@ -17,20 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { FaStar, FaRegStar, FaClock, FaEdit } from "react-icons/fa";
 
-const initialData = {
-  new: [
-    { id: "c1", title: "123456", rating: 0 },
-    { id: "c2", title: "1234", rating: 0 },
-  ],
-  evaluated: [
-    { id: "c3", title: "12345", rating: 0 },
-  ],
-  proposal: [
-    { id: "c4", title: "123", rating: 0 },
-  ],
-  closed: [],
-};
-
+const visibleStages = ["new", "evaluated", "proposal", "closed"];
 const columnTitles = {
   new: "新潛在客戶",
   evaluated: "已評估",
@@ -38,18 +26,13 @@ const columnTitles = {
   closed: "成交",
 };
 
-export default function SalesFunnelBoard() {
-  const [columns, setColumns] = useState(initialData);
+export default function SalesFunnelBoard({ columns, setColumns }) {
   const [overColumnId, setOverColumnId] = useState(null);
   const [activeCard, setActiveCard] = useState(null);
   const [activeId, setActiveId] = useState(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 20,
-      },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 20 } })
   );
 
   const handleDragStart = ({ active }) => {
@@ -103,8 +86,7 @@ export default function SalesFunnelBoard() {
     setOverColumnId(targetColumn);
   };
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
+  const handleDragEnd = ({ active, over }) => {
     setActiveCard(null);
     setOverColumnId(null);
     setActiveId(null);
@@ -123,7 +105,6 @@ export default function SalesFunnelBoard() {
     }
 
     const isOverColumn = Object.keys(columns).includes(overId);
-
     if (isOverColumn) {
       targetColumn = overId;
     } else {
@@ -137,7 +118,9 @@ export default function SalesFunnelBoard() {
     if (!sourceColumn || !targetColumn) return;
 
     if (sourceColumn === targetColumn) {
-      const oldIndex = columns[sourceColumn].findIndex((i) => i.id === activeId);
+      const oldIndex = columns[sourceColumn].findIndex(
+        (i) => i.id === activeId
+      );
       const newIndex = columns[targetColumn].findIndex((i) => i.id === overId);
       if (oldIndex !== newIndex) {
         const newItems = arrayMove(columns[sourceColumn], oldIndex, newIndex);
@@ -155,16 +138,18 @@ export default function SalesFunnelBoard() {
       onDragEnd={handleDragEnd}
     >
       <div className="grid grid-cols-4 gap-4 p-4">
-        {Object.entries(columns).map(([columnId, items]) => (
-          <Column
-            key={columnId}
-            id={columnId}
-            title={columnTitles[columnId]}
-            items={items}
-            isOver={overColumnId === columnId}
-            activeId={activeId}
-          />
-        ))}
+        {Object.entries(columns)
+          .filter(([key]) => visibleStages.includes(key))
+          .map(([columnId, items]) => (
+            <Column
+              key={columnId}
+              id={columnId}
+              title={columnTitles[columnId]}
+              items={items}
+              isOver={overColumnId === columnId}
+              activeId={activeId}
+            />
+          ))}
       </div>
       <DragOverlay dropAnimation={null}>
         {activeCard ? (
@@ -172,6 +157,7 @@ export default function SalesFunnelBoard() {
             id={activeCard.id}
             title={activeCard.title}
             rating={activeCard.rating}
+            type={activeCard.type || "default"}
             isOverlay
           />
         ) : null}
@@ -185,10 +171,15 @@ function Column({ id, title, items, isOver, activeId }) {
   return (
     <div
       ref={setNodeRef}
-      className={`p-2 transition-colors rounded-xl min-h-[100px] ${isOver ? "bg-gray-200" : "bg-white"}`}
+      className={`p-2 transition-colors rounded-xl min-h-[100px] ${
+        isOver ? "bg-gray-200" : "bg-white"
+      }`}
     >
       <h2 className="font-bold text-lg mb-2">{title}</h2>
-      <SortableContext items={items.map((item) => item.id)} strategy={rectSortingStrategy}>
+      <SortableContext
+        items={items.map((item) => item.id)}
+        strategy={rectSortingStrategy}
+      >
         <div className="flex flex-col gap-4">
           {items.map((item) => (
             <SortableCard
@@ -196,6 +187,7 @@ function Column({ id, title, items, isOver, activeId }) {
               id={item.id}
               title={item.title}
               rating={item.rating || 0}
+              type={item.type || "default"}
               isPreview={item.id === activeId}
             />
           ))}
@@ -205,9 +197,23 @@ function Column({ id, title, items, isOver, activeId }) {
   );
 }
 
-function SortableCard({ id, title, rating, isOverlay = false, isPreview = false }) {
+function SortableCard({
+  id,
+  title,
+  rating,
+  type = "default",
+  isOverlay = false,
+  isPreview = false,
+}) {
   const sortable = useSortable({ id });
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = sortable;
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = sortable;
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -217,20 +223,34 @@ function SortableCard({ id, title, rating, isOverlay = false, isPreview = false 
     border: isPreview ? "2px dashed #aaa" : undefined,
   };
 
+  const typeColorMap = {
+    default: "bg-white",
+    success: "bg-green-100",
+    warning: "bg-yellow-100",
+    error: "bg-red-100",
+    info: "bg-blue-100",
+  };
+
+  const cardColor = typeColorMap[type] || typeColorMap.default;
+
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
       style={style}
-      className="bg-white p-3 border hover:shadow-md rounded-2xl relative cursor-move group w-64"
+      className={`${cardColor} p-3 border hover:shadow-md rounded-2xl relative cursor-move group w-64`}
     >
       <div className="font-semibold mb-1">{title}</div>
       <div className="flex items-center justify-between text-sm text-gray-600">
         <div className="flex items-center gap-1">
-          {[...Array(3)].map((_, idx) => (
-            idx < rating ? <FaStar key={idx} className="text-yellow-400" /> : <FaRegStar key={idx} />
-          ))}
+          {[...Array(3)].map((_, idx) =>
+            idx < rating ? (
+              <FaStar key={idx} className="text-yellow-400" />
+            ) : (
+              <FaRegStar key={idx} />
+            )
+          )}
           <FaClock className="ml-2" />
         </div>
         <FaEdit className="opacity-0 group-hover:opacity-100 transition duration-200 cursor-pointer" />

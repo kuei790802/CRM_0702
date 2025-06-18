@@ -36,16 +36,6 @@ const crmConfig = {
         name: '商機管理',
         icon: <BarChartOutlined />,
       },
-      {
-        path: '/crm/contract',
-        name: '合約資料',
-        icon: <BarChartOutlined />,
-      },
-      {
-        path: '/crm/chart',
-        name: '分析報表',
-        icon: <BarChartOutlined />,
-      },
     ],
   },
   location: {

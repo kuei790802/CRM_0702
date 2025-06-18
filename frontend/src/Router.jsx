@@ -27,8 +27,11 @@ import "antd/dist/reset.css";
 //CRM相關頁面
 import CRMCustomer from "./backpages/crm/CRMCustomer.jsx";
 import CRMDashboard from "./backpages/crm/CRMDashboard.jsx";
-import SalesFunnelBoard from "./backpages/crm/SalesFunnelBoard.jsx";
-import CRMCalender from "./backpages/crm/CRMCalender.jsx";
+import SalesFunnel from "./backpages/crm/SalesFunnel.jsx";
+import CRMOpportunities from "./backpages/crm/CRMOpportunities.jsx";
+import CRMOpportunityForm from "./backpages/crm/CRMOpportunityForm.jsx";
+import CRMCustomerForm from "./backpages/crm/CRMCustomerForm.jsx";
+import CRMCalendar from "./backpages/crm/CRMCalendar.jsx";
 
 const user = useUserStore.getState().user;
 const role = user?.role || "guest";
@@ -88,7 +91,7 @@ const router = createBrowserRouter([
       },
       {
         path: "salesfunnel", 
-        element: <SalesFunnelBoard />,
+        element: <SalesFunnel />,
       },
       {
         path: "customer", 
@@ -96,8 +99,20 @@ const router = createBrowserRouter([
       },
       {
         path: "calender", 
-        element: <CRMCalender />,
-      }
+        element: <CRMCalendar />,
+      },
+      {
+        path: "opportunity", 
+        element: <CRMOpportunities />,
+      },
+      {
+        path: "opportunity/:id",
+        element: <CRMOpportunityForm />,
+      },
+      {
+        path: "customer/:id",
+        element: <CRMCustomerForm />,
+      },
     ],
   },
   {
