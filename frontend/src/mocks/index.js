@@ -5,6 +5,12 @@ import { loginHandlers } from './modules/login';
 import { crmCustomerHandlers } from './modules/crmCustomer';
 import { crmOpportunitiesHandlers } from './modules/crmOpportunities';
 import { crmcalendarEventsHandler } from './modules/crmcalendarEventsHandler';
+import { erpCustomersHandler } from './modules/erpCustomer';
+import { erpOrdersHandler } from './modules/erpOrders';
+import { erpReturnsHandler } from './modules/erpReturns';
+import { erpProductsHandler } from './modules/erpProducts';
+import { erpStockLevelsHandler } from './modules/erpStockLevels';
+import { erpPurchaseOrdersHandler } from './modules/erpPurchaseOrders';
 
 export const handlers = [
   ...newsHandlers,
@@ -14,5 +20,11 @@ export const handlers = [
   ...crmCustomerHandlers,
   ...crmOpportunitiesHandlers,
   ...crmcalendarEventsHandler,
+  ...erpCustomersHandler,
+  ...erpOrdersHandler,
+  ...erpReturnsHandler,
+  ...erpProductsHandler,
+  ...erpStockLevelsHandler,
+  ...erpPurchaseOrdersHandler,
 
 ];

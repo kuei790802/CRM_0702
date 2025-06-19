@@ -25,14 +25,6 @@ const appListConfig = [
     roles: ['admin', 'manager'],
   },
   {
-    key: 'b2c',
-    icon: <RobotOutlined style={{ fontSize: "30px", color: "#08c" }} />,
-    title: "B2C模組",
-    desc: "企業對消費者模組",
-    url: "/b2c",
-    roles: ['admin', 'editor'],
-  },
-  {
     key: 'crm',
     icon: <BarChartOutlined style={{ fontSize: "30px", color: "#08c" }} />,
     title: "CRM模組",

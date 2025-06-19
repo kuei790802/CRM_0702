@@ -18,7 +18,6 @@ import Cart from "./pages/Cart.jsx";
 import BaseLayout from "./layout/BaseLayout";
 import cmsConfig from "./configs/cmsConfig";
 import erpConfig from "./configs/erpConfig";
-import b2cConfig from "./configs/b2cConfig";
 import crmConfig from "./configs/crmConfig";
 import usersConfig from "./configs/usersConfig.jsx";
 import appListConfig from "./configs/appListConfig";
@@ -70,14 +69,6 @@ const router = createBrowserRouter([
       { path: "user", element: <User /> },
       { path: "news/:id", element: <NewsDetail /> },
     ],
-  },
-  {
-    path: "/b2c/*",
-    element: ["admin", "editor"].includes(role) ? (
-      <BaseLayout menuConfig={b2cConfig} appListConfig={filteredAppList} />
-    ) : (
-      <FunnyError />
-    ),
   },
   {
     path: "/cms/*",
