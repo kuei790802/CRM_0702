@@ -24,7 +24,7 @@ public class SalesOrderCreateDTO {
     @NotEmpty(message = "付款方式不可為空")
     private String paymentMethod;
 
-    private String remarks; // 備註
+    private String remarks;
 
     @NotEmpty(message = "訂單明細不可為空")
     @Valid

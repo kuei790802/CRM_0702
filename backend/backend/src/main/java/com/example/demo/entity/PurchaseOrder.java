@@ -75,7 +75,7 @@ public class PurchaseOrder {
     @JsonManagedReference
     private List<PurchaseOrderDetail> details = new ArrayList<>();
 
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by", nullable = false, updatable = false)
     private Long createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
