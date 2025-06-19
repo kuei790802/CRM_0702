@@ -46,9 +46,10 @@ export default function SalesFunnel() {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-end items-center mb-4">
         <Button
           type="primary"
+          size="large"
           icon={<PlusOutlined />}
           onClick={() => setModalOpen(true)}
         >

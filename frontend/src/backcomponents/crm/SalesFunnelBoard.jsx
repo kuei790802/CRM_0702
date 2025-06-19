@@ -137,7 +137,7 @@ export default function SalesFunnelBoard({ columns, setColumns }) {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-4 gap-4 p-4">
+      <div className="grid grid-cols-4 gap-4 min-h-screen">
         {Object.entries(columns)
           .filter(([key]) => visibleStages.includes(key))
           .map(([columnId, items]) => (
@@ -170,8 +170,7 @@ function Column({ id, title, items, isOver, activeId }) {
   const { setNodeRef } = useDroppable({ id });
   return (
     <div
-      ref={setNodeRef}
-      className={`p-2 transition-colors rounded-xl min-h-[100px] ${
+      className={`transition-colors rounded-xl min-h-[100px] ${
         isOver ? "bg-gray-200" : "bg-white"
       }`}
     >
@@ -180,7 +179,9 @@ function Column({ id, title, items, isOver, activeId }) {
         items={items.map((item) => item.id)}
         strategy={rectSortingStrategy}
       >
-        <div className="flex flex-col gap-4">
+        <div 
+        ref={setNodeRef}
+        className="flex flex-col gap-4">
           {items.map((item) => (
             <SortableCard
               key={item.id}
@@ -188,7 +189,6 @@ function Column({ id, title, items, isOver, activeId }) {
               title={item.title}
               rating={item.rating || 0}
               type={item.type || "default"}
-              isPreview={item.id === activeId}
             />
           ))}
         </div>
@@ -220,7 +220,6 @@ function SortableCard({
     transition,
     opacity: isDragging && !isOverlay ? 0.3 : 1,
     zIndex: isOverlay ? 999 : undefined,
-    border: isPreview ? "2px dashed #aaa" : undefined,
   };
 
   const typeColorMap = {
@@ -239,11 +238,11 @@ function SortableCard({
       {...attributes}
       {...listeners}
       style={style}
-      className={`${cardColor} p-3 border hover:shadow-md rounded-2xl relative cursor-move group w-64`}
+      className={`${cardColor} w-full p-2 border hover:shadow-md rounded-2xl relative cursor-move group`}
     >
       <div className="font-semibold mb-1">{title}</div>
       <div className="flex items-center justify-between text-sm text-gray-600">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center ">
           {[...Array(3)].map((_, idx) =>
             idx < rating ? (
               <FaStar key={idx} className="text-yellow-400" />

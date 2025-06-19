@@ -32,6 +32,17 @@ import CRMOpportunities from "./backpages/crm/CRMOpportunities.jsx";
 import CRMOpportunityForm from "./backpages/crm/CRMOpportunityForm.jsx";
 import CRMCustomerForm from "./backpages/crm/CRMCustomerForm.jsx";
 import CRMCalendar from "./backpages/crm/CRMCalendar.jsx";
+//ERP相關頁面
+import ERPOrders from "./backpages/erp/ERPOrders.jsx";
+import ERPProducts from "./backpages/erp/ERPProducts.jsx";
+import ERPStockLevels from "./backpages/erp/ERPStockLevels.jsx";
+import ERPPurchaseOrders from "./backpages/erp/ERPPurchaseOrders.jsx";
+import ERPCustomers from "./backpages/erp/ERPCustomers.jsx";
+import ERPDashboard from "./backpages/erp/ERPDashboard.jsx";
+import ERPReturns from "./backpages/erp/ERPReturns.jsx";
+import Finance from "./backpages/erp/Finance.jsx";
+import Inventory from "./backpages/erp/Inventory.jsx";
+import Sales from "./backpages/erp/Sales.jsx";
 
 const user = useUserStore.getState().user;
 const role = user?.role || "guest";
@@ -84,25 +95,25 @@ const router = createBrowserRouter([
       ) : (
         <FunnyError />
       ),
-      children: [
+    children: [
       {
-        path: "dashboard", 
+        path: "dashboard",
         element: <CRMDashboard />,
       },
       {
-        path: "salesfunnel", 
+        path: "salesfunnel",
         element: <SalesFunnel />,
       },
       {
-        path: "customer", 
+        path: "customer",
         element: <CRMCustomer />,
       },
       {
-        path: "calender", 
+        path: "calender",
         element: <CRMCalendar />,
       },
       {
-        path: "opportunity", 
+        path: "opportunity",
         element: <CRMOpportunities />,
       },
       {
@@ -122,6 +133,45 @@ const router = createBrowserRouter([
     ) : (
       <FunnyError />
     ),
+    children: [
+      { path: "dashboard", element: <ERPDashboard /> },
+      {
+        path: "inventory/products",
+        element: <ERPProducts />,
+      },
+      {
+        path: "inventory/purchaseorders",
+        element: <ERPPurchaseOrders />,
+      },
+      {
+        path: "inventory/stocklevels",
+        element: <ERPStockLevels />,
+      },
+      {
+        path: "sales/orders",
+        element: <ERPOrders />,
+      },
+      {
+        path: "sales/customers",
+        element: <ERPCustomers />,
+      },
+      {
+        path: "sales/returns",
+        element: <ERPReturns />,
+      },
+      {
+        path: "finance",
+        element: <Finance />,
+      },
+      {
+        path: "inventory",
+        element: <Inventory />,
+      },
+      {
+        path: "sales",
+        element: <Sales />,
+      },
+    ],
   },
   {
     path: "/users/*",
