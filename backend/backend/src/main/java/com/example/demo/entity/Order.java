@@ -1,3 +1,4 @@
+// CRM/backend/backend/src/main/java/com/example/demo/entity/Order.java
 package com.example.demo.entity;
 
 import com.example.demo.enums.OrderStatus;
@@ -25,7 +26,7 @@ public class Order {
     private Platform platform;
 
     @ManyToOne
-    @JoinColumn(name = "userid")
+    @JoinColumn(name = "customer_id")
     private CCustomer CCustomer;
 
     private LocalDate orderdate;
@@ -46,6 +47,10 @@ public class Order {
 
     private LocalDateTime createat;
     private LocalDateTime updateat;
+
+    // 新增總金額欄位
+    @Column(name = "total_amount") // 請在資料庫中新增此欄位
+    private Double totalAmount; // 假設訂單總金額是 Double
 
     //--------
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

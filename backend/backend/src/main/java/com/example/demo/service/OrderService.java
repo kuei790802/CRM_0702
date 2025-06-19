@@ -85,21 +85,21 @@ public class OrderService {
         newOrder.setUpdateat(LocalDateTime.now()); // <<-- 修正：補上時間戳
         newOrder.setOrderDetails(new ArrayList<>()); // 初始化 List
 
+        double calculatedTotalAmount = 0.0; // 初始化一個變數來累計總金額
+
         // 5. 從 CartDetail 複製到 OrderDetail，並更新庫存預訂量
         for (CartDetail detail : cart.getCartdetails()) {
             OrderDetail orderDetail = new OrderDetail();
-            // ★★★ 複合主鍵的設定 ★★★
-            // 因為我們使用了 @IdClass，所以不需要手動設定 orderid 和 productid
-            // JPA 會在儲存時，根據關聯自動填入
             orderDetail.setProduct(detail.getProduct());
             orderDetail.setQuantity(detail.getQuantity());
-            orderDetail.setUnitprice(detail.getProduct().getUnitprice()); // 記錄下單時的價格
-            orderDetail.setCreateat(LocalDateTime.now()); // <<-- 修正：補上時間戳
-            orderDetail.setUpdateat(LocalDateTime.now()); // <<-- 修正：補上時間戳
+            orderDetail.setUnitprice(detail.getProduct().getUnitprice());
+            orderDetail.setCreateat(LocalDateTime.now());
+            orderDetail.setUpdateat(LocalDateTime.now());
             newOrder.addOrderDetail(orderDetail);
 
-            // 更新庫存：增加 unitsInReserved 數量
-            // (此處邏輯不變，但可以考慮優化為更穩健的庫存分配策略)
+            calculatedTotalAmount += detail.getProduct().getUnitprice() * detail.getQuantity(); // 累計金額
+
+            // 更新庫存
             List<Inventory> inventories = detail.getProduct().getInventories();
             if (!inventories.isEmpty()) {
                 Inventory inventoryToUpdate = inventories.get(0);
@@ -107,15 +107,16 @@ public class OrderService {
                 inventoryRepository.save(inventoryToUpdate);
             }
         }
+        newOrder.setTotalAmount(calculatedTotalAmount); // 設定訂單總金額
 
-        // 6. 儲存訂單 (因為 Order.java 已設定 CascadeType.ALL，OrderDetail 會一併儲存)
+        // 6. 儲存訂單
         Order savedOrder = orderRepository.saveAndFlush(newOrder);
 
-        // 7. 清空購物車 (此功能依賴 Cart.java 中的 orphanRemoval=true)
+        // 7. 清空購物車
         cart.getCartdetails().clear();
         cartRepository.save(cart);
 
-        // 8. 刷新狀態並回傳 DTO (修正：避免快取造成的狀態不一致問題)
+        // 8. 刷新狀態並回傳 DTO
         entityManager.refresh(savedOrder);
 
         return mapToOrderDto(savedOrder);
@@ -214,7 +215,7 @@ public class OrderService {
                 .orderDate(order.getOrderdate())
                 .orderStatus(order.getOrderStatus())
                 .paymentStatus(order.getPaymentStatus())
-                .totalPrice(totalPrice)
+                .totalPrice(order.getTotalAmount())
                 .orderDetails(detailDtos)
                 .build();
     }
