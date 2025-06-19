@@ -2,12 +2,19 @@ import img1 from '../assets/banner.jpg';
 
 export default function About() {
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
       {/* 第一區塊：品牌使命 */}
       <section className="mb-16">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-logo-tan mb-4 text-center">
-          以一口冰品，傳遞一個更好的未來
-        </h2>
+        <div className="flex items-center justify-between">
+      {/* 左邊主標題 */}
+      <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold">
+        良野冰品
+      </h2>
+      {/* 右邊副標 */}
+      <span className="text-lg sm:text-xl md:text-2xl font-medium">
+        夏天的唯一選擇
+      </span>
+    </div>
         <img
           src={img1}
           alt="品牌使命圖片"
@@ -23,7 +30,7 @@ export default function About() {
 
       {/* 第二區塊：組織文化 */}
       <section>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-logo-tan mb-4 text-center">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-center">
           關懷是我們的文化，理想是我們的溫度
         </h2>
         <img
