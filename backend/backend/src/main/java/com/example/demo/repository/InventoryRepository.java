@@ -1,23 +1,20 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.Inventory;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-public interface InventoryRepository extends JpaRepository<Inventory, Long> {
-    List<Inventory> findByProduct_ProductnameContaining(String productname);
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+import com.example.demo.entity.Inventory;
+import com.example.demo.entity.Product;
+import com.example.demo.entity.Warehouse;
 
+@Repository
+public interface InventoryRepository extends JpaRepository<Inventory, Long>{
 
-
-
-
-
-
-
-
-    // 此功能可移去庫存異動
-    List<Inventory> findByUpdateatBetween(LocalDateTime startTime, LocalDateTime endTime);
+    Optional<Inventory> findByProduct_ProductIdAndWarehouse_WarehouseId(Long productId, Long warehouseId);
+    List<Inventory> findByProduct_ProductId(Long productId);
+    Optional<Inventory> findByProductAndWarehouse(Product product, Warehouse warehouse);
 }
+

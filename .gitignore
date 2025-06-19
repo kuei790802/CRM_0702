@@ -10,7 +10,7 @@
 /frontend/lerna-debug.log*
 
 # === Backend (Spring Boot / Maven) ===
-/backend/target/
+/backend/backend/target/
 /backend/*.log
 /backend/.settings/
 /backend/.classpath

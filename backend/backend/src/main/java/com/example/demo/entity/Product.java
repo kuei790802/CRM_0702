@@ -1,123 +1,79 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "products")
+@Table(name="products")
+@Getter
+@Setter
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productid;
-    private String productname;
+    @Column(name = "product_id")
+    private Long productId;
+
+    @Column(name = "product_code", nullable = false, unique = true, length = 50)
+    private String productCode;
+
+    @Column(name = "name", nullable = false, length = 255)
+    private String name;
+
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-    private String quantityperunit;
-    private Double unitprice;
-    private Boolean isactive;
-    private LocalDateTime createat;
-    private LocalDateTime updateat;
 
-    public String getProductname() {
-        return productname;
-    }
 
-    public void setProductname(String productname) {
-        this.productname = productname;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private ProductCategory category;
 
-    public Long getProductid() {
-        return productid;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id", nullable = false)
+    private Unit unit;
 
-    public void setProductid(Long productid) {
-        this.productid = productid;
-    }
+    @Column(name = "is_purchasable", nullable = false)
+    private boolean isPurchasable = true;
 
-    public String getDescription() {
-        return description;
-    }
+    @Column(name = "is_salable", nullable = false)
+    private boolean isSalable = true;
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    @Column(name = "base_price", nullable = false, precision = 18, scale = 2)
+    private BigDecimal basePrice;
 
-    public String getQuantityperunit() {
-        return quantityperunit;
-    }
+    @Column(name = "tax_type", nullable = false, length = 20)
+    private String taxType;
 
-    public void setQuantityperunit(String quantityperunit) {
-        this.quantityperunit = quantityperunit;
-    }
+    @Column(name = "cost_method", nullable = false, length = 50)
+    private String costMethod = "AVERAGE";
 
-    public Double getUnitprice() {
-        return unitprice;
-    }
 
-    public void setUnitprice(Double unitprice) {
-        this.unitprice = unitprice;
-    }
+    @Column(name = "safety_stock_quantity", nullable = false)
+    private Integer safetyStockQuantity = 0;
 
-    public Boolean getIsactive() {
-        return isactive;
-    }
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
-    public void setIsactive(Boolean isactive) {
-        this.isactive = isactive;
-    }
+    
 
-    public LocalDateTime getCreateat() {
-        return createat;
-    }
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
 
-    public void setCreateat(LocalDateTime createat) {
-        this.createat = createat;
-    }
+    
 
-    public LocalDateTime getUpdateat() {
-        return updateat;
-    }
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
 
-    public void setUpdateat(LocalDateTime updateat) {
-        this.updateat = updateat;
-    }
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    //--------------
-    @OneToMany(mappedBy = "product")
-    private List<ProductImg> productimgs = new ArrayList<>();
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
-    public List<ProductImg> getProductimgs() {
-        return productimgs;
-    }
-
-    public void setProductimgs(List<ProductImg> productimgs) {
-        this.productimgs = productimgs;
-    }
-
-    //-------------
-    @OneToMany(mappedBy = "product")
-    private List<Inventory> inventories = new ArrayList<>();
-
-    public List<Inventory> getInventories() {
-        return inventories;
-    }
-
-    public void setInventories(List<Inventory> inventories) {
-        this.inventories = inventories;
-    }
-
-    //---------
-    @OneToMany(mappedBy = "product")
-    private List<CartDetail> cartdetails = new ArrayList<>();
-
-    public List<CartDetail> getCartdetails() {
-        return cartdetails;
-    }
-
-    public void setCartdetails(List<CartDetail> cartdetails) {
-        this.cartdetails = cartdetails;
-    }
+    // 尚未加入所有欄位和完整的 @ManyToOne 關聯，先專注在核心功能上
 
 }
