@@ -85,7 +85,7 @@ public class SalesOrder {
             mappedBy = "salesOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SalesOrderDetail> details = new ArrayList<>();
 
-    // ... 其他時間與建立者等欄位 ...
+
 
     public void addDetail(SalesOrderDetail detail) {
         details.add(detail);
