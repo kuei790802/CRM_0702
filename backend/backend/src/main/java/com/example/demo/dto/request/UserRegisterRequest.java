@@ -6,6 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -13,6 +15,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class UserRegisterRequest extends RegisterRequest {
     private String userName;
-    private String role;
-    private LocalDate validUntil;
+    private LocalDate accessEndDate; // 用來設定 accessEndTime 的日期
+    private List<String> authorityCodes;
 }

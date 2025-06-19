@@ -23,6 +23,7 @@ public class UserLogAction {
     private User user;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ActionType actionType;
 
     private String description;
