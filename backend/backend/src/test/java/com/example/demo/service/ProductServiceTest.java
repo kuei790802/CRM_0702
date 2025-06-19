@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.example.demo.dto.ProductResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -93,7 +95,7 @@ class ProductServiceTest {
 
         // 2. 執行 (Act)
         // 呼叫我們即將開發的 searchProducts 方法
-        Page<Product> actualPage = productService.searchProducts(categoryId, isSalable, keyword, pageable);
+        Page<ProductResponseDTO> actualPage = productService.searchProducts(categoryId, isSalable, keyword, pageable);
 
         // 3. 斷言 (Assert)
         // 驗證回傳的分頁結果是否符合預期
@@ -114,7 +116,7 @@ class ProductServiceTest {
         Product updatedInfo = new Product(); // 模擬要更新的資訊
         updatedInfo.setName("新品名");
         updatedInfo.setBasePrice(new BigDecimal("150.00"));
-        
+
         // 設定 Mockito：當 findById 被呼叫時，回傳我們模擬的已存在的產品
         when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
         // 設定 Mockito：當 save 被呼叫時，直接回傳傳入的物件
@@ -136,7 +138,7 @@ class ProductServiceTest {
         Long nonExistentProductId = 99L;
         Product updatedInfo = new Product();
         updatedInfo.setName("新品名");
-        
+
         // 設定 Mockito：當 findById 被呼叫時，回傳一個空的 Optional，表示找不到
         when(productRepository.findById(nonExistentProductId)).thenReturn(Optional.empty());
 
@@ -162,16 +164,16 @@ class ProductServiceTest {
 
         // 3. 斷言 (Assert)
         // 我們要驗證 'save' 方法被呼叫時，傳入的 product 物件其 is_active 是 false
-        
+
         // ArgumentCaptor 可以捕獲方法被呼叫時傳入的參數
         ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
-        
+
         // 驗證 save 方法確實被以某個 Product 物件呼叫了
         verify(productRepository).save(productCaptor.capture());
-        
+
         // 取得被傳入的 Product 物件
         Product savedProduct = productCaptor.getValue();
-        
+
         // 斷言它的 is_active 狀態是 false
         assertFalse(savedProduct.getIsActive());
     }

@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ProductResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ProductCreateDTO;
 import com.example.demo.dto.ProductUpdateDTO;
-import com.example.demo.entity.Product;
+//import com.example.demo.entity.Product;
 import com.example.demo.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -30,16 +31,17 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductCreateDTO productDTO) {
+    public ResponseEntity<ProductResponseDTO> createProduct(
+            @Valid @RequestBody ProductCreateDTO productDTO) {
         Long currentUserId = 1L;
 
-        Product createdProduct = productService.createProductFromDTO(productDTO, currentUserId);
+        ProductResponseDTO createdProduct = productService.createProductFromDTO(productDTO, currentUserId);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
     @GetMapping
-    public ResponseEntity<Page<Product>> searchProducts(
+    public ResponseEntity<Page<ProductResponseDTO>> searchProducts(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Boolean isSalable,
             @RequestParam(required = false) String keyword,
@@ -47,19 +49,27 @@ public class ProductController {
         
         
         
-        Page<Product> productPage = productService.searchProducts(categoryId, isSalable, keyword, pageable);
+        Page<ProductResponseDTO> productPage = productService.searchProducts(
+                categoryId, isSalable, keyword, pageable);
         
         return ResponseEntity.ok(productPage);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id){
+        ProductResponseDTO product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
+    }
+
+
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id, 
             @Valid @RequestBody ProductUpdateDTO productDTO) {
         
         Long currentUserId = 1L;
         
-        Product updatedProduct = productService.updateProductFromDTO(id, productDTO, currentUserId);
+        ProductResponseDTO updatedProduct = productService.updateProductFromDTO(id, productDTO, currentUserId);
         
         return ResponseEntity.ok(updatedProduct);
     }
@@ -75,10 +85,10 @@ public class ProductController {
     }
 
     @PostMapping("/{id}/restore")
-    public ResponseEntity<Product> restoreProduct(@PathVariable Long id) {
+    public ResponseEntity<ProductResponseDTO> restoreProduct(@PathVariable Long id) {
         Long currentUserId = 1L;
 
-        Product restoredProduct = productService.restoreProduct(id, currentUserId);
+        ProductResponseDTO restoredProduct = productService.restoreProduct(id, currentUserId);
         
         
         return ResponseEntity.ok(restoredProduct);

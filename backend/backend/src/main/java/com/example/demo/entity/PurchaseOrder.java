@@ -61,6 +61,9 @@ public class PurchaseOrder {
     @Column(name = "total_net_amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalNetAmount;
 
+    @Column(name = "total_cost_amount", nullable = false, precision = 18, scale = 2)
+    private BigDecimal totalCostAmount;
+
     @Column(name = "remarks", columnDefinition = "TEXT")
     private String remarks;
 

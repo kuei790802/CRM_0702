@@ -1,15 +1,11 @@
 package com.example.demo.entity;
 
-import java.math.BigDecimal;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name="products")
@@ -32,11 +28,13 @@ public class Product {
     private String description;
 
 
-    @Column(name = "category_id")
-    private Long categoryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private ProductCategory category;
 
-    @Column(name = "unit_id", nullable = false)
-    private Long unitId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id", nullable = false)
+    private Unit unit;
 
     @Column(name = "is_purchasable", nullable = false)
     private boolean isPurchasable = true;
@@ -69,6 +67,12 @@ public class Product {
 
     @Column(name = "updated_by", nullable = false)
     private Long updatedBy;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
     // 尚未加入所有欄位和完整的 @ManyToOne 關聯，先專注在核心功能上
 
