@@ -10,6 +10,8 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
 
+
+//todo: 6/20新增payload使通用
 public class JwtTool {
     private static final String SECRET = "ben-ben-is-such-a-nice-guy-so-heis-giving-u-a-key-x0x0";
     private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 2;

@@ -14,18 +14,18 @@ import java.time.LocalDate;
 
 @Service
 public class CCustomerService {
-    private final CCustomerRepo CCustomerRepo;
+    private final CCustomerRepo cCustomerRepo;
     private final BCryptPasswordEncoder encoder;
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo CCustomerRepo) {
-        this.CCustomerRepo = CCustomerRepo;
+    public CCustomerService(CCustomerRepo cCustomerRepo) {
+        this.cCustomerRepo = cCustomerRepo;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
     }
 
     // 檢視帳號是否已存在
     public Boolean checkAccountExist(String account){
-        return CCustomerRepo.findByAccount(account).isPresent();
+        return cCustomerRepo.findByAccount(account).isPresent();
     }
 
     // 密碼強度規範
@@ -75,7 +75,7 @@ public class CCustomerService {
                 .isDeleted(false)
                 .build();
 
-        return CCustomerRepo.save(newCCustomer);
+        return cCustomerRepo.save(newCCustomer);
     }
 
 
@@ -83,7 +83,7 @@ public class CCustomerService {
     // 登入驗證 (JWT + OUATH2)+ 拋給別人我已經登入的資訊供後續開發
     public CCustomer login(String account, String password){
         // 測帳號 //暫時，之後要改成能有重設帳密功能，跳轉介面?發送EMAIL?顯示錯誤訊息?
-        CCustomer loginCCustomer = CCustomerRepo.findByAccount(account)
+        CCustomer loginCCustomer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(() -> new ForgetAccountOrPasswordException(account, password));
 
         // 測密碼 //暫時，之後要改成能有重設帳密功能，跳轉介面?發送EMAIL?顯示錯誤訊息?
@@ -97,7 +97,7 @@ public class CCustomerService {
 
     // 檢視顧客資料: 顯示用戶個人基本資訊（帳號、姓名、電話、地址等）資料查詢、權限驗證（只能看自己的資料）
     public CCustomerProfileResponse getProfile(String account) {
-        CCustomer customer = CCustomerRepo.findByAccount(account)
+        CCustomer customer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return new CCustomerProfileResponse(
@@ -116,7 +116,7 @@ public class CCustomerService {
     // 更改基本資料: 讓用戶更新個人資訊（含忘記密碼、密碼更改）資料驗證、密碼加密更新、資料一致性
 
     public CCustomerProfileResponse updateProfile(String account, UpdateCCustomerProfileRequest request) {
-        CCustomer customer = CCustomerRepo.findByAccount(account)
+        CCustomer customer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(() -> new RuntimeException("帳號不存在"));
 
         // 更新基本資料，並防止為空值
@@ -144,7 +144,7 @@ public class CCustomerService {
             customer.setPassword(encoder.encode(request.getNewPassword()));
         }
 
-        CCustomer savedCustomer = CCustomerRepo.save(customer);
+        CCustomer savedCustomer = cCustomerRepo.save(customer);
 
         return new CCustomerProfileResponse(
                 savedCustomer.getAccount(),

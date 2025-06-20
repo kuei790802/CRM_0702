@@ -6,6 +6,7 @@ import com.example.demo.entity.Authority;
 import com.example.demo.entity.CCustomer;
 import com.example.demo.entity.User;
 import com.example.demo.exception.AccountAlreadyExistsException;
+import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.AuthorityRepo;
 import com.example.demo.repository.CCustomerRepo;
@@ -121,6 +122,20 @@ public class UserService {
         return userRepo.save(newUser);
     }
 
+    // 登入驗證 (JWT + OUATH2)+ 拋給別人我已經登入的資訊供後續開發
+    public User login(String account, String password){
+        // 測帳號 //暫時，之後要改成能有重設帳密功能，跳轉介面?發送EMAIL?顯示錯誤訊息?
+        User loginUser = userRepo.findByAccount(account)
+                .orElseThrow(() -> new ForgetAccountOrPasswordException(account, password));
+
+        // 測密碼 //暫時，之後要改成能有重設帳密功能，跳轉介面?發送EMAIL?顯示錯誤訊息?
+        String dbPassword = loginUser.getPassword();
+        if(!encoder.matches(password, dbPassword)){
+            throw new ForgetAccountOrPasswordException(account, password);
+        }
+
+        return loginUser;
+    }
 
     // user拿到admin給的一次密碼後，自己更改密碼+加密
 
