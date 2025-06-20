@@ -34,6 +34,8 @@ public class OpportunityMapper {
 
                 .bCustomer(BCustomer.builder().customerId(request.getCustomerId()).build())
                 .contact(request.getContactId() != null ? Contact.builder().contactId(request.getContactId()).build() : null)
+                .totalRatingSum(0L) // 初始化總評分
+                .numberOfRatings(0) // 初始化評分次數
                 .build();
     }
 
@@ -43,7 +45,7 @@ public class OpportunityMapper {
      * @param opportunity 要轉換的 Opportunity 實體
      * @return 轉換後的 OpportunityResponse DTO
      */
-    public OpportunityDto toResponse(Opportunity opportunity) {
+    public OpportunityDto toResponse(Opportunity opportunity, Long currentUserId) {
         if (opportunity == null) {
             return null;
         }
@@ -53,6 +55,12 @@ public class OpportunityMapper {
 
         Long contactId = (opportunity.getContact() != null) ? opportunity.getContact().getContactId() : null;
         String contactName = (opportunity.getContact() != null) ? opportunity.getContact().getContactName() : null;
+
+        //計算平均評分
+        Double averageRating = 0.0;
+        if (opportunity.getNumberOfRatings() != null && opportunity.getNumberOfRatings() > 0) {
+            averageRating = (double) opportunity.getTotalRatingSum() / opportunity.getNumberOfRatings();
+        }
 
         return OpportunityDto.builder()
                 .opportunityId(opportunity.getOpportunityId())
@@ -68,6 +76,7 @@ public class OpportunityMapper {
                 .contactName(contactName)
                 .createdAt(opportunity.getCreatedAt())
                 .updatedAt(opportunity.getUpdatedAt())
+                .averageRating(averageRating) // 平均評分
                 .build();
     }
 

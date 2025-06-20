@@ -66,5 +66,13 @@ public class Opportunity {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    // 評分總和
+    // 初始值為 0
+    @Column(name = "total_rating_sum", nullable = false)
+    private Long totalRatingSum = 0L;
 
+    // 評分
+    // 初始值為 0
+    @Column(name = "number_of_ratings", nullable = false)
+    private Integer numberOfRatings = 0;
 }

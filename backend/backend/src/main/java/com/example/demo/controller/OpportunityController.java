@@ -112,4 +112,33 @@ public class OpportunityController {
         Page<OpportunityDto> opportunities = opportunityService.searchOpportunities(name, status, stage, customerId, contactId, closeDateBefore, pageable);
         return ResponseEntity.ok(opportunities);
     }
+
+    /**
+     * 為指定商機提交評分。
+     * HTTP POST 請求到 /api/opportunities/{id}/rate
+     * @param id 路徑變數，要評分的商機ID。
+     * @param ratingScore 請求參數，評分分數 (1-5)。
+     * @return 更新評分後的商機回應 DTO (HTTP 200 OK)。
+     */
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<OpportunityDto> rateOpportunity(
+            @PathVariable Long id,
+            @RequestParam int ratingScore) { // 評分分數作為查詢參數或請求體中的字段
+        // **** 這裡獲取當前用戶ID的邏輯至關重要且必須安全 ****
+        // 這是 Spring Security 的標準做法：
+        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Long currentUserId = null;
+        // if (authentication != null && authentication.getPrincipal() instanceof YourCustomUserDetails) {
+        //     currentUserId = ((YourCustomUserDetails) authentication.getPrincipal()).getId();
+        // }
+        // if (currentUserId == null) {
+        //     // 如果無法獲取用戶 ID，可能是未登錄或安全配置問題，返回 401 Unauthorized
+        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        // }
+
+        Long currentUserId = 1L; // <-- 臨時佔位符！在實際應用中，請替換為從 Spring Security 安全地獲取用戶ID
+
+        OpportunityDto updatedOpportunity = opportunityService.rateOpportunity(id, currentUserId, ratingScore);
+        return ResponseEntity.ok(updatedOpportunity);
+    }
 }

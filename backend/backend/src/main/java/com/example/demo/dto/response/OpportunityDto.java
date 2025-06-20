@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 /**
  * 用於向客戶端傳送商機資訊的回應資料。
- *
  */
 @Data
 @NoArgsConstructor
@@ -44,5 +43,8 @@ public class OpportunityDto {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // 用於顯示平均評分的字段
+    private Double averageRating;
 
 }

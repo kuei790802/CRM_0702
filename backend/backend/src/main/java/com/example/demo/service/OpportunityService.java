@@ -94,4 +94,15 @@ public interface OpportunityService {
      * @return 符合指定階段的商機回應 DTO 分頁列表。
      */
     Page<OpportunityDto> findByStage(OpportunityStage stage, Pageable pageable);
+
+    /**
+     * 為指定的商機添加或更新評分。
+     * @param opportunityId 要評分的商機的唯一識別碼。
+     * @param userId 進行評分的用戶的 ID。(在實際應用中，此ID應從安全上下文獲取)
+     * @param ratingScore 評分分數 (1-3)
+     * @return 更新評分後的商機回應 DTO。
+     * @throws EntityNotFoundException 如果找不到對應的商機。
+     * @throws IllegalArgumentException 如果評分分數無效 (例如不在 1-3 範圍內)。
+     */
+    OpportunityDto rateOpportunity(Long opportunityId, Long userId, int ratingScore);
 }

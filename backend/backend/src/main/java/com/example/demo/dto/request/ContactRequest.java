@@ -10,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class ContactRequest {
 
     @NotBlank(message = "聯絡人姓名不能為空")

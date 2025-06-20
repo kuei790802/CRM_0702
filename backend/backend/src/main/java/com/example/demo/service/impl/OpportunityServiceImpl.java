@@ -14,6 +14,8 @@ import com.example.demo.repository.OpportunityRepository;
 import com.example.demo.service.OpportunityService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,6 +30,8 @@ import java.util.Optional;
 
 @Service
 public class OpportunityServiceImpl implements OpportunityService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OpportunityServiceImpl.class);
 
     private final OpportunityRepository opportunityRepository;
     private final BCustomerRepository bCustomerRepository;
@@ -44,39 +48,69 @@ public class OpportunityServiceImpl implements OpportunityService {
         this.opportunityMapper = opportunityMapper;
     }
 
+    /**
+     * 獲取所有商機的分頁列表。
+     * @param pageable 分頁和排序資訊。
+     * @return 包含商機的回應 DTO 分頁對象。
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<OpportunityDto> findAll(Pageable pageable) {
         return opportunityRepository.findAll(pageable)
-                .map(opportunityMapper::toResponse);
+                .map(opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
 
-
+    /**
+     * 根據商機ID查詢單個商機。
+     * @param id 商機的唯一識別碼。
+     * @return 包含商機回應 DTO 的 Optional，如果找不到則為空。
+     */
     @Override
+    @Transactional(readOnly = true)
     public Optional<OpportunityDto> findById(Long id) {
         Optional<Opportunity> opportunityOptional = opportunityRepository.findById(id);
-        return opportunityOptional.map(opportunityMapper::toResponse);
+        return opportunityOptional.map(
+                opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
 
+    /**
+     * 創建一個新的商機。
+     * 接收 DTO 進行創建，返回創建後的回應 DTO。
+     * 驗證關聯的客戶和聯絡人是否存在。
+     * @param request 包含新商機資料的請求 DTO。
+     * @return 創建成功的商機回應 DTO。
+     * @throws EntityNotFoundException 如果關聯的客戶或聯絡人不存在。
+     */
     @Override
     @Transactional
     public OpportunityDto create(OpportunityRequest request) {
-        Opportunity opportunity = opportunityMapper.toEntity(request);
-
         BCustomer bCustomer = bCustomerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getCustomerId() + " 的客戶"));
+
+        Opportunity opportunity = opportunityMapper.toEntity(request);
         opportunity.setBCustomer(bCustomer);
 
         if (request.getContactId() != null) {
             Contact contact = contactRepository.findById(request.getContactId())
                     .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getContactId() + " 的聯絡人"));
             opportunity.setContact(contact);
+        } else {
+            opportunity.setContact(null);
         }
 
         Opportunity savedOpportunity = opportunityRepository.save(opportunity);
-        return opportunityMapper.toResponse(savedOpportunity);
+        return opportunityMapper.toResponse(savedOpportunity, null);
     }
 
+    /**
+     * 更新一個現有的商機。
+     * 接收 ID 和 DTO 進行更新，返回更新後的回應 DTO。
+     * 驗證商機本身及關聯的客戶和聯絡人是否存在。
+     * @param id 商機的唯一識別碼。
+     * @param request 包含更新資料的請求 DTO。
+     * @return 更新成功的商機回應 DTO。
+     * @throws EntityNotFoundException 如果商機、關聯客戶或聯絡人不存在。
+     */
     @Override
     @Transactional
     public OpportunityDto update(Long id, OpportunityRequest request) {
@@ -102,15 +136,63 @@ public class OpportunityServiceImpl implements OpportunityService {
         }
 
         Opportunity updatedOpportunity = opportunityRepository.save(existingOpportunity);
-        return opportunityMapper.toResponse(updatedOpportunity);
+        return opportunityMapper.toResponse(updatedOpportunity, null);
     }
 
+    /**
+     * 根據商機ID刪除一個商機。
+     * @param id 要刪除的商機的唯一識別碼。
+     * @throws EntityNotFoundException 如果找不到對應的商機。
+     */
     @Override
     @Transactional
     public void delete(Long id) {
+        if (!opportunityRepository.existsById(id)) {
+            throw new EntityNotFoundException("找不到 ID 為 " + id + " 的商機進行刪除");
+        }
         opportunityRepository.deleteById(id);
     }
 
+    /**
+     * 為指定的商機添加或更新評分。
+     * 這將更新商機的總評分和評分次數，並重新計算平均評分。
+     * @param opportunityId 要評分的商機的唯一識別碼。
+     * @param userId 進行評分的用戶的 ID。(在實際應用中，此ID應從安全上下文獲取)
+     * @param ratingScore 評分分數 (1-3)。
+     * @return 更新評分後的商機回應 DTO。
+     * @throws EntityNotFoundException 如果找不到對應的商機。
+     * @throws IllegalArgumentException 如果評分分數無效 (例如不在 1-3 範圍內)。
+     */
+    @Override
+    @Transactional
+    public OpportunityDto rateOpportunity(Long opportunityId, Long userId, int ratingScore) {
+        // 1. 驗證評分分數是否在有效範圍 (1 - 3)
+        if (ratingScore < 1 || ratingScore > 3) {
+            logger.warn("Received invalid rating score: {}. Rating must be between 1 and 3.", ratingScore);
+            throw new IllegalArgumentException("評分分數必須在 1 到 3 之間");
+        }
+
+        // 2. 查找商機，如果不存在則拋出異常。
+        Opportunity opportunity = opportunityRepository.findById(opportunityId)
+                .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + opportunityId + " 的商機進行評分"));
+
+        // 3. 更新評分相關字段
+        // 注意：這裡假設一個用戶可以重複評分，每次評分都會計入總和。
+        // 如果您需要實現「一個用戶只能評分一次」的功能，則需要更複雜的邏輯，
+        // 例如額外的評分記錄表，或者在 Opportunity 實體中儲存 Map<Long, Integer> 來記錄每個用戶的評分。
+        opportunity.setTotalRatingSum(opportunity.getTotalRatingSum() + ratingScore);
+        opportunity.setNumberOfRatings(opportunity.getNumberOfRatings() + 1);
+
+        logger.info("Opportunity ID {} rated by User ID {}. New total sum: {}, new count: {}",
+                opportunityId, userId, opportunity.getTotalRatingSum(), opportunity.getNumberOfRatings());
+
+        // 4. 保存更新後的商機。
+        Opportunity updatedOpportunity = opportunityRepository.save(opportunity);
+
+        // 5. 將更新後的實體轉換為 DTO。
+        // 同上，如果 toResponse 需要 currentUserId 但這裡沒有，請調整
+        return opportunityMapper.toResponse(updatedOpportunity, null);
+    }
 
     /**
      * 實作多條件動態搜尋商機的方法。
@@ -161,27 +243,27 @@ public class OpportunityServiceImpl implements OpportunityService {
         };
 
         return opportunityRepository.findAll(spec, pageable)
-                .map(opportunityMapper::toResponse);
+                .map(opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<OpportunityDto> findByBCustomerId(Long customerId, Pageable pageable) {
         return opportunityRepository.findByBCustomer_CustomerId(customerId, pageable)
-                .map(opportunityMapper::toResponse);
+                .map(opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<OpportunityDto> findByStatus(OpportunityStatus status, Pageable pageable) {
         return opportunityRepository.findByStatus(status, pageable)
-                .map(opportunityMapper::toResponse);
+                .map(opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<OpportunityDto> findByStage(OpportunityStage stage, Pageable pageable) {
         return opportunityRepository.findByStage(stage, pageable)
-                .map(opportunityMapper::toResponse);
+                .map(opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
 }
