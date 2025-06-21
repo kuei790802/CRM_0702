@@ -25,8 +25,11 @@ public class SalesOrder {
     @Column(name = "order_number", unique = true, nullable = false, length = 50)
     private String orderNumber;
 
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private CustomerBase customer;
+
+
 
     @Column(name = "contact_person_id")
     private Long contactPersonId;

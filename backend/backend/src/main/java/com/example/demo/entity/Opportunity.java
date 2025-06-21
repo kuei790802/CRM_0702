@@ -148,7 +148,7 @@ public class Opportunity {
     public void setCustomer(BCustomer BCustomer) {
         this.BCustomer = BCustomer;
         if (BCustomer != null) {
-            this.customerId = BCustomer.getId();
+            this.customerId = BCustomer.getCustomerId();
         } else {
             this.customerId = null;
         }

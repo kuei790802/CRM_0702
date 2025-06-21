@@ -4,8 +4,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,6 +25,10 @@ public class SalesOrderDetail {
 
     @Column(name = "item_sequence", nullable = false)
     private Integer itemSequence;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    private Product product;
 
     @Column(name = "product_id", nullable = false)
     private Long productId;

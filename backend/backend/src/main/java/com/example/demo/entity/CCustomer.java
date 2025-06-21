@@ -16,21 +16,18 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CCustomer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long customerId;
+public class CCustomer extends CustomerBase{
 
-    @Column(nullable = false)
-    private String customerName;
+
+
     @Column(nullable = false, unique = true)
     private String account;
     @Column(nullable = false)
     private String password;
-    @Column(nullable = false, unique = true)
-    private String email;
 
-    private String address;
+
+
+
     private LocalDate birthday;
 
     private LocalDateTime createdAt;
@@ -60,6 +57,7 @@ public class CCustomer {
     private Cart cart;
 
     @OneToMany(mappedBy = "CCustomer")
+    @Builder.Default
     private List<CCustomerAddress> CCustomerAddress = new ArrayList<>();
 
     @ManyToOne
@@ -72,5 +70,7 @@ public class CCustomer {
             joinColumns = @JoinColumn(name = "customer_id"),
             inverseJoinColumns = @JoinColumn(name = "coupon_id")
     )
+
+    @Builder.Default
     private List<Coupon> coupons = new ArrayList<>();
 }

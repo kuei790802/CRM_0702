@@ -1,0 +1,57 @@
+package com.example.demo.entity;
+
+import com.example.demo.enums.CustomerType;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "customer_base")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "customer_type")
+@Getter
+@Setter
+public abstract class CustomerBase {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "customer_id")
+    private Long customerId;
+
+    @Column(name = "customer_code", unique = true, nullable = false, length = 50)
+    private String customerCode;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "customer_type", nullable = false, length = 10, insertable = false, updatable = false)
+    private CustomerType customerType;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    @Column(name = "address", length = 500)
+    private String address;
+
+    @Column(name = "email", length = 255)
+    private String email;
+
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+
+
+
+}

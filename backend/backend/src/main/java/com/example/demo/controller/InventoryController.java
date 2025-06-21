@@ -2,8 +2,11 @@ package com.example.demo.controller;
 
 
 import com.example.demo.dto.InventoryAdjustmentDTO;
+import com.example.demo.dto.ShipmentRequestDTO;
 import com.example.demo.entity.Inventory;
+import com.example.demo.entity.SalesShipment;
 import com.example.demo.service.InventoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import java.util.List;
 public class InventoryController {
 
     private final InventoryService inventoryService;
+
 
 
     @PostMapping("/purchase-orders/{orderId}/receive")
@@ -47,5 +51,16 @@ public class InventoryController {
                 adjustmentDTO.getDocumentItemId()
         );
         return ResponseEntity.ok(updatedInventory);
+    }
+
+    @PostMapping("/sales_orders/{orderId}/ship")
+    public ResponseEntity<SalesShipment>  shipSalesOrder(
+            @PathVariable Long orderId,
+            @Valid @RequestBody ShipmentRequestDTO requestDTO
+    ) {
+        Long currentUserId = 1L;
+        SalesShipment shipment = inventoryService.shipSalesOrder(orderId, requestDTO.getWarehouseId(),currentUserId);
+
+        return ResponseEntity.ok(shipment);
     }
 }
