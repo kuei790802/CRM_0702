@@ -22,7 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = {"contacts", "tags"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BCustomer {
 
@@ -66,6 +66,15 @@ public class BCustomer {
     @OneToMany(mappedBy = "bCustomer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Contact> contacts = new HashSet<>();
 
+    // ----- 多對多關聯：一個客戶可以有多個標籤 -----
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "b_customer_tags",
+            joinColumns = @JoinColumn(name = "b_customer_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
     // ----- 關聯管理輔助方法 -----
     /**
      * 添加一個聯絡人到此客戶。
@@ -85,5 +94,15 @@ public class BCustomer {
     public void removeContact(Contact contact) {
         contacts.remove(contact);
         contact.setBCustomer(null); // 清除聯絡人所屬的客戶
+    }
+
+    public void addTag(Tag tag) {
+        this.tags.add(tag);
+        tag.getBCustomers().add(this);
+    }
+
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
+        tag.getBCustomers().remove(this);
     }
 }

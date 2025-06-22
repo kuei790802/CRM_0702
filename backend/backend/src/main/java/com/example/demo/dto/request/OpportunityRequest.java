@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 用於接收客戶端創建或更新商機的請求資料。
@@ -42,5 +43,7 @@ public class OpportunityRequest {
     private Long customerId;
 
     private Long contactId;
+
+    private List<Long> tagIds;
 
 }

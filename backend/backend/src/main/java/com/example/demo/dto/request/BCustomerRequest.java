@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,6 +35,6 @@ public class BCustomerRequest {
     @Email(message = "客戶電子郵件格式不正確")
     private String customerEmail;
 
-
+    private List<Long> tagIds;
 
 }

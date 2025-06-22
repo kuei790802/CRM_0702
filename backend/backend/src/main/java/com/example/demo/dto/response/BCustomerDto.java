@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -36,5 +37,7 @@ public class BCustomerDto {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private List<Long> tagIds;
 
 }

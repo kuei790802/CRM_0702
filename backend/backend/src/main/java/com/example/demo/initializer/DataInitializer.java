@@ -3,15 +3,19 @@ package com.example.demo.initializer;
 import com.example.demo.dto.request.BCustomerRequest;
 import com.example.demo.dto.request.ContactRequest;
 import com.example.demo.dto.request.OpportunityRequest;
+import com.example.demo.dto.request.TagRequest;
 import com.example.demo.dto.response.BCustomerDto;
 import com.example.demo.dto.response.ContactDto;
 import com.example.demo.dto.response.OpportunityDto;
+import com.example.demo.dto.response.TagDto;
 import com.example.demo.service.BCustomerService;
 import com.example.demo.service.ContactService;
 import com.example.demo.service.OpportunityService;
+import com.example.demo.service.TagService;
 import com.example.demo.util.BCustomerFaker;
 import com.example.demo.util.ContactFaker;
 import com.example.demo.util.OpportunityFaker;
+import com.example.demo.util.TagFaker;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +25,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -38,6 +43,8 @@ public class DataInitializer implements CommandLineRunner {
     private ContactService contactService;
     @Autowired
     private OpportunityService opportunityService;
+    @Autowired
+    private TagService tagService;
 
     @Autowired
     private BCustomerFaker bCustomerFaker;
@@ -45,10 +52,35 @@ public class DataInitializer implements CommandLineRunner {
     private ContactFaker contactFaker;
     @Autowired
     private OpportunityFaker opportunityFaker;
+    @Autowired
+    private TagFaker tagFaker;
 
     @Override
     public void run(String... args) throws Exception {
         logger.info("--- 應用程式啟動，開始生成假資料 (僅限 dev profile) ---");
+
+        // 0. 生成並保存假標籤資料
+        int numTags = 5; // 生成 5 個假標籤
+        List<TagRequest> fakeTagRequests = tagFaker.generateFakeTagRequests(numTags);
+        List<Long> tagIds = new ArrayList<>(); // 用於後續關聯客戶和商機
+        logger.info("正在生成並保存 {} 筆假標籤數據...", numTags);
+        for (TagRequest request : fakeTagRequests) {
+            try {
+                TagDto createdTag = tagService.create(request);
+                tagIds.add(createdTag.getTagId());
+                logger.info("成功創建標籤: {} (ID: {})", createdTag.getTagName(), createdTag.getTagId());
+            } catch (IllegalArgumentException e) {
+                logger.warn("創建標籤失敗 (名稱 {} 已存在)", request.getTagName());
+                tagService.findByTagName(request.getTagName()).ifPresent(tag -> tagIds.add(tag.getTagId()));
+            } catch (Exception e) {
+                logger.error("創建標籤失敗: {}", e.getMessage(), e);
+            }
+        }
+        if (tagIds.isEmpty()) {
+            logger.error("未能創建任何標籤。客戶和商機將無法關聯標籤。");
+        }
+        logger.info("標籤數據生成完畢。已創建標籤ID: {}", tagIds);
+
 
         // 1. 生成並保存假客戶資料
         int numCustomers = 5;
@@ -56,10 +88,25 @@ public class DataInitializer implements CommandLineRunner {
         List<Long> customerIds = new ArrayList<>();
         logger.info("正在生成並保存 {} 筆假客戶數據...", numCustomers);
         for (BCustomerRequest request : fakeCustomerRequests) {
+            List<Long> associatedTagIdsForCustomer = new ArrayList<>();
+            if (!tagIds.isEmpty()) {
+                int tagsToAssociate = random.nextInt(4); // 關聯 0 到 3 個標籤
+                // 打亂標籤列表以確保隨機性
+                Collections.shuffle(tagIds);
+                for (int i = 0; i < tagsToAssociate && i < tagIds.size(); i++) {
+                    associatedTagIdsForCustomer.add(tagIds.get(i));
+                }
+            }
+
+            // *** 已修正 ***
+            // 將生成的標籤ID列表設定到 request 物件中
+            // 前提: BCustomerRequest DTO 中有名為 setTagIds 的方法
+            request.setTagIds(associatedTagIdsForCustomer.stream().distinct().collect(Collectors.toList())); // 使用 distinct 避免重複
+
             try {
                 BCustomerDto createdCustomer = bCustomerService.create(request);
                 customerIds.add(createdCustomer.getCustomerId());
-                logger.info("成功創建客戶: {} (ID: {})", createdCustomer.getCustomerName(), createdCustomer.getCustomerId());
+                logger.info("成功創建客戶: {} (ID: {})，關聯標籤ID: {}", createdCustomer.getCustomerName(), createdCustomer.getCustomerId(), request.getTagIds());
             } catch (Exception e) {
                 logger.error("創建客戶失敗: {}", e.getMessage(), e);
             }
@@ -100,10 +147,24 @@ public class DataInitializer implements CommandLineRunner {
         List<OpportunityRequest> fakeOpportunityRequests = opportunityFaker.generateFakeOpportunityRequests(numOpportunities, customerIds, contactIds);
         logger.info("正在生成並保存 {} 筆假商機數據...", numOpportunities);
         for (OpportunityRequest request : fakeOpportunityRequests) {
+            List<Long> associatedTagIdsForOpportunity = new ArrayList<>();
+            if (!tagIds.isEmpty()) {
+                int tagsToAssociate = random.nextInt(4); // 關聯 0 到 3 個標籤
+                Collections.shuffle(tagIds);
+                for (int i = 0; i < tagsToAssociate && i < tagIds.size(); i++) {
+                    associatedTagIdsForOpportunity.add(tagIds.get(i));
+                }
+            }
+
+            // *** 已修正 ***
+            // 將生成的標籤ID列表設定到 request 物件中
+            // 前提: OpportunityRequest DTO 中有名為 setTagIds 的方法
+            request.setTagIds(associatedTagIdsForOpportunity.stream().distinct().collect(Collectors.toList())); // 使用 distinct 避免重複
+
             try {
                 OpportunityDto createdOpportunity = opportunityService.create(request);
                 opportunityIds.add(createdOpportunity.getOpportunityId());
-                logger.info("成功創建商機: {} (ID: {})", createdOpportunity.getOpportunityName(), createdOpportunity.getOpportunityId());
+                logger.info("成功創建商機: {} (ID: {})，關聯標籤ID: {}", createdOpportunity.getOpportunityName(), createdOpportunity.getOpportunityId(), request.getTagIds());
             } catch (EntityNotFoundException e) {
                 logger.warn("創建商機失敗 (關聯實體不存在): {}", e.getMessage());
             } catch (Exception e) {
@@ -112,17 +173,15 @@ public class DataInitializer implements CommandLineRunner {
         }
         logger.info("商機數據生成完畢。已創建商機ID: {}", opportunityIds);
 
-        // **** 新增部分：為生成的商機隨機評分 ****
         logger.info("--- 開始為生成的商機隨機評分 ---");
-        Long testUserId = 1L;
+        Long testUserId = 1L; // 假設用戶 ID 為 1
         if (opportunityIds.isEmpty()) {
             logger.warn("沒有商機ID，跳過評分生成。");
         } else {
             for (Long oppId : opportunityIds) {
-                // 為每個商機評分 1 到 5 次
-                int numRatings = random.nextInt(5) + 1;
+                int numRatings = random.nextInt(5) + 1; // 每個商機評分 1 到 5 次
                 for (int i = 0; i < numRatings; i++) {
-                    int ratingScore = random.nextInt(3) + 1;
+                    int ratingScore = random.nextInt(3) + 1; // 評分 1 到 3 分
                     try {
                         opportunityService.rateOpportunity(oppId, testUserId, ratingScore);
                         logger.info("商機 ID {} 收到評分: {}", oppId, ratingScore);

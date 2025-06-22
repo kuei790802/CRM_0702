@@ -5,12 +5,14 @@ import com.example.demo.dto.response.OpportunityDto;
 import com.example.demo.entity.BCustomer;
 import com.example.demo.entity.Contact;
 import com.example.demo.entity.Opportunity;
+import com.example.demo.entity.Tag;
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.mapper.OpportunityMapper;
 import com.example.demo.repository.BCustomerRepository;
 import com.example.demo.repository.ContactRepository;
 import com.example.demo.repository.OpportunityRepository;
+import com.example.demo.repository.TagRepository;
 import com.example.demo.service.OpportunityService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
@@ -23,9 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -37,15 +39,18 @@ public class OpportunityServiceImpl implements OpportunityService {
     private final BCustomerRepository bCustomerRepository;
     private final ContactRepository contactRepository;
     private final OpportunityMapper opportunityMapper;
+    private final TagRepository tagRepository;
 
     public OpportunityServiceImpl(OpportunityRepository opportunityRepository,
                                   BCustomerRepository bCustomerRepository,
                                   ContactRepository contactRepository,
-                                  OpportunityMapper opportunityMapper) {
+                                  OpportunityMapper opportunityMapper,
+                                  TagRepository tagRepository) {
         this.opportunityRepository = opportunityRepository;
         this.bCustomerRepository = bCustomerRepository;
         this.contactRepository = contactRepository;
         this.opportunityMapper = opportunityMapper;
+        this.tagRepository = tagRepository;
     }
 
     /**
@@ -53,6 +58,7 @@ public class OpportunityServiceImpl implements OpportunityService {
      * @param pageable 分頁和排序資訊。
      * @return 包含商機的回應 DTO 分頁對象。
      */
+
     @Override
     @Transactional(readOnly = true)
     public Page<OpportunityDto> findAll(Pageable pageable) {
@@ -87,15 +93,27 @@ public class OpportunityServiceImpl implements OpportunityService {
         BCustomer bCustomer = bCustomerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getCustomerId() + " 的客戶"));
 
-        Opportunity opportunity = opportunityMapper.toEntity(request);
-        opportunity.setBCustomer(bCustomer);
-
+        Contact contact = null;
         if (request.getContactId() != null) {
-            Contact contact = contactRepository.findById(request.getContactId())
+            contact = contactRepository.findById(request.getContactId())
                     .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getContactId() + " 的聯絡人"));
-            opportunity.setContact(contact);
-        } else {
-            opportunity.setContact(null);
+        }
+
+        Opportunity opportunity = opportunityMapper.toEntity(request);
+
+        opportunity.setBCustomer(bCustomer);
+        opportunity.setContact(contact);
+        opportunity.setCreatedAt(LocalDateTime.now());
+        opportunity.setUpdatedAt(LocalDateTime.now());
+        opportunity.setNumberOfRatings(0);
+        opportunity.setTotalRatingSum(0L);
+
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
+            if (tags.size() != request.getTagIds().size()) {
+                throw new EntityNotFoundException("一個或多個標籤ID不存在。");
+            }
+            opportunity.setTags(new HashSet<>(tags));
         }
 
         Opportunity savedOpportunity = opportunityRepository.save(opportunity);
@@ -133,6 +151,16 @@ public class OpportunityServiceImpl implements OpportunityService {
             }
         } else {
             existingOpportunity.setContact(null);
+        }
+
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
+            if (tags.size() != request.getTagIds().size()) {
+                throw new EntityNotFoundException("一個或多個用於更新的標籤ID不存在。");
+            }
+            existingOpportunity.setTags(new HashSet<>(tags));
+        } else {
+            existingOpportunity.getTags().clear();
         }
 
         Opportunity updatedOpportunity = opportunityRepository.save(existingOpportunity);

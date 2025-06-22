@@ -61,7 +61,7 @@ public class OpportunityFaker {
                 .stage(stages.get(random.nextInt(stages.size())))
                 .status(statuses.get(random.nextInt(statuses.size())))
                 .customerId(customerId)
-                .contactId(contactId) // 這裡已經是 Long 類型，沒有改變
+                .contactId(contactId)
                 .build();
     }
 

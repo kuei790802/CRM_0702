@@ -12,6 +12,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "opportunities")
@@ -75,4 +77,23 @@ public class Opportunity {
     // 初始值為 0
     @Column(name = "number_of_ratings", nullable = false)
     private Integer numberOfRatings = 0;
+
+    // ----- 多對多關聯：一個商機可以有多個標籤 ----
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "opportunity_tags",
+            joinColumns = @JoinColumn(name = "opportunity_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
+    public void addTag(Tag tag) {
+        this.tags.add(tag);
+        tag.getOpportunities().add(this);
+    }
+
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
+        tag.getOpportunities().remove(this);
+    }
 }

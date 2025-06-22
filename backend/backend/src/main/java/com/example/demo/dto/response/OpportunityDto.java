@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 用於向客戶端傳送商機資訊的回應資料。
@@ -43,6 +44,8 @@ public class OpportunityDto {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private List<Long> tagIds;
 
     // 用於顯示平均評分的字段
     private Double averageRating;
