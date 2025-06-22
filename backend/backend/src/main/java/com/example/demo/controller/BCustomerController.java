@@ -50,7 +50,7 @@ public class BCustomerController {
     // Update
     @PutMapping("/{id}")
     public ResponseEntity<BCustomer> update(@PathVariable Long id, @RequestBody BCustomer BCustomer) {
-        BCustomer.setId(id);
+        BCustomer.setCustomerId(id);
         BCustomer updatedBCustomer = customerService.save(BCustomer);
         if (updatedBCustomer == null) {
             return ResponseEntity.notFound().build();

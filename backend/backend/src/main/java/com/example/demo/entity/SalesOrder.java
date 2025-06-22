@@ -19,6 +19,7 @@ import java.util.List;
 @Setter
 public class SalesOrder {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sales_order_id")
     private Long SalesOrderId;
 
@@ -39,6 +40,10 @@ public class SalesOrder {
 
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
+
+    @Column(name = "currency", nullable = false, length = 10)
+    private String currency = "TWD";
+
 
     @Column(name = "total_amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalAmount;

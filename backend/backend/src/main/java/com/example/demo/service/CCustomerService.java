@@ -10,16 +10,19 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 
+
+
 @Service
 public class CCustomerService {
     private final CCustomerRepo CCustomerRepo;
     private final BCryptPasswordEncoder encoder;
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo CCustomerRepo) {
-        this.CCustomerRepo = CCustomerRepo;
-        this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
+    public CCustomerService(CCustomerRepo customerRepo, BCryptPasswordEncoder encoder) {
+        this.CCustomerRepo = customerRepo;
+        this.encoder = encoder;
     }
+
 
     // 檢視帳號是否已存在
     public Boolean checkAccountExist(String account){
@@ -39,7 +42,7 @@ public class CCustomerService {
 
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
-                .customerName(customerName)
+                .name(customerName)
                 .password(encoder.encode(password))
                 .email(email)
                 .address(address)
@@ -50,6 +53,7 @@ public class CCustomerService {
 
         return CCustomerRepo.save(newCCustomer);
     }
+
 
 
 
@@ -75,7 +79,7 @@ public class CCustomerService {
 
         return new CCustomerProfileResponse(
                 customer.getAccount(),
-                customer.getCustomerName(),
+                customer.getName(),
                 customer.getEmail(),
                 customer.getAddress(),
                 customer.getBirthday()

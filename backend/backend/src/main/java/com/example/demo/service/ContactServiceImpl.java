@@ -36,13 +36,13 @@ public class ContactServiceImpl implements ContactService {
     @Override
     @Transactional
     public Contact save(Contact contact) {
-        if (contact.getCustomer() == null || contact.getCustomer().getId() == null) {
+        if (contact.getCustomer() == null || contact.getCustomer().getCustomerId() == null) {
             throw new IllegalArgumentException("Contact must be associated with an existing Customer ID.");
         }
 
-        BCustomer BCustomer = BCustomerRepository.findById(contact.getCustomer().getId())
+        BCustomer BCustomer = BCustomerRepository.findById(contact.getCustomer().getCustomerId())
                 .orElseThrow(() -> new BCustomerNotFoundException(
-                        "Customer not found with ID: " + contact.getCustomer().getId()));
+                        "Customer not found with ID: " + contact.getCustomer().getCustomerId()));
 
         contact.setCustomer(BCustomer);
 

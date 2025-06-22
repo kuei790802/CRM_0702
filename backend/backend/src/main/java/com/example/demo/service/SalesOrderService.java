@@ -37,15 +37,17 @@ public class SalesOrderService {
         CustomerBase customer = customerBaseRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + dto.getCustomerId() + " 的客戶"));
 
-        if (!customer.isActive()) {
+        if (!Boolean.TRUE.equals(customer.isActive())) {
             throw new DataConflictException("客戶 '" + customer.getName() + "' 為非啟用狀態，無法建立訂單。");
         }
+
 
 
         SalesOrder newOrder = new SalesOrder();
         newOrder.setCustomer(customer);
         newOrder.setOrderDate(dto.getOrderDate());
         newOrder.setShippingAddress(dto.getShippingAddress());
+        newOrder.setShippingMethod(dto.getShippingMethod());
         newOrder.setPaymentMethod(dto.getPaymentMethod());
         newOrder.setRemarks(dto.getRemarks());
 
@@ -73,11 +75,16 @@ public class SalesOrderService {
 
             SalesOrderDetail detail = new SalesOrderDetail();
             detail.setProduct(product);
+            detail.setProductId(detailDTO.getProductId());
             detail.setQuantity(detailDTO.getQuantity());
             detail.setUnitPrice(detailDTO.getUnitPrice());
             detail.setItemSequence(sequence++);
             detail.setDiscountRate(BigDecimal.ZERO);
 
+
+            if (product.getUnit() != null) {
+                detail.setUnitId(product.getUnit().getUnitId());
+            }
 
             BigDecimal itemAmount = detail.getUnitPrice().multiply(detail.getQuantity());
             detail.setItemAmount(itemAmount);

@@ -6,6 +6,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,9 +20,11 @@ public class PurchaseOrderCreateDTO {
     @NotNull(message = "進貨日期不可為空")
     private LocalDate orderDate;
     
-    private String currency = "TWD"; 
+    private String currency = "TWD";
 
-    private String remarks; 
+
+    @Size(max = 200, message = "備註不可超過200字")
+    private String remarks;
 
     @NotEmpty(message = "進貨明細不可為空")
     @Valid 

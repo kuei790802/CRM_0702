@@ -1,11 +1,15 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
 
 @Entity
 @Table(name = "records")
+@Getter
+@Setter
 public class Record {
 
     @Id
@@ -26,54 +30,10 @@ public class Record {
     private Double amount;
 
     @Column(name = "salespersonname")
-    private Double salesPersonName;
+    private String salesPersonName;
 
     // Getter and Setter
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public Long getCustomerId() {
-        return customerId;
-    }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-    public Long getOpportunityId() {
-        return opportunityId;
-    }
-
-    public void setOpportunityId(Long opportunityId) {
-        this.opportunityId = opportunityId;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public Double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-        this.amount = amount;
-    }
-
-    public Double getSalesPersonName() {
-        return salesPersonName;
-    }
-
-    public void setSalesPersonName(Double salesPersonName) {
-        this.salesPersonName = salesPersonName;
-    }
 }

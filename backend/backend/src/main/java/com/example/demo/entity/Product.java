@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="products")
+@Table(name = "products")
 @Getter
 @Setter
 public class Product {
@@ -21,7 +21,7 @@ public class Product {
     @Column(name = "product_code", nullable = false, unique = true, length = 50)
     private String productCode;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -58,12 +58,10 @@ public class Product {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    
 
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
-    
 
     @Column(name = "updated_by", nullable = false)
     private Long updatedBy;
@@ -74,6 +72,18 @@ public class Product {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // 尚未加入所有欄位和完整的 @ManyToOne 關聯，先專注在核心功能上
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
 
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+
+        // 尚未加入所有欄位和完整的 @ManyToOne 關聯，先專注在核心功能上
+
+    }
 }

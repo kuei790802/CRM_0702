@@ -20,10 +20,18 @@ public class Users {
     @Column(name = "user_id", nullable=false)
     private Long userId;
 
+
     @Column(name = "username")
     private String username;
 
     @Column(name = "email",unique=true)
     private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Column(name = "role_id", nullable = false)
+    private Long roleId;
+
 
 }

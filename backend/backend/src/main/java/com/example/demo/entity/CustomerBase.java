@@ -3,7 +3,9 @@ package com.example.demo.entity;
 import com.example.demo.enums.CustomerType;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 @DiscriminatorColumn(name = "customer_type")
 @Getter
 @Setter
+@SuperBuilder
+@NoArgsConstructor
 public abstract class CustomerBase {
 
     @Id
@@ -36,7 +40,7 @@ public abstract class CustomerBase {
     @Column(name = "address", length = 500)
     private String address;
 
-    @Column(name = "email", length = 255)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "created_by", nullable = false)

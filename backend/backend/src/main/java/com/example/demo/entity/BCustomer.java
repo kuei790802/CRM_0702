@@ -9,11 +9,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "customers")
+@DiscriminatorValue("B2B")
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)

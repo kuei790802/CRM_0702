@@ -32,8 +32,9 @@ public class ContactController {
         String customerName = null;
         Long customerId = null;
         if (contact.getCustomer() != null) {
-            customerId = contact.getCustomer().getId();
+            customerId = contact.getCustomer().getCustomerId();
             customerName = contact.getCustomer().getName();
+
         }
         return new ContactResponseDto(
                 contact.getId(),
@@ -99,7 +100,8 @@ public class ContactController {
 
         // 如果請求中提供了不同的客戶 ID，則更新所屬客戶
         if (contactRequestDto.getCustomerId() != null &&
-                !contactRequestDto.getCustomerId().equals(existingContact.getCustomer().getId())) {
+                !contactRequestDto.getCustomerId().equals(existingContact.getCustomer().getCustomerId())) {
+
 
             BCustomer newBCustomer = BCustomerService.findById(contactRequestDto.getCustomerId());
             existingContact.setCustomer(newBCustomer);

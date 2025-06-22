@@ -59,7 +59,7 @@ public class BCustomerServiceImpl implements BCustomerService {
                 .orElseThrow(() -> new EntityNotFoundException("Tag not found with ID: " + tagId));
 
         // 3. 將查找到的標籤添加到客戶的標籤集合中
-        BCustomer.addTag(tag);
+        BCustomer.getTags().add(tag);
 
         // 4. 儲存更新後的客戶實體，JPA 會自動更新中間表
         BCustomerRepository.save(BCustomer);
@@ -77,7 +77,7 @@ public class BCustomerServiceImpl implements BCustomerService {
                 .orElseThrow(() -> new EntityNotFoundException("Tag not found with ID: " + tagId));
 
         // 3. 從客戶的標籤集合中移除標籤
-        BCustomer.removeTag(tag);
+        BCustomer.getTags().removeIf(t -> t.getId().equals(tagId));
 
         // 4. 儲存更新後的客戶實體，JPA 會自動更新中間表
         BCustomerRepository.save(BCustomer);
