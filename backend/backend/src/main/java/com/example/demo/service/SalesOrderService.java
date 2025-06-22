@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.SalesOrderCreateDTO;
 import com.example.demo.dto.SalesOrderDetailCreateDTO;
+import com.example.demo.dto.SalesOrderSummaryDTO;
 import com.example.demo.entity.CustomerBase;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.SalesOrder;
@@ -15,12 +16,17 @@ import com.example.demo.repository.CustomerBaseRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SalesOrderRepository;
 
+import com.example.demo.specification.SalesOrderSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -107,7 +113,7 @@ public class SalesOrderService {
         newOrder.setTotalNetAmount(totalNetAmount);
         BigDecimal totalTaxAmount = totalNetAmount.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
         newOrder.setTotalTaxAmount(totalTaxAmount);
-        newOrder.setTotalAmount(totalNetAmount.add(totalTaxAmount));
+        newOrder.setTotalAmount(newOrder.getTotalNetAmount().add(newOrder.getTotalTaxAmount()));
 
 
         String orderNumber = "SO-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + "-" + (salesOrderRepository.count() + 1);
@@ -115,5 +121,18 @@ public class SalesOrderService {
 
 
         return salesOrderRepository.save(newOrder);
+    }
+
+    public Page<SalesOrderSummaryDTO> searchSalesOrders(
+            Long customerId, SalesOrderStatus status,
+            LocalDate startDate, LocalDate endDate,
+            String keyword, Pageable pageable) {
+
+        Specification<SalesOrder> spec = SalesOrderSpecification.findByCriteria(
+                customerId, status, startDate, endDate, keyword);
+
+        Page<SalesOrder> orderPage = salesOrderRepository.findAll(spec, pageable);
+
+        return orderPage.map(SalesOrderSummaryDTO::fromEntity);
     }
 }
