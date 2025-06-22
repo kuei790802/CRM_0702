@@ -179,9 +179,7 @@ function Column({ id, title, items, isOver, activeId }) {
         items={items.map((item) => item.id)}
         strategy={rectSortingStrategy}
       >
-        <div 
-        ref={setNodeRef}
-        className="flex flex-col gap-4">
+        <div ref={setNodeRef} className="flex flex-col gap-4">
           {items.map((item) => (
             <SortableCard
               key={item.id}
@@ -205,6 +203,22 @@ function SortableCard({
   isOverlay = false,
   isPreview = false,
 }) {
+  const [currentRating, setCurrentRating] = useState(rating);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [selectedType, setSelectedType] = useState(type);
+
+  const handleStarClick = (index) => {
+    if (currentRating === 1 && index === 0) {
+      setCurrentRating(0);
+    } else {
+      setCurrentRating(index + 1);
+    }
+  };
+
+  const handleTypeChange = (newType) => {
+    setSelectedType(newType);
+    setShowColorPicker(false);
+  };
   const sortable = useSortable({ id });
   const {
     attributes,
@@ -222,15 +236,14 @@ function SortableCard({
     zIndex: isOverlay ? 999 : undefined,
   };
 
-  const typeColorMap = {
-    default: "bg-white",
-    success: "bg-green-100",
-    warning: "bg-yellow-100",
-    error: "bg-red-100",
-    info: "bg-blue-100",
+  const borderColorMap = {
+    default: "border-gray-300",
+    success: "border-green-400",
+    warning: "border-yellow-400",
+    error: "border-red-400",
+    info: "border-blue-400",
   };
-
-  const cardColor = typeColorMap[type] || typeColorMap.default;
+  const borderColor = borderColorMap[selectedType] || borderColorMap.default;
 
   return (
     <div
@@ -238,21 +251,63 @@ function SortableCard({
       {...attributes}
       {...listeners}
       style={style}
-      className={`${cardColor} w-full p-2 border hover:shadow-md rounded-2xl relative cursor-move group`}
+      className={`bg-white w-full px-3 py-4 border-2 ${borderColor} hover:shadow-md rounded-2xl relative cursor-pointer cursor-move group`}
     >
-      <div className="font-semibold mb-1">{title}</div>
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <div className="flex items-center ">
-          {[...Array(3)].map((_, idx) =>
-            idx < rating ? (
-              <FaStar key={idx} className="text-yellow-400" />
-            ) : (
-              <FaRegStar key={idx} />
-            )
-          )}
-          <FaClock className="ml-2" />
-        </div>
-        <FaEdit className="opacity-0 group-hover:opacity-100 transition duration-200 cursor-pointer" />
+      {/* 卡片右上角的 FaEdit 和顏色選單 */}
+      <div className="absolute top-2 right-2">
+        <FaEdit
+          className="text-gray-500 hover:text-black transition duration-200 cursor-pointer"
+          onClick={() => setShowColorPicker((prev) => !prev)}
+        />
+        {showColorPicker && (
+          <div className="absolute right-0 mt-2 bg-white border rounded shadow-md z-50 p-2 space-y-1">
+            {["success", "warning", "error", "info"].map((typeOption) => (
+              <div
+                key={typeOption}
+                onClick={() => handleTypeChange(typeOption)}
+                className="flex items-center gap-2 px-2 py-1 text-sm cursor-pointer rounded hover:bg-gray-100"
+              >
+                <span
+                  className={`inline-block w-3 h-3 rounded-full ${
+                    {
+                      success: "bg-green-400",
+                      warning: "bg-yellow-400",
+                      error: "bg-red-400",
+                      info: "bg-blue-400",
+                    }[typeOption]
+                  }`}
+                ></span>
+                {typeOption}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 標題 */}
+      <div className="font-semibold mb-2">{title}</div>
+
+      {/* 星星評分 */}
+      <div className="flex items-center text-sm text-gray-600">
+        {[...Array(3)].map((_, idx) =>
+          idx < currentRating ? (
+            <FaStar
+              key={idx}
+              className="text-yellow-400 cursor-pointer"
+              onClick={() =>
+                currentRating === 1 && idx === 0
+                  ? setCurrentRating(0)
+                  : setCurrentRating(idx + 1)
+              }
+            />
+          ) : (
+            <FaRegStar
+              key={idx}
+              className="cursor-pointer"
+              onClick={() => setCurrentRating(idx + 1)}
+            />
+          )
+        )}
       </div>
     </div>
   );

@@ -42,6 +42,9 @@ import ERPReturns from "./backpages/erp/ERPReturns.jsx";
 import Finance from "./backpages/erp/Finance.jsx";
 import Inventory from "./backpages/erp/Inventory.jsx";
 import Sales from "./backpages/erp/Sales.jsx";
+// 使用者角色和權限
+import UsersManage from "./backpages/users/usersManage.jsx";
+import UsersLogs from "./backpages/users/usersLogs.jsx";
 
 const user = useUserStore.getState().user;
 const role = user?.role || "guest";
@@ -172,6 +175,16 @@ const router = createBrowserRouter([
       ) : (
         <FunnyError />
       ),
+      children: [
+        {
+          path: "management",
+          element: <UsersManage />,
+        },
+        {
+          path: "logs",
+          element: <UsersLogs />,
+        },
+      ],
   },
 ]);
 
