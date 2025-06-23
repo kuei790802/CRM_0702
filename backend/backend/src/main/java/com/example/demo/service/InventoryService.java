@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.demo.entity.*;
 import com.example.demo.enums.SalesOrderStatus;
@@ -79,6 +80,17 @@ public class InventoryService {
         return inventoryRepository.findByProduct_ProductId(productId);
     }
 
+    /**
+     * 根據產品ID獲取當前庫存數量。
+     * @param productId 產品ID
+     * @return 如果找到庫存，返回庫存數量；如果沒有該產品的庫存紀錄，則返回 0。
+     */
+    public BigDecimal getProductStock(Long productId) {
+        // 使用 inventoryRepository 根據 productId 查找庫存紀錄
+        Optional<Inventory> inventoryOpt = inventoryRepository.findByProductId(productId);
+        // 如果存在庫存紀錄，則返回其 stock 數量；否則返回 0
+        return inventoryOpt.map(Inventory::getCurrentStock).orElse(BigDecimal.valueOf(0));
+    }
 
     @Transactional
     public Inventory adjustInventory(Long productId, Long warehouseId,

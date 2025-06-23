@@ -32,5 +32,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>{
             @Param("warehouseId") Long warehouseId,
             @Param("quantity") BigDecimal quantity
     );
+
+    Optional<Inventory> findByProductId(Long productId);
 }
 

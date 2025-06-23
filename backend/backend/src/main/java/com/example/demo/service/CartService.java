@@ -4,16 +4,19 @@ import com.example.demo.dto.request.AddItemRequestDto;
 import com.example.demo.dto.response.CartDetailDto;
 import com.example.demo.dto.response.CartViewDto;
 import com.example.demo.entity.*;
+import com.example.demo.repository.CCustomerRepo;
 import com.example.demo.repository.CartDetailRepository;
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.CCsutomerRepository;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,17 +25,28 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
+@AllArgsConstructor
 public class CartService {
-    @Autowired
-    private CartRepository cartRepository;
-    @Autowired
-    private CartDetailRepository cartDetailRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private CCsutomerRepository CCsutomerRepository;
-    @Autowired
+    private final CartRepository cartRepository;
+    private final CartDetailRepository cartDetailRepository;
+    private final ProductRepository productRepository;
+    private final CCustomerRepo cCustomerRepo;
+    private final InventoryService inventoryService;
+
     private EntityManager entityManager;
+
+
+    public CartService(CartRepository cartRepository, CartDetailRepository cartDetailRepository,
+                       ProductRepository productRepository, CCustomerRepo cCustomerRepo,
+                       InventoryService inventoryService) {
+        this.cartRepository = cartRepository;
+        this.cartDetailRepository = cartDetailRepository;
+        this.productRepository = productRepository;
+        this.cCustomerRepo = cCustomerRepo;
+        this.inventoryService = inventoryService;
+    }
+
 
     /**
      * 檢查此 customerId 有無購物車，若有則呈現出對應的 CartViewDto；若無則呈現空的 CartViewDto
@@ -44,6 +58,7 @@ public class CartService {
                 .orElse(getEmptyCart());   // 如果找不到，則回傳一個空購物車 DTO
     }
 
+
     /**
      * 新增商品到購物車
      */
@@ -54,25 +69,30 @@ public class CartService {
         Product product = productRepository.findById(requestDto.getProductid())
                 .orElseThrow(() -> new EntityNotFoundException("找不到商品 ID: " + requestDto.getProductid()));
 
+
         // === 以下是庫存檢查邏輯 ===
         // 1. 從 Product 物件中取得所有相關的 Inventory 紀錄列表
-        List<Inventory> inventories = product.getInventories();
+//        List<Inventory> inventories = product.getInventory;
 
-        // 2. 使用 Stream API 將所有庫存地點的 unitsinstock 加總
-        int totalStock = inventories.stream()
-                .mapToInt(Inventory::getUnitsinstock) // 將每個 Inventory 物件轉換成它的庫存數量(int)
-                .sum(); // 將所有的 int 數字加總
-
-        int reservedStock = inventories.stream()
-                .mapToInt(Inventory::getUnitsinreserved)
-                .sum();
-
-        int usableStock = totalStock - reservedStock;
-
-        // 3. 用計算出來的總庫存進行比較
-        if (usableStock < requestDto.getQuantity()) {
-            throw new IllegalStateException("商品庫存不足，目前可下訂庫存為: " + usableStock);
+        BigDecimal currentStock = inventoryService.getProductStock(product.getProductId());
+        if (currentStock.intValue() < requestDto.getQuantity()) {
+            throw new RuntimeException("Insufficient stock for product: " + product.getName());
         }
+        // 2. 使用 Stream API 將所有庫存地點的 unitsinstock 加總
+//        int totalStock = inventories.stream()
+//                .mapToInt(Inventory::getUnitsinstock) // 將每個 Inventory 物件轉換成它的庫存數量(int)
+//                .sum(); // 將所有的 int 數字加總
+
+//        int reservedStock = inventories.stream()
+//                .mapToInt(Inventory::getUnitsinreserved)
+//                .sum();
+//
+//        int usableStock = totalStock - reservedStock;
+//
+//        // 3. 用計算出來的總庫存進行比較
+//        if (usableStock < requestDto.getQuantity()) {
+//            throw new IllegalStateException("商品庫存不足，目前可下訂庫存為: " + usableStock);
+//        }
 
         // 如果您在 Product Entity 中新增了 getTotalStock() 方法，這裡也可以簡化為：
         // if (product.getTotalStock() < requestDto.getQuantity()) {
@@ -80,18 +100,27 @@ public class CartService {
         // }
 
         // 查找購物車是否已存在此商品
-        Optional<CartDetail> existingDetailOpt = cart.getCartdetails().stream()
-                .filter(d -> d.getProduct().getProductid().equals(requestDto.getProductid()))
-                .findFirst();
+//        Optional<CartDetail> existingDetailOpt = cart.getCartdetails().stream()
+//                .filter(d -> d.getProduct().getProductid().equals(requestDto.getProductid()))
+//                .findFirst();
+        Optional<CartDetail> existingDetail = cartDetailRepository.findByCartAndProduct(cart, product);
+//        if (existingDetailOpt.isPresent()) {
+//            // 如果存在，則更新數量
+//            CartDetail existingDetail = existingDetailOpt.get();
+//            int newQuantity = existingDetail.getQuantity() + requestDto.getQuantity();
+        if (existingDetail.isPresent()) {
+            CartDetail detail = existingDetail.get();
+            detail.setQuantity(detail.getQuantity() + requestDto.getQuantity());
+            int newQuantity = existingDetail.get().getQuantity() + requestDto.getQuantity(); //TODO(joshkuei): Make sure the`get().getQuantity()` it's right.
 
-        if (existingDetailOpt.isPresent()) {
-            // 如果存在，則更新數量
-            CartDetail existingDetail = existingDetailOpt.get();
-            int newQuantity = existingDetail.getQuantity() + requestDto.getQuantity();
-            if (newQuantity > usableStock) {
-                throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + usableStock);
+            cartDetailRepository.save(detail);
+//            if (newQuantity > usableStock) {
+//            throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + usableStock);
+//        }
+            if (currentStock.compareTo(BigDecimal.valueOf(newQuantity)) < 0) {
+                throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + currentStock);
             }
-            existingDetail.setQuantity(newQuantity);
+            existingDetail.get().setQuantity(newQuantity); //TODO(joshkuei): Make sure the `get().setQuantity()` it's right.
             cartRepository.saveAndFlush(cart);
         } else {
             // 如果不存在，則新增一個 CartDetail
@@ -101,12 +130,19 @@ public class CartService {
             newDetail.setAddat(LocalDateTime.now());
             newDetail.setCart(cart); // 明確設定它屬於哪個 cart
             cartDetailRepository.saveAndFlush(newDetail);
+
+//            CartDetail newDetail = new CartDetail();
+//            newDetail.setCart(cart);
+//            newDetail.setProduct(product);
+//            newDetail.setQuantity(request.getQuantity());
+//            cartDetailRepository.save(newDetail);
         }
 
         entityManager.refresh(cart);
 
 
         return mapToCartViewDto(cart);
+//        return getCartView(cart.getId());
     }
 
     /**
@@ -226,7 +262,7 @@ public class CartService {
     }
 
     private Cart findCartByUser(Long customerId) {
-        return cartRepository.findByCCustomer_CustomerId((long)customerId)
+        return cartRepository.findByCCustomer_CustomerId((long) customerId)
                 .orElseThrow(() -> new EntityNotFoundException("使用者 " + customerId + " 尚無購物車"));
     }
 
