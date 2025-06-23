@@ -1,69 +1,64 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "tags")
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString(exclude = {"bCustomers", "opportunities"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Tag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "tagid")
-    private Long id;
+    @EqualsAndHashCode.Include
+    private Long tagId;
 
-    @Column(name = "tagname")
-    private String name;
+    @Column(nullable = false, unique = true, length = 100)
+    private String tagName;
 
-    // -----
-    @ManyToMany(mappedBy = "tags")
-    private Set<BCustomer> BCustomers = new HashSet<>();
+    @Column(length = 100)
+    private String color;
 
-    public Tag() {}
+    // ----- 多對多關聯：標籤可以關聯多個客戶 -----
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    private Set<BCustomer> bCustomers = new HashSet<>();
 
-    public Tag(String name) {
-        this.name = name;
+    // ----- 多對多關聯：標籤可以關聯多個商機 -----
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    private Set<Opportunity> opportunities = new HashSet<>();
+
+    // 添加客戶關聯
+    public void addBCustomer(BCustomer bCustomer) {
+        this.bCustomers.add(bCustomer);
+        bCustomer.getTags().add(this);
     }
 
-    // Getter and Setter
-    public Long getId() {
-        return id;
+    // 移除客戶關聯
+    public void removeBCustomer(BCustomer bCustomer) {
+        this.bCustomers.remove(bCustomer);
+        bCustomer.getTags().remove(this);
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    // 添加商機關聯
+    public void addOpportunity(Opportunity opportunity) {
+        this.opportunities.add(opportunity);
+        opportunity.getTags().add(this);
     }
 
-    public String getName() {
-        return name;
+    // 移除商機關聯
+    public void removeOpportunity(Opportunity opportunity) {
+        this.opportunities.remove(opportunity);
+        opportunity.getTags().remove(this);
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Set<BCustomer> getCustomers() {
-        return BCustomers;
-    }
-
-    public void setCustomers(Set<BCustomer> BCustomers) {
-        this.BCustomers = BCustomers;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Tag tag = (Tag) o;
-        return id != null && id.equals(tag.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
-    }
-
-
 }

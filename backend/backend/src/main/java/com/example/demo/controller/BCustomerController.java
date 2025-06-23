@@ -1,18 +1,19 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.APIResponse;
-import com.example.demo.entity.BCustomer;
+import com.example.demo.dto.request.BCustomerRequest;
+import com.example.demo.dto.response.BCustomerDto;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.service.BCustomerServiceImpl;
+import com.example.demo.service.impl.BCustomerServiceImpl;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/customers")
 public class BCustomerController {
-
 
     private final BCustomerServiceImpl customerService;
 
@@ -20,66 +21,65 @@ public class BCustomerController {
         this.customerService = customerService;
     }
 
-
-
-    // Read All
+    /**
+     * 獲取所有客戶 (分頁)
+     * GET /api/customers?page=0&size=10&sort=customerName,asc
+     * @param pageable Spring 自動傳入的分頁與排序參數
+     * @return 客戶分頁資料
+     */
     @GetMapping
-    public ResponseEntity<List<BCustomer>> getAll() {
-        return ResponseEntity.ok(customerService.findAll());
+    public ResponseEntity<Page<BCustomerDto>> getAll(Pageable pageable) {
+        Page<BCustomerDto> customers = customerService.findAll(pageable);
+        return ResponseEntity.ok(customers);
     }
-    // Read By id
+
+    /**
+     * 根據 ID 獲取單一客戶
+     * GET /api/customers/{id}
+     * @param id 客戶 ID
+     * @return 找到的客戶 DTO
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<BCustomer> getById(@PathVariable Long id) {
-        BCustomer BCustomer = customerService.findById(id);
-        if (BCustomer == null) {
-            // null -> 404 Not Found
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(BCustomer);
+    public ResponseEntity<BCustomerDto> getById(@PathVariable Long id) {
+        BCustomerDto BCustomerDto = customerService.findById(id);
+        return ResponseEntity.ok(BCustomerDto);
     }
 
-    // Create
+    /**
+     * 建立一個新客戶
+     * POST /api/customers
+     * @param request 包含客戶資料的請求 DTO
+     * @return 建立成功後的新客戶 DTO，HTTP 狀態為 201 Created
+     */
     @PostMapping
-    public ResponseEntity<BCustomer> create(@RequestBody BCustomer BCustomer) {
-        // 201
-        BCustomer savedBCustomer = customerService.save(BCustomer);
-        // 200
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedBCustomer);
+    public ResponseEntity<BCustomerDto> create(@Valid @RequestBody BCustomerRequest request) {
+        BCustomerDto createdCustomer = customerService.create(request);
+        return new ResponseEntity<>(createdCustomer, HttpStatus.CREATED);
     }
 
-    // Update
+    /**
+     * 根據 ID 更新一個客戶
+     * PUT /api/customers/{id}
+     * @param id 要更新的客戶 ID
+     * @param request 包含更新資料的請求 DTO
+     * @return 更新成功後的客戶 DTO
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<BCustomer> update(@PathVariable Long id, @RequestBody BCustomer BCustomer) {
-        BCustomer.setId(id);
-        BCustomer updatedBCustomer = customerService.save(BCustomer);
-        if (updatedBCustomer == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(updatedBCustomer);
+    public ResponseEntity<BCustomerDto> update(@PathVariable Long id, @Valid @RequestBody BCustomerRequest request) {
+        BCustomerDto updatedCustomer = customerService.update(id, request);
+        return ResponseEntity.ok(updatedCustomer);
     }
 
-    // Delete
+    /**
+     * 根據 ID 刪除一個客戶
+     * DELETE /api/customers/{id}
+     * @param id 要刪除的客戶 ID
+     * @return HTTP 狀態 204 No Content
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         customerService.delete(id);
-        // 刪除成功 -> 204 No Content，表示操作成功但沒有內容返回
         return ResponseEntity.noContent().build();
-    }
-
-    // ----- 新增標籤至客戶 -----
-    @PostMapping("/{id}/tags/{tagId}")
-    public ResponseEntity<APIResponse> addTag(@PathVariable Long id, @PathVariable Long tagId) {
-        customerService.addTag(id, tagId);
-        return ResponseEntity.ok(new APIResponse(
-                "Tag " + tagId + " added successfully for customer " + id, true));
-    }
-
-    // ----- 從客戶移除標籤 -----
-    @DeleteMapping("/{id}/tags/{tagId}")
-    public ResponseEntity<APIResponse> removeTag(@PathVariable Long id, @PathVariable Long tagId) {
-        customerService.removeTag(id, tagId);
-        return ResponseEntity.ok(new APIResponse(
-                "Tag " + tagId + " removed successfully from customer " + id, true));
     }
 
 }

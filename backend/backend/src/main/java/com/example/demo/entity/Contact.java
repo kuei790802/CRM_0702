@@ -1,138 +1,55 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.Objects;
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "contacts")
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString(exclude = {"bCustomer"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Contact {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "contactid")
-    private Long id;
+    @EqualsAndHashCode.Include
+    private Long contactId;
 
-    @Column(name = "customerid", nullable = false)
-    private Long customerId;
+    @Column(nullable = false, length = 100)
+    private String contactName;
 
-    @Column(name = "contactname", nullable = false)
-    private String name;
+    @Column(length = 100)
+    private String contactTitle;
 
-    @Column(name = "contacttitle")
-    private String title;
-
-    @Column(name = "contactphone")
-    private String phone;
-
-    @Column(name = "contactemail")
+    @Column(length = 150)
     private String email;
 
-    @Column(name = "contactnotes")
-    private String notes;
+    @Column(length = 30)
+    private String contactPhone;
 
+    @Column(columnDefinition = "TEXT")
+    private String contactNotes;
 
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
-    // ----- 多對一 -----
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    // ----- 多對一關聯：聯絡人所屬的客戶 -----
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customerid", insertable = false, updatable = false)
-    private BCustomer BCustomer;
+    @JoinColumn(name = "customer_id", nullable = false)
+    private BCustomer bCustomer;
 
-    public Contact() {}
-
-    // Getter and Setter
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-    public BCustomer getCustomer() {
-        return BCustomer;
-    }
-
-    public void setCustomer(BCustomer BCustomer) {
-        this.BCustomer = BCustomer;
-        if (BCustomer != null) {
-            this.customerId = BCustomer.getId();
-        } else {
-            this.customerId = null;
-        }
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Contact contact = (Contact) o;
-        return id != null && Objects.equals(id, contact.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id != null ? Objects.hash(id) : super.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Contact{" +
-                "id=" + id +
-                ", customerid=" + customerId +
-                ", name='" + name + '\'' +
-                ", title='" + title + '\'' +
-                ", phone='" + phone + '\'' +
-                ", email='" + email + '\'' +
-                ", notes='" + notes + '\'' +
-                '}';
-    }
 }

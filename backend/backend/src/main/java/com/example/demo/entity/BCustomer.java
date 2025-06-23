@@ -1,208 +1,108 @@
 package com.example.demo.entity;
 
+import com.example.demo.enums.BCustomerIndustry;
+import com.example.demo.enums.BCustomerLevel;
+import com.example.demo.enums.BCustomerType;
 import jakarta.persistence.*;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
+
 @Entity
-@Table(name = "customers")
+@Table(name = "b_customers")
 @EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString(exclude = {"contacts", "tags"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BCustomer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "customerid")
-    private Long id;
+    @EqualsAndHashCode.Include
+    private Long customerId;
 
-    @Column(name = "customername", nullable = false)
-    private String name;
+    @Column(nullable = false, length = 100)
+    private String customerName;
 
-    @Column(name = "industry")
-    private String industry;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 100)
+    private BCustomerIndustry industry;
 
-    @Column(name = "customertype")
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private BCustomerType BCustomerType;
 
-    @Column(name = "sourceid")
-    private Long sourceId;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private BCustomerLevel BCustomerLevel;
 
-    @Column(name = "customerlevel")
-    private String level;
+    @Column(length = 255)
+    private String customerAddress;
 
-    @Column(name = "customeraddress")
-    private String address;
+    @Column(length = 30)
+    private String customerTel;
 
-    @Column(name = "customertel")
-    private String tel;
-
-    @Column(name = "customeremail")
-    private String email;
+    @Column(length = 150)
+    private String customerEmail;
 
     @CreatedDate
-    @Column(name = "customercreated", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "customerupdated")
     private LocalDateTime updatedAt;
 
-    // ----- 多對多 -----
-   @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    // ----- 一對多關聯：客戶擁有的聯絡人集合 -----
+    @OneToMany(mappedBy = "bCustomer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Contact> contacts = new HashSet<>();
+
+    // ----- 多對多關聯：一個客戶可以有多個標籤 -----
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "tagmaps",
-            joinColumns = @JoinColumn(name = "customerid"),
-            inverseJoinColumns = @JoinColumn(name = "tagid")
+            name = "b_customer_tags",
+            joinColumns = @JoinColumn(name = "b_customer_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags = new HashSet<>();
 
-    public BCustomer() {}
-    public BCustomer(String name) {
-        this.name = name;
+    // ----- 關聯管理輔助方法 -----
+    /**
+     * 添加一個聯絡人到此客戶。
+     * 同時維護聯絡人的客戶關聯（雙向），確保數據一致性。
+     * @param contact 要添加的聯絡人實體
+     */
+    public void addContact(Contact contact) {
+        contacts.add(contact);
+        contact.setBCustomer(this); // 設定聯絡人所屬的客戶
     }
 
-
-
-    // Getter and Setter
-    public Long getId() {
-        return id;
+    /**
+     * 從此客戶移除一個聯絡人。
+     * 同時清除聯絡人的客戶關聯，確保數據一致性。
+     * @param contact 要移除的聯絡人實體
+     */
+    public void removeContact(Contact contact) {
+        contacts.remove(contact);
+        contact.setBCustomer(null); // 清除聯絡人所屬的客戶
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getIndustry() {
-        return industry;
-    }
-
-    public void setIndustry(String industry) {
-        this.industry = industry;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Long getSourceId() {
-        return sourceId;
-    }
-
-    public void setSourceId(Long sourceid) {
-        this.sourceId = sourceId;
-    }
-
-    public String getLevel() {
-        return level;
-    }
-
-    public void setLevel(String level) {
-        this.level = level;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getTel() {
-        return tel;
-    }
-
-    public void setTel(String tel) {
-        this.tel = tel;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-//    public void setCreatedAt(LocalDateTime createdAt) {
-//        this.createdAt = createdAt;
-//    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-//    public void setUpdatedAt(LocalDateTime updatedAt) {
-//        this.updatedAt = updatedAt;
-//    }
-
-    // -----
     public void addTag(Tag tag) {
         this.tags.add(tag);
+        tag.getBCustomers().add(this);
     }
 
     public void removeTag(Tag tag) {
         this.tags.remove(tag);
+        tag.getBCustomers().remove(this);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        // 檢查物件是否為 null 或類別是否不一致
-        if (o == null || getClass() != o.getClass()) return false;
-        BCustomer BCustomer = (BCustomer) o;
-        // 如果 ID 已生成，則使用 ID 進行比較；如果 ID 尚未生成（即為新實體），則使用物件引用比較 (super.equals(o))
-        // 這種做法可以避免在 ID 未生成時，兩個不同的新實體被誤判為相同。
-        return id != null && Objects.equals(id, BCustomer.id);
-    }
-
-    @Override
-    public int hashCode() {
-        // 如果 ID 已生成，則使用 ID 的 hashCode；如果 ID 尚未生成，則返回 Objects.hash(super.hashCode()) 或一個常數。
-        // 與 equals() 方法保持一致性是關鍵。
-        return id != null ? Objects.hash(id) : super.hashCode();
-    }
-
-    // --- 覆寫 toString() 方法 (方便除錯) ---
-    // 覆寫 toString() 可以方便地在日誌或除錯時查看實體的屬性值。
-    // 注意：避免在 toString() 中包含懶載入的關聯集合（如 `tags`），因為這可能導致 N+1 問題
-    // 或在未正確初始化集合時拋出 LazyInitializationException。
-    @Override
-    public String toString() {
-        return "Customer{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", industry='" + industry + '\'' +
-                ", type='" + type + '\'' +
-                ", sourceid=" + sourceId +
-                ", level='" + level + '\'' +
-                ", address='" + address + '\'' +
-                ", tel='" + tel + '\'' +
-                ", email='" + email + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
-
 }

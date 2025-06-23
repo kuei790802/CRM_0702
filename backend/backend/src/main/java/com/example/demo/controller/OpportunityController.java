@@ -1,9 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.OpportunityRequestDto;
-import com.example.demo.dto.OpportunityResponseDto;
-import com.example.demo.exception.BCustomerNotFoundException;
-import com.example.demo.exception.OpportunityNotFoundException;
+import com.example.demo.dto.request.OpportunityRequest;
+import com.example.demo.dto.response.OpportunityDto;
+import com.example.demo.enums.OpportunityStage;
+import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.service.OpportunityService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/opportunities")
@@ -25,105 +25,120 @@ public class OpportunityController {
     }
 
     /**
-     * 獲取所有商機。
-     * GET /api/opportunities
-     *
-     * @return 包含所有商機回應 DTO 的列表，HTTP 狀態碼 200 OK
+     * 獲取所有商機列表，支持分頁。
+     * HTTP GET 請求到 /api/opportunities
+     * @param pageable 分頁資訊 (page, size, sort 等參數會自動由 Spring 解析)
+     * @return 包含商機回應 DTO 分頁列表的 HTTP 200 OK 響應
      */
     @GetMapping
-    public ResponseEntity<List<OpportunityResponseDto>> getAll() {
-        List<OpportunityResponseDto> opportunities = opportunityService.findAll();
-        return ResponseEntity.ok(opportunities);
+    public ResponseEntity<Page<OpportunityDto>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(opportunityService.findAll(pageable));
     }
 
     /**
-     * 根據 ID 獲取單一商機。
-     * GET /api/opportunities/{id}
-     *
-     * @param id 商機 ID
-     * @return 匹配的商機回應 DTO，HTTP 狀態碼 200 OK
-     * @throws OpportunityNotFoundException 如果找不到該商機，由 @ResponseStatus 處理並返回 404 NOT FOUND
+     * 根據ID獲取單個商機。
+     * HTTP GET 請求到 /api/opportunities/{id}
+     * @param id 路徑變數，商機的唯一識別碼
+     * @return 對應的商機回應 DTO (HTTP 200 OK) 或 404 Not Found 響應
      */
     @GetMapping("/{id}")
-    public ResponseEntity<OpportunityResponseDto> getById(@PathVariable Long id) {
-        OpportunityResponseDto opportunity = opportunityService.findById(id);
-        return ResponseEntity.ok(opportunity);
+    public ResponseEntity<OpportunityDto> getById(@PathVariable Long id) {
+        return opportunityService.findById(id)
+                .map(ResponseEntity::ok) // 如果找到商機，返回 HTTP 200 OK
+                .orElse(ResponseEntity.notFound().build()); // 如果找不到，返回 HTTP 404 Not Found
     }
 
     /**
-     * 建立新商機。
-     * POST /api/opportunities
-     *
-     * @param opportunityRequestDto 包含新商機資料的 DTO (會自動進行驗證)
-     * @return 建立後的商機回應 DTO，HTTP 狀態碼 201 CREATED
-     * @throws BCustomerNotFoundException 如果指定的客戶 ID 不存在
+     * 創建一個新的商機。
+     * HTTP POST 請求到 /api/opportunities
+     * @param request 從請求體中獲取的商機請求 DTO (已啟用驗證)
+     * @return 創建成功的商機回應 DTO (HTTP 201 Created)
      */
     @PostMapping
-    public ResponseEntity<OpportunityResponseDto> create(@Valid @RequestBody OpportunityRequestDto opportunityRequestDto) {
-        OpportunityResponseDto savedOpportunity = opportunityService.save(opportunityRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedOpportunity);
+    public ResponseEntity<OpportunityDto> create(@Valid @RequestBody OpportunityRequest request) {
+        OpportunityDto createdOpportunity = opportunityService.create(request);
+        return new ResponseEntity<>(createdOpportunity, HttpStatus.CREATED); // 返回 HTTP 201 Created
     }
 
     /**
-     * 根據 ID 更新現有商機。
-     * PUT /api/opportunities/{id}
-     *
-     * @param id             要更新的商機 ID
-     * @param opportunityRequestDto 包含更新資料的 DTO (會自動進行驗證)
-     * @return 更新後的商機回應 DTO，HTTP 狀態碼 200 OK
-     * @throws OpportunityNotFoundException 如果找不到要更新的商機
-     * @throws BCustomerNotFoundException    如果指定的客戶 ID 不存在
+     * 更新現有的商機。
+     * HTTP PUT 請求到 /api/opportunities/{id}
+     * @param id 路徑變數，要更新的商機ID
+     * @param request 從請求體中獲取的包含更新資訊的商機請求 DTO (已啟用驗證)
+     * @return 更新後的商機回應 DTO (HTTP 200 OK) 或 404 Not Found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<OpportunityResponseDto> update(@PathVariable Long id, @Valid @RequestBody OpportunityRequestDto opportunityRequestDto) {
-        // 設定 DTO 的 ID，確保 Service 層知道是更新操作
-        opportunityRequestDto.setId(id);
-        OpportunityResponseDto updatedOpportunity = opportunityService.save(opportunityRequestDto);
-        return ResponseEntity.ok(updatedOpportunity);
+    public ResponseEntity<OpportunityDto> update(@PathVariable Long id, @Valid @RequestBody OpportunityRequest request) {
+        OpportunityDto updatedOpportunity = opportunityService.update(id, request);
+        return ResponseEntity.ok(updatedOpportunity); // 返回 HTTP 200 OK
     }
 
     /**
-     * 根據 ID 刪除商機。
-     * DELETE /api/opportunities/{id}
-     *
-     * @param id 要刪除的商機 ID
-     * @return 無內容回應，HTTP 狀態碼 204 NO CONTENT
-     * @throws OpportunityNotFoundException 如果找不到要刪除的商機
+     * 刪除一個商機。
+     * HTTP DELETE 請求到 /api/opportunities/{id}
+     * @param id 路徑變數，要刪除的商機ID
+     * @return 204 No Content 響應 (表示成功刪除但沒有內容返回)
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         opportunityService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build(); // 返回 HTTP 204 No Content
     }
 
     /**
-     * 根據客戶 ID 獲取該客戶下的所有商機。
-     * GET /api/opportunities/customer/{customerId}
-     *
-     * @param customerId 客戶 ID
-     * @return 屬於該客戶的商機回應 DTO 列表，HTTP 狀態碼 200 OK
-     * @throws BCustomerNotFoundException 如果客戶不存在
+     * 根據多個條件搜索商機，支持分頁。
+     * HTTP GET 請求到 /api/opportunities/search
+     * 請求參數範例：/api/opportunities/search?name=新&status=WON&stage=PROPOSAL&customerId=1&contactId=2&closeDateBefore=2025-12-31&page=0&size=10
+     * @param name 商機名稱模糊搜尋關鍵字 (可選)
+     * @param status 商機狀態枚舉 (可選)
+     * @param stage 商機階段枚舉 (可選)
+     * @param customerId 關聯客戶ID (可選)
+     * @param contactId 關聯聯絡人ID (可選)
+     * @param closeDateBefore 預計結束日期在指定日期之前 (可選，日期格式為YYYY-MM-DD，例如 2025-12-31)
+     * @param pageable 分頁資訊
+     * @return 符合所有條件的商機回應 DTO 分頁列表。
      */
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<OpportunityResponseDto>> getOpportunitiesByCustomerId(@PathVariable Long customerId) {
-        List<OpportunityResponseDto> opportunities = opportunityService.findOpportunitiesByCustomerId(customerId);
+    @GetMapping("/search")
+    public ResponseEntity<Page<OpportunityDto>> searchOpportunities(
+            @RequestParam(required = false) String name, // @RequestParam 綁定 URL 查詢參數
+            @RequestParam(required = false) OpportunityStatus status,
+            @RequestParam(required = false) OpportunityStage stage,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long contactId,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(
+                    iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate closeDateBefore,
+            Pageable pageable) {
+
+        Page<OpportunityDto> opportunities = opportunityService.searchOpportunities(name, status, stage, customerId, contactId, closeDateBefore, pageable);
         return ResponseEntity.ok(opportunities);
     }
 
     /**
-     * 根據客戶 ID 獲取該客戶下的所有商機，支援分頁和排序。
-     * GET /api/opportunities/customer/{customerId}/paged
-     *
-     * @param customerId 客戶 ID
-     * @param pageable   分頁和排序資訊 (例如: ?page=0&size=10&sort=closeDate,desc)
-     * @return 屬於該客戶的商機分頁結果，HTTP 狀態碼 200 OK
-     * @throws BCustomerNotFoundException 如果客戶不存在
+     * 為指定商機提交評分。
+     * HTTP POST 請求到 /api/opportunities/{id}/rate
+     * @param id 路徑變數，要評分的商機ID。
+     * @param ratingScore 請求參數，評分分數 (1-5)。
+     * @return 更新評分後的商機回應 DTO (HTTP 200 OK)。
      */
-    @GetMapping("/customer/{customerId}/paged")
-    public ResponseEntity<Page<OpportunityResponseDto>> getPagedOpportunitiesByCustomerId(
-            @PathVariable Long customerId,
-            Pageable pageable) {
-        Page<OpportunityResponseDto> opportunitiesPage = opportunityService.findOpportunitiesByCustomerId(customerId, pageable);
-        return ResponseEntity.ok(opportunitiesPage);
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<OpportunityDto> rateOpportunity(
+            @PathVariable Long id,
+            @RequestParam int ratingScore) { // 評分分數作為查詢參數或請求體中的字段
+        // **** 這裡獲取當前用戶ID的邏輯至關重要且必須安全 ****
+        // 這是 Spring Security 的標準做法：
+        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Long currentUserId = null;
+        // if (authentication != null && authentication.getPrincipal() instanceof YourCustomUserDetails) {
+        //     currentUserId = ((YourCustomUserDetails) authentication.getPrincipal()).getId();
+        // }
+        // if (currentUserId == null) {
+        //     // 如果無法獲取用戶 ID，可能是未登錄或安全配置問題，返回 401 Unauthorized
+        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        // }
+
+        Long currentUserId = 1L; // <-- 臨時佔位符！在實際應用中，請替換為從 Spring Security 安全地獲取用戶ID
+
+        OpportunityDto updatedOpportunity = opportunityService.rateOpportunity(id, currentUserId, ratingScore);
+        return ResponseEntity.ok(updatedOpportunity);
     }
 }
