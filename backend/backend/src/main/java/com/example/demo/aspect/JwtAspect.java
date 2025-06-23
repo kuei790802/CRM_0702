@@ -36,9 +36,20 @@ public class JwtAspect {
         }
 
         // ✅ 把帳號資訊放進 request scope，給 controller 用
-        String account = claims.getSubject(); // 或 claims.get("account", String.class)
+        String account = claims.getSubject();
         req.setAttribute("account", account);
         System.out.println("Set request attribute 'account' = " + account);
+
+        // ★★★【修改重點】★★★
+        // 從 claims 中獲取 customerId 並存入 request scope
+        Long customerId = claims.get("customerId", Long.class); // 從 JWT claims 取出 customerId
+        if (customerId == null) {
+            throw new JwtException("Token is missing customerId claim");
+        }
+        req.setAttribute("customerId", customerId); // 將 customerId 放入 request attribute
+        System.out.println("Set request attribute 'customerId' = " + customerId);
+        // ★★★【修改結束】★★★
+
 
         System.out.println("Token ok, account = " + account);
         System.out.println("JwtAspect checkJwt END");

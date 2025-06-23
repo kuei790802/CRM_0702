@@ -48,6 +48,8 @@ public class EcpayProperties {
         private String senderCellphone;
         private String senderZipCode;
         private String senderAddress;
+        private String serverReplyUrl; // <<-- 【新增】
+        private String clientReplyUrl; // <<-- 【新增】
         // Getters and Setters for Logistics...
     }
 
