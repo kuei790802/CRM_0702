@@ -20,11 +20,11 @@ function Footer() {
   };
 
   return (
-    <footer className="bg-[#dbe297] text-gray-800 py-10">
+    <footer className=" text-gray-800 py-10">
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
         {/* 聯絡我們 */}
         <div className="flex flex-col items-center text-center">
-          <h2 className="text-lg font-bold bg-white inline-block px-4 py-1 rounded-full mb-4">
+          <h2 className="text-lg font-bold bg-logo-tan inline-block px-4 py-1 rounded-full mb-4">
             聯絡我們
           </h2>
           <p className="font-semibold">心邦有限公司</p>
@@ -40,7 +40,7 @@ function Footer() {
 
         {/* 公司・店面位置 */}
         <div className="flex flex-col items-center text-center">
-          <h2 className="text-lg font-bold bg-white inline-block px-4 py-1 rounded-full mb-4">
+          <h2 className="text-lg font-bold bg-logo-tan inline-block px-4 py-1 rounded-full mb-4">
             公司・店面位置
           </h2>
           <p className="font-semibold">良野豆乳冰品Vegan Savage</p>
@@ -52,7 +52,7 @@ function Footer() {
 
         {/* 顧客服務 + 後台入口 */}
         <div className="flex flex-col items-center text-center">
-          <h2 className="text-lg font-bold bg-white inline-block px-4 py-1 rounded-full mb-4">
+          <h2 className="text-lg font-bold bg-logo-tan inline-block px-4 py-1 rounded-full mb-4">
             顧客服務
           </h2>
           <ul className="space-y-1">

@@ -4,10 +4,13 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import router from "./Router.jsx";
 
-if (import.meta.env.MODE === 'development') {
+if (import.meta.env.MODE === 'development' || import.meta.env.VITE_USE_MOCK === 'true') {
   const { worker } = await import('./mocks/browser');
-  await worker.start();
+  await worker.start({
+    onUnhandledRequest: 'bypass',
+  });
 }
+
 
 
 createRoot(document.getElementById("root")).render(

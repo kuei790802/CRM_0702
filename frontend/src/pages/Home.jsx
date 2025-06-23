@@ -1,5 +1,6 @@
 import Banner from "../components/Home/Banner";
 import Section from "../components/Home/Section";
+import Highlight from "../components/Home/Highlight";
 import ProductList from "../components/Home/ProductList";
 
 const lightPackProducts = [
@@ -39,6 +40,7 @@ function Home() {
       <Banner />
       <Section />
       <ProductList products={lightPackProducts} />
+      <Highlight />
     </>
   );
 }

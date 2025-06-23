@@ -77,18 +77,9 @@ function Login() {
         </button>
       </form>
 
-      <div className="text-center mt-6 text-sm text-gray-600">或使用社群帳號登入</div>
-
-      <div className="flex justify-center space-x-6 mt-4">
-        <Link to="/b2c">
-          <SiLine className="text-3xl text-green-500 cursor-pointer" />
-        </Link>
-        <FaFacebook className="text-3xl text-blue-600 cursor-pointer" />
-      </div>
-
       <div className="text-center mt-10">
         <p className="text-lg font-bold">還不是會員？</p>
-        <Link to="/Sign">
+        <Link to="/SignFlow">
           <button className="mt-2 px-6 py-2 border border-orange-500 text-orange-500 font-semibold rounded hover:bg-orange-50">
             註冊會員
           </button>

@@ -10,8 +10,7 @@ import FunnyError from "./components/FunnyError";
 import Product from "./pages/Product.jsx";
 import NewsDetail from "./pages/NewsDetail.jsx";
 import User from "./pages/User.jsx";
-import Sign from "./pages/Sign.jsx";
-import CustDetail from "./pages/CustDetail.jsx";
+import SignFlow from "./pages/SignFlow.jsx";
 import SignSuccess from "./pages/SignSuccess.jsx";
 import Cart from "./pages/Cart.jsx";
 
@@ -64,8 +63,7 @@ const router = createBrowserRouter([
       { path: "news", element: <News /> },
       { path: "contact", element: <Contact /> },
       { path: "login", element: <Login /> },
-      { path: "sign", element: <Sign /> },
-      { path: "custdetail", element: <CustDetail /> },
+      { path: "signFlow", element: <SignFlow /> },
       { path: "signsuccess", element: <SignSuccess /> },
       { path: "product", element: <Product /> },
       { path: "cart", element: <Cart /> },

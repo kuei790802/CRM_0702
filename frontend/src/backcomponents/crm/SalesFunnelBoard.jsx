@@ -251,7 +251,7 @@ function SortableCard({
       {...attributes}
       {...listeners}
       style={style}
-      className={`bg-white w-full px-3 py-4 border-2 ${borderColor} hover:shadow-md rounded-2xl relative cursor-pointer cursor-move group`}
+      className={`bg-white w-full px-3 py-4 border-2 ${borderColor} hover:shadow-md rounded-2xl relative cursor-pointer group`}
     >
       {/* 卡片右上角的 FaEdit 和顏色選單 */}
       <div className="absolute top-2 right-2">

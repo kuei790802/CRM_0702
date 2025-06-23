@@ -23,46 +23,37 @@ function User() {
   const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
 
-  const handleAdminRedirect = () => {
-    const role = user?.role;
-    if (role === 'admin') {
-      navigate('/users');
-    } else if (role === 'editor') {
-      navigate('/cms');
-    } else if (role === 'manager') {
-      navigate('/erp');
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#f8f5f1] text-gray-800 px-6 py-4">
+    <div className="min-h-screen  text-gray-800 px-4 md:px-12 py-8">
       {/* Header */}
       <div className="flex justify-between items-center mb-6 text-sm">
         <div>
           你好, <span className="font-bold">{user?.name || '訪客'}</span>
         </div>
-        <button
-          className="text-blue-600 hover:underline"
-          onClick={() => {
-            logout();
-            navigate('/login');
-          }}
-        >
-          登出
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            className="text-blue-600 hover:underline"
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+          >
+            登出
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
       <div className="overflow-x-auto">
-        <div className="grid grid-cols-5 min-w-[500px] border-b border-gray-300 text-center text-sm font-medium">
+        <div className="grid grid-cols-5 min-w-[500px] border-b border-gray-200 text-center text-sm font-medium tracking-wide">
           {tabs.map((tab, index) => (
             <div
               key={index}
               onClick={() => setActiveTab(index)}
-              className={`py-3 cursor-pointer transition-all ${
+              className={`py-3 cursor-pointer transition-all duration-200 ${
                 activeTab === index
-                  ? 'bg-white border-t border-l border-r border-gray-300 rounded-t-md font-bold'
-                  : 'bg-[#f8f5f1] hover:bg-white'
+                  ? 'text-logo-tan border-b-2 border-logo-tan bg-white font-semibold'
+                  : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
               {tab}
@@ -72,7 +63,7 @@ function User() {
       </div>
 
       {/* Content */}
-      <div className="bg-white min-h-[400px] p-6 border border-t-0 border-gray-300 rounded-b-md">
+      <div className="bg-white min-h-[400px] p-6 mt-4 ">
         {tabComponents[activeTab]}
       </div>
     </div>

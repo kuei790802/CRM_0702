@@ -5,7 +5,7 @@ import ProductCard from "./ProductCard.jsx";
 
 function ProductList({ products }) {
   return (
-    <section className="py-10 bg-[#f9f6f1] text-center">
+    <section className="py-10 text-center">
       <h2 className="text-2xl font-semibold mb-8">輕包裝水果冰棒</h2>
       <div className="flex flex-wrap justify-center gap-6">
         {products.map((product) => (

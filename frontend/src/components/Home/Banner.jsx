@@ -5,9 +5,9 @@ import "swiper/css";
 import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 
-import Banner1 from "../../assets/banner1.jpg";
-import Banner2 from "../../assets/banner2.jpg";
-import Banner3 from "../../assets/banner3.jpg";
+import Banner1 from "../../assets/banner4.png";
+import Banner2 from "../../assets/banner5.png";
+import Banner3 from "../../assets/banner6.png";
 
 function Banner() {
   const banners = [Banner1, Banner2, Banner3];
