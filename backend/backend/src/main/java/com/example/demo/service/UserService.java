@@ -97,14 +97,6 @@ public class UserService {
 
 
 
-        // 以下這段應該可以刪掉?
-//        boolean hasAdmin = persistedAuthorities.stream()
-//                .anyMatch(auth -> auth.getCode().equalsIgnoreCase("USER_CREATE"));
-//        if (!hasAdmin) {
-//            throw new AccessDeniedException("沒有建立使用者的權限");
-//        }
-
-
         User newUser = User.builder()
                 .account(account)
                 .userName(userName)
@@ -163,7 +155,7 @@ public class UserService {
     }
 
     // user修改自己資料
-    public void updateOwnProfile(String account, UpdateUserProfileRequest request) {
+    public UserProfileResponse updateOwnProfile(String account, UpdateUserProfileRequest request) {
         User user = userRepo.findByAccount(account)
                 .orElseThrow(() -> new UsernameNotFoundException("帳號不存在: " + account));
 
@@ -178,7 +170,22 @@ public class UserService {
             user.setPassword(encoder.encode(request.getNewPassword()));
         }
 
-        userRepo.save(user);
+        User saveduser = userRepo.save(user);
+
+        return new UserProfileResponse(
+                saveduser.getUserId(),
+                saveduser.getAccount(),
+                saveduser.getEmail(),
+                saveduser.getUserName(),
+                saveduser.isActive(),
+                saveduser.getRoleName(),
+                saveduser.getAuthorities().stream()
+                        .map(Authority::getCode)
+                        .collect(Collectors.toList()),
+                saveduser.getAccessStartDate(),
+                saveduser.getAccessEndDate(),
+                saveduser.getLastLogin()
+        );
     }
 
 

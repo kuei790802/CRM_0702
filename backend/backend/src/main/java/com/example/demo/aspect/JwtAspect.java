@@ -39,6 +39,7 @@ public class JwtAspect {
         String account = claims.getSubject(); // 或 claims.get("account", String.class)
         req.setAttribute("account", account);
         System.out.println("Set request attribute 'account' = " + account);
+        System.out.println("🪪 JWT 中帳號: " + account);
 
         // 把腳色資訊放進 request scope，給 controller 用(但好像customer沒有(?)
         String role = claims.get("role", String.class);

@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface MessageRepo extends JpaRepository<Message, Long> {
     // 可依顧客ID取得留言
-    List<Message> findByCustomerId(Long customerId);
+    List<Message> findBycCustomer(CCustomer customer);
 
-    List<Message> findByCCustomer(CCustomer customer);
+    List<Message> findBycCustomer_CustomerId(Long customerId);
 
 }

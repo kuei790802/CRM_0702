@@ -22,9 +22,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/customer")
 public class CCustomerController {
-
     private final CCustomerService cCustomerService;
-
     public CCustomerController(CCustomerService cCustomerService) {
         this.cCustomerService = cCustomerService;
     }
@@ -58,12 +56,13 @@ public class CCustomerController {
 //        return cCustomerService.getProfile(account);
 //    }
 
+
     @CheckJwt
     @GetMapping("/profile")
-    public CCustomerProfileResponse getProfile(HttpServletRequest request) {
+    public ResponseEntity<CCustomerProfileResponse> getProfile(HttpServletRequest request) {
         String account = (String) request.getAttribute("account");
         System.out.println("profile endpoint account = " + account);
-        return cCustomerService.getProfile(account);
+        return ResponseEntity.ok(cCustomerService.getProfile(account));
     }
 
     @CheckJwt

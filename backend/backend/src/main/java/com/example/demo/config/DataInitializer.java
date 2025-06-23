@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import com.example.demo.entity.Authority;
 import com.example.demo.entity.User;
+import com.example.demo.enums.AuthorityCode;
 import com.example.demo.repository.AuthorityRepo;
 import com.example.demo.repository.UserRepo;
 import org.springframework.boot.CommandLineRunner;
@@ -26,16 +27,28 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // 確認所有 enum 權限是否已存在，若不存在就建立
+        for (AuthorityCode code : AuthorityCode.values()) {
+            if (!authorityRepo.existsByCode(code.getCode())) {
+                authorityRepo.save(code.toAuthorityEntity());
+            }
+        }
+
+        // 建立 admin 使用者，並賦予所有權限（從資料庫抓取）
         if (userRepo.findByAccount("admin").isEmpty()) {
-            Authority allAccess = authorityRepo.save(
-                    Authority.builder()
-                            .code("ALL_ACCESS")
-                            .module("System")
-                            .description("全系統存取")
-                            .displayName("系統管理權限")
-                            .moduleGroup("SYSTEM")
-                            .build()
-            );
+            List<Authority> allAuthorities = authorityRepo.findAll();
+
+
+//        if (userRepo.findByAccount("admin").isEmpty()) {
+//            Authority allAccess = authorityRepo.save(
+//                    Authority.builder()
+//                            .code("ALL_ACCESS")
+//                            .module("System")
+//                            .description("全系統存取")
+//                            .displayName("系統管理權限")
+//                            .moduleGroup("SYSTEM")
+//                            .build()
+//            );
 
             User admin = User.builder()
                     .account("admin")
@@ -43,7 +56,7 @@ public class DataInitializer implements CommandLineRunner {
                     .password(encoder.encode("Admin123!@#"))
                     .email("admin@system.com")
                     .roleName("ADMIN")
-                    .authorities(List.of(allAccess))
+                    .authorities(allAuthorities)
                     .isActive(true)
                     .isDeleted(false)
                     .accessStartDate(LocalDate.now())

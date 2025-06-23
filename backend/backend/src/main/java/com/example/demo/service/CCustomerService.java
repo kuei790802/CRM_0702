@@ -6,6 +6,7 @@ import com.example.demo.entity.CCustomer;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
+import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.CCustomerRepo;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -107,7 +108,7 @@ public class CCustomerService {
     // 檢視顧客資料: 顯示用戶個人基本資訊（帳號、姓名、電話、地址等）資料查詢、權限驗證（只能看自己的資料）
     public CCustomerProfileResponse getProfile(String account) {
         CCustomer customer = cCustomerRepo.findByAccount(account)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(()-> new UsernameNotFoundException("找不到使用者: " + account));
 
         return new CCustomerProfileResponse(
                 customer.getAccount(),
