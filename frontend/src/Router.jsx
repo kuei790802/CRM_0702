@@ -23,6 +23,7 @@ import usersConfig from "./configs/usersConfig.jsx";
 import appListConfig from "./configs/appListConfig";
 import useUserStore from "./stores/userStore";
 import "antd/dist/reset.css";
+import BackLogin from "./backpages/BackLogin.jsx";
 //CRM相關頁面
 import CRMCustomer from "./backpages/crm/CRMCustomer.jsx";
 import CRMDashboard from "./backpages/crm/CRMDashboard.jsx";
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
       { path: "news/:id", element: <NewsDetail /> },
     ],
   },
+  {path: "/backlogin", element: <BackLogin />}, // 後台登入頁面
   {
     path: "/cms/*",
     element: ["admin", "editor"].includes(role) ? (

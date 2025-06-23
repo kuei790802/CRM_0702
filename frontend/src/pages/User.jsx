@@ -41,14 +41,6 @@ function User() {
         <div>
           你好, <span className="font-bold">{user?.name || '訪客'}</span>
         </div>
-        {['admin', 'editor', 'manager'].includes(user?.role) && (
-            <button
-              className="text-green-600 hover:underline"
-              onClick={handleAdminRedirect}
-            >
-              進入後台系統
-            </button>
-          )}
         <button
           className="text-blue-600 hover:underline"
           onClick={() => {

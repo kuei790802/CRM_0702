@@ -19,10 +19,12 @@ import { Button, ConfigProvider, Dropdown } from "antd";
 import React, { useState } from "react";
 import logo from "../assets/prologo.png";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import useBackUserStore from "../stores/useBackUserStore";
 
 export default function BaseLayout({ menuConfig, appListConfig }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logoutBackUser } = useBackUserStore();
   const pathname = location.pathname;
   const [settings, setSetting] = useState({
     fixSiderbar: true,
@@ -89,6 +91,7 @@ export default function BaseLayout({ menuConfig, appListConfig }) {
                         icon: <LogoutOutlined />,
                         label: "登出",
                         onClick: () => {
+                          logoutBackUser();
                           navigate("/login");
                         },
                       },
