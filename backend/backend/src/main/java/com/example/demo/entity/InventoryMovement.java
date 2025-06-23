@@ -58,4 +58,10 @@ public class InventoryMovement {
 
     @Column(name = "movement_date", nullable = false)
     private LocalDateTime movementDate;
+
+    @Column(name = "unit_cost_at_movement", nullable = false, precision = 18, scale = 2)
+    private BigDecimal unitCostAtMovement;
+
+    @Column(name = "total_cost_change",  nullable = false, precision = 18, scale = 2)
+    private BigDecimal totalCostChange;
 }

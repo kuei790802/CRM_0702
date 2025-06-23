@@ -2,7 +2,9 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,7 +18,9 @@ import java.util.Set;
 @DiscriminatorValue("B2B")
 @Getter
 @Setter
-@EntityListeners(AuditingEntityListener.class)
+@SuperBuilder
+@NoArgsConstructor
+//@EntityListeners(AuditingEntityListener.class)
 public class BCustomer extends CustomerBase{
 
 
@@ -25,7 +29,7 @@ public class BCustomer extends CustomerBase{
     @Column(name = "industry")
     private String industry;
 
-    @Column(name = "customertype")
+    @Column(name = "customer_type_detail")
     private String type;
 
     @Column(name = "sourceid")
@@ -41,13 +45,13 @@ public class BCustomer extends CustomerBase{
 
 
 
-    @CreatedDate
-    @Column(name = "customercreated", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "customerupdated")
-    private LocalDateTime updatedAt;
+//    @CreatedDate
+//    @Column(name = "customercreated", updatable = false)
+//    private LocalDateTime createdAt;
+//
+//    @LastModifiedDate
+//    @Column(name = "customerupdated")
+//    private LocalDateTime updatedAt;
 
     // ----- 多對多 -----
    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -58,9 +62,9 @@ public class BCustomer extends CustomerBase{
     )
     private Set<Tag> tags = new HashSet<>();
 
-    public BCustomer() {}
-    public BCustomer(String name) {
-        setName(name);
+//    public BCustomer() {}
+//    public BCustomer(String name) {
+//        setName(name);
     }
 
 
@@ -202,4 +206,4 @@ public class BCustomer extends CustomerBase{
 //                '}';
 //    }
 
-}
+

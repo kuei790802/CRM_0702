@@ -6,17 +6,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customer_base")
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "customer_type")
+@DiscriminatorColumn(name = "customer_type", discriminatorType = DiscriminatorType.STRING)
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public abstract class CustomerBase {
 
     @Id
@@ -43,15 +49,19 @@ public abstract class CustomerBase {
     @Column(name = "email")
     private String email;
 
+    @CreatedBy
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedBy
     @Column(name = "updated_by", nullable = false)
     private Long updatedBy;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 

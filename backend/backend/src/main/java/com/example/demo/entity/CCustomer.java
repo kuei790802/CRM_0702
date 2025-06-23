@@ -32,8 +32,8 @@ public class CCustomer extends CustomerBase{
 
     private LocalDate birthday;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+//    private LocalDateTime createdAt;
+//    private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
     private LocalDateTime accessStartTime;
     private LocalDateTime accessEndTime;
@@ -44,24 +44,24 @@ public class CCustomer extends CustomerBase{
     @Builder.Default
     private Boolean isDeleted = false;
 
-    @Column(name = "is_active", nullable = false)
-    @Builder.Default
-    private Boolean isActive = true;
+//    @Column(name = "is_active", nullable = false)
+//    @Builder.Default
+//    private Boolean isActive = true;
 
 
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        if (this.isDeleted == null) this.isDeleted = false;
-        if (this.isActive == null) this.isActive = true;
-
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+//    @PrePersist
+//    public void onCreate() {
+//        this.createdAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+//        if (this.isDeleted == null) this.isDeleted = false;
+//        if (this.isActive == null) this.isActive = true;
+//
+//    }
+//
+//    @PreUpdate
+//    public void onUpdate() {
+//        this.updatedAt = LocalDateTime.now();
+//    }
 
 
     @OneToOne(mappedBy = "CCustomer")
