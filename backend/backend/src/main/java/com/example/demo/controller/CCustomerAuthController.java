@@ -6,6 +6,7 @@ import com.example.demo.entity.CCustomer;
 import com.example.demo.entity.VIPLevel;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
+import com.example.demo.security.JwtUserPayload;
 import com.example.demo.service.CCustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,12 +33,7 @@ public class CCustomerAuthController {
                 req.getPassword()
         );
 
-        String token =  JwtTool.createToken(
-                cCustomer.getCustomerName(),
-                cCustomer.getAccount(),
-                cCustomer.getCustomerId(),
-                cCustomer.getVipLevel()
-        );
+        String token =  JwtTool.createToken(JwtUserPayload.fromCustomer(cCustomer));
 
         CCustomerLoginResponse res = CCustomerLoginResponse.builder()
                 .token(token)

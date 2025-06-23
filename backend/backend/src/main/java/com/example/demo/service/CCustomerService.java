@@ -4,9 +4,9 @@ import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
 import com.example.demo.exception.AccountAlreadyExistsException;
+import com.example.demo.exception.EmailAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.repository.CCustomerRepo;
-import com.example.demo.security.CheckJwt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +26,11 @@ public class CCustomerService {
     // 檢視帳號是否已存在
     public Boolean checkAccountExist(String account){
         return cCustomerRepo.findByAccount(account).isPresent();
+    }
+
+    // 檢視email是否已被註冊
+    public Boolean checkEmailExist(String email){
+        return cCustomerRepo.existsByEmail(email);
     }
 
     // 密碼強度規範
@@ -60,6 +65,10 @@ public class CCustomerService {
                             , LocalDate birthday){
         if(checkAccountExist(account)){
             throw new AccountAlreadyExistsException(account);
+        }
+
+        if(checkEmailExist(email)){
+            throw new EmailAlreadyExistsException(email);
         }
 
         validatePasswordStrength(password);

@@ -35,10 +35,14 @@ public class JwtAspect {
             throw new JwtException("Token expired");
         }
 
-        // ✅ 把帳號資訊放進 request scope，給 controller 用
+        // 把帳號資訊放進 request scope，給 controller 用
         String account = claims.getSubject(); // 或 claims.get("account", String.class)
         req.setAttribute("account", account);
         System.out.println("Set request attribute 'account' = " + account);
+
+        // 把腳色資訊放進 request scope，給 controller 用(但好像customer沒有(?)
+        String role = claims.get("role", String.class);
+        req.setAttribute("role", role);
 
         System.out.println("Token ok, account = " + account);
         System.out.println("JwtAspect checkJwt END");

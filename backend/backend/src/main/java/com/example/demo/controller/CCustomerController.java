@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 ///register, /update-profile, /delete-account
 /// 帳戶基本操作
@@ -27,6 +29,14 @@ public class CCustomerController {
         this.cCustomerService = cCustomerService;
     }
 
+    @GetMapping("/emailcheck")
+    public ResponseEntity<Map<String, Object>> emailcheck(@RequestParam String email) {
+        boolean exists = cCustomerService.checkEmailExist(email);
+        Map<String, Object> result = new HashMap<>();
+        result.put("exists", exists);
+        result.put("message", exists ? "true" : "false");
+        return ResponseEntity.ok(result);
+    }
 
     @PostMapping("/register")
     public ResponseEntity<CCustomer> register(@RequestBody CCustomerRegisterRequest req){

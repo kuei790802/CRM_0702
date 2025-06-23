@@ -20,34 +20,34 @@ public class MessageController {
         this.messageService = messageService;
     }
 
-    @CheckJwt
-    @PostMapping("/create")
-    public ResponseEntity<MessageResponse> createMessage(
-            HttpServletRequest request,
-            @RequestBody MessageCreateRequest messageCreateRequest){
+//    @CheckJwt
+//    @PostMapping("/create")
+//    public ResponseEntity<MessageResponse> createMessage(
+//            HttpServletRequest request,
+//            @RequestBody MessageCreateRequest messageCreateRequest){
+//
+//        String account = (String) request.getAttribute("account");
+//        // TODO: 用 account 查 customerId，假設 service 有方法轉換
+//        Long customerId = getCustomerIdByAccount(account);
+//
+//        MessageResponse created = messageService.createMessage(customerId, messageCreateRequest);
+//
+//        return ResponseEntity.ok(created);
+//    }
 
-        String account = (String) request.getAttribute("account");
-        // TODO: 用 account 查 customerId，假設 service 有方法轉換
-        Long customerId = getCustomerIdByAccount(account);
-
-        MessageResponse created = messageService.createMessage(customerId, messageCreateRequest);
-
-        return ResponseEntity.ok(created);
-    }
-
-    @CheckJwt
-    @GetMapping("/list")
-    public ResponseEntity<List<MessageResponse>> getMessages(HttpServletRequest request){
-        String account = (String) request.getAttribute("account");
-        Long customerId = getCustomerIdByAccount(account);
-
-        List<MessageResponse> messages = messageService.getMessagesByCustomer(customerId);
-        return ResponseEntity.ok(messages);
-    }
-
-    // TODO: 實作 getCustomerIdByAccount 或改用 service 注入 CCustomerService 查詢
-    private Long getCustomerIdByAccount(String account){
-        // 範例：請自行實作
-        return 1L; // placeholder
-    }
+//    @CheckJwt
+//    @GetMapping("/list")
+//    public ResponseEntity<List<MessageResponse>> getMessages(HttpServletRequest request){
+//        String account = (String) request.getAttribute("account");
+//        Long customerId = getCustomerIdByAccount(account);
+//
+//        List<MessageResponse> messages = messageService.getMessagesByCustomer(customerId);
+//        return ResponseEntity.ok(messages);
+//    }
+//
+//    // TODO: 實作 getCustomerIdByAccount 或改用 service 注入 CCustomerService 查詢
+//    private Long getCustomerIdByAccount(String account){
+//        // 範例：請自行實作
+//        return 1L; // placeholder
+//    }
 }

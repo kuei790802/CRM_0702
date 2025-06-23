@@ -7,6 +7,7 @@ import com.example.demo.entity.CCustomer;
 import com.example.demo.entity.User;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
+import com.example.demo.security.JwtUserPayload;
 import com.example.demo.service.CCustomerService;
 import com.example.demo.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -29,21 +30,17 @@ public class UserAuthController {
                 req.getPassword()
         );
 
-        String token =  JwtTool.createToken(
-                user.getCustomerName(),
-                user.getAccount(),
-                user.getCustomerId(),
-                user.getVipLevel()
-        );
+        String token =  JwtTool.createToken(JwtUserPayload.fromUser(user));
 
-        CCustomerLoginResponse res = CCustomerLoginResponse.builder()
+        UserLoginResponse res = UserLoginResponse.builder()
                 .token(token)
                 .account(user.getAccount())
-                .customerName(user.getCustomerName())
+                .userId(user.getUserId())
+                .userName(user.getUserName())
                 .email(user.getEmail())
-                .birthday(user.getBirthday())
-                .createdAt(user.getCreatedAt())
-                .spending(user.getSpending())
+                .roleName(user.getRoleName())
+                .lastLogin(user.getLastLogin())
+                .accessEndDate(user.getAccessEndDate())
                 .build();
         return ResponseEntity.ok(res);
     }

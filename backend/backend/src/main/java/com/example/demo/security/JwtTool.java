@@ -18,16 +18,30 @@ public class JwtTool {
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
 
-    public static String createToken(String customerName, String account, Long customerId, VIPLevel vipLevel){
+    public static String createToken(
+            // 先註解，原本寫死，改成彈性的jwtpayload
+            // String customerName, String account, Long customerId, VIPLevel vipLevel
+            JwtUserPayload payload){
         return Jwts.builder()
-                .setSubject(account)
-                .claim("customerId", customerId)
-                .claim("customerName", customerName)
-                .claim("viplevel", vipLevel)
+                .setSubject(payload.getAccount())
+                .claim("id", payload.getId())
+                .claim("name", payload.getName())
+                .claim("role", payload.getRole())
+                .claim("authorities", payload.getAuthorities()) // Optional
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+            // return Jwts.builder()
+            // .setSubject(account)
+            // .claim("customerId", customerId)
+            // .claim("customerName", customerName)
+            // .claim("viplevel", vipLevel)
+            // .setIssuedAt(new Date())
+            // .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+            // .signWith(key, SignatureAlgorithm.HS256)
+            // .compact();
+
     }
 
     // 回傳整個 payload
