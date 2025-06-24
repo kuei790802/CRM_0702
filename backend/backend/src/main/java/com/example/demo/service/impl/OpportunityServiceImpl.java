@@ -205,9 +205,7 @@ public class OpportunityServiceImpl implements OpportunityService {
                 .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + opportunityId + " 的商機進行評分"));
 
         // 3. 更新評分相關字段
-        // 注意：這裡假設一個用戶可以重複評分，每次評分都會計入總和。
-        // 如果您需要實現「一個用戶只能評分一次」的功能，則需要更複雜的邏輯，
-        // 例如額外的評分記錄表，或者在 Opportunity 實體中儲存 Map<Long, Integer> 來記錄每個用戶的評分。
+        // 一個用戶可以重複評分，每次評分都會計入總和。
         opportunity.setTotalRatingSum(opportunity.getTotalRatingSum() + ratingScore);
         opportunity.setNumberOfRatings(opportunity.getNumberOfRatings() + 1);
 
@@ -218,7 +216,6 @@ public class OpportunityServiceImpl implements OpportunityService {
         Opportunity updatedOpportunity = opportunityRepository.save(opportunity);
 
         // 5. 將更新後的實體轉換為 DTO。
-        // 同上，如果 toResponse 需要 currentUserId 但這裡沒有，請調整
         return opportunityMapper.toResponse(updatedOpportunity, null);
     }
 
@@ -266,7 +263,7 @@ public class OpportunityServiceImpl implements OpportunityService {
             // 從 opportunitiesByStage 中獲取商機列表，如果不存在則設為空列表
             List<Opportunity> opportunitiesInStage = opportunitiesByStage.getOrDefault(stage, Collections.emptyList());
             List<OpportunityDto> opportunityDtos = opportunitiesInStage.stream()
-                    .map(opportunity -> opportunityMapper.toResponse(opportunity, null)) // 使用您現有的 Mapper
+                    .map(opportunity -> opportunityMapper.toResponse(opportunity, null))
                     .collect(Collectors.toList());
             stageDto.setOpportunities(opportunityDtos);
 

@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import com.example.demo.dto.response.dashboard.NameValueDto;
 import com.example.demo.entity.Opportunity;
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
@@ -8,8 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OpportunityRepository extends JpaRepository<Opportunity, Long>,
@@ -91,4 +94,26 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long>,
             "GROUP BY o.stage " +
             "ORDER BY o.stage")
     List<SalesFunnelRepository> getFunnelStageSummaries();
+
+    /**
+     * [匯總查詢] 按階段統計活躍商機的數量。
+     * @return 一個列表，每個元素包含一個階段名稱(name)和對應的商機數量(value)。
+     */
+    @Query("SELECT o.stage, COUNT(o) FROM Opportunity o WHERE o.status = 'OPEN' GROUP BY o.stage")
+    List<Object[]> countOpenOpportunitiesByStage();
+
+    /**
+     * [匯總查詢] 按月份統計指定日期之後的新增商機數量。
+     * @param startDate 開始統計的日期時間。
+     * @return 一個列表，每個元素包含一個年月字串(name)和對應的新增商機數量(value)。
+     */
+    @Query("SELECT FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), COUNT(o) FROM Opportunity o WHERE o.createdAt >= :startDate GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m') ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m') ASC")
+    List<Object[]> countNewOpportunitiesByMonth(@Param("startDate") LocalDateTime startDate);
+
+    /**
+     * 根據指定的商機狀態，計算符合條件的商機總數。
+     * @param status 要計算的商機狀態。
+     * @return 符合條件的商機數量。
+     */
+    long countByStatus(OpportunityStatus status);
 }
