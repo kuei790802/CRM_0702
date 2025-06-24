@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.request.OpportunityPriorityRequest;
 import com.example.demo.dto.request.OpportunityRequest;
 import com.example.demo.dto.response.OpportunityDto;
+import com.example.demo.dto.response.SalesFunnelDto;
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.service.OpportunityService;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/opportunities")
@@ -157,5 +159,15 @@ public class OpportunityController {
 
         OpportunityDto updatedOpportunity = opportunityService.setPriority(id, request);
         return ResponseEntity.ok(updatedOpportunity);
+    }
+
+    /**
+     * GET /api/opportunities/funnel : 獲取銷售漏斗資料
+     * @return 包含所有活躍銷售階段及其商機的列表
+     */
+    @GetMapping("/funnel")
+    public ResponseEntity<List<SalesFunnelDto>> getSalesFunnel() {
+        List<SalesFunnelDto> funnelData = opportunityService.getSalesFunnelData();
+        return ResponseEntity.ok(funnelData);
     }
 }

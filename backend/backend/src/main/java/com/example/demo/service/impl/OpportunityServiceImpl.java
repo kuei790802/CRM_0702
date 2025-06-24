@@ -3,6 +3,7 @@ package com.example.demo.service.impl;
 import com.example.demo.dto.request.OpportunityPriorityRequest;
 import com.example.demo.dto.request.OpportunityRequest;
 import com.example.demo.dto.response.OpportunityDto;
+import com.example.demo.dto.response.SalesFunnelDto;
 import com.example.demo.entity.BCustomer;
 import com.example.demo.entity.Contact;
 import com.example.demo.entity.Opportunity;
@@ -10,10 +11,7 @@ import com.example.demo.entity.Tag;
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.mapper.OpportunityMapper;
-import com.example.demo.repository.BCustomerRepository;
-import com.example.demo.repository.ContactRepository;
-import com.example.demo.repository.OpportunityRepository;
-import com.example.demo.repository.TagRepository;
+import com.example.demo.repository.*;
 import com.example.demo.service.OpportunityService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
@@ -25,6 +23,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -235,6 +234,49 @@ public class OpportunityServiceImpl implements OpportunityService {
         Opportunity updatedOpportunity = opportunityRepository.save(opportunity);
 
         return opportunityMapper.toResponse(updatedOpportunity, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesFunnelDto> getSalesFunnelData() {
+        // 步驟 1: 查詢每個階段的匯總數據 (數量和總金額)
+        List<SalesFunnelRepository> summaries = opportunityRepository.getFunnelStageSummaries();
+        Map<OpportunityStage, SalesFunnelRepository> summaryMap = summaries.stream()
+                .collect(Collectors.toMap(SalesFunnelRepository::getStage, summary -> summary));
+
+        // 步驟 2: 一次性查詢出所有 OPEN 的商機，並按階段分組
+        List<Opportunity> openOpportunities = opportunityRepository.findByStatus(OpportunityStatus.OPEN);
+        Map<OpportunityStage, List<Opportunity>> opportunitiesByStage = openOpportunities.stream()
+                .collect(Collectors.groupingBy(Opportunity::getStage));
+
+        // 步驟 3: 遍歷所有可能的階段枚舉值，以確保即使某階段沒有商機也能顯示
+        List<SalesFunnelDto> funnelData = new ArrayList<>();
+        for (OpportunityStage stage : OpportunityStage.values()) {
+            SalesFunnelDto stageDto = new SalesFunnelDto();
+            stageDto.setStage(stage);
+            // 這裡可以自訂顯示名稱，或在 Enum 中定義
+            stageDto.setStageDisplayName(stage.name());
+
+            // 從 summaryMap 中獲取匯總數據，如果不存在則設為 0
+            SalesFunnelRepository summary = summaryMap.get(stage);
+            stageDto.setTotalCount(summary != null ? summary.getTotalCount() : 0L);
+            stageDto.setTotalExpectedValue(summary != null && summary.getTotalValue()
+                    != null ? summary.getTotalValue() : BigDecimal.ZERO);
+
+            // 從 opportunitiesByStage 中獲取商機列表，如果不存在則設為空列表
+            List<Opportunity> opportunitiesInStage = opportunitiesByStage.getOrDefault(stage, Collections.emptyList());
+            List<OpportunityDto> opportunityDtos = opportunitiesInStage.stream()
+                    .map(opportunity -> opportunityMapper.toResponse(opportunity, null)) // 使用您現有的 Mapper
+                    .collect(Collectors.toList());
+            stageDto.setOpportunities(opportunityDtos);
+
+            funnelData.add(stageDto);
+        }
+
+        // 過濾掉不屬於活躍漏斗的階段
+        return funnelData.stream()
+                .filter(stageDto -> stageDto.getStage() != OpportunityStage.CLOSED_LOST && stageDto.getStage() != OpportunityStage.CLOSED_WON)
+                .collect(Collectors.toList());
     }
 
     /**

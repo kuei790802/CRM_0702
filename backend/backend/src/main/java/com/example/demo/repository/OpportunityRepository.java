@@ -7,8 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface OpportunityRepository extends JpaRepository<Opportunity, Long>,
         JpaSpecificationExecutor<Opportunity> {
@@ -68,4 +70,25 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long>,
      * @return 預計結束日期在指定日期之前的商機分頁列表。
      */
     Page<Opportunity> findByCloseDateBefore(LocalDate closeDate, Pageable pageable);
+
+    /**
+     * 查詢所有狀態為 OPEN 的商機。
+     * 用於在服務層中一次性獲取所有需要處理的商機，避免 N+1 查詢問題。
+     * @param status 要查詢的狀態，固定為 OPEN
+     * @return 狀態為 OPEN 的商機列表
+     */
+    List<Opportunity> findByStatus(OpportunityStatus status);
+
+    /**
+     * 匯總查詢：按階段分組，計算每個階段的商機數量和預期總金額。
+     * - 只計算狀態為 OPEN 的商機，因為已結束的商機不屬於銷售漏斗。
+     * - 使用我們上面定義的 FunnelStageSummary 介面來接收結果。
+     * @return 每個階段的匯總數據列表
+     */
+    @Query("SELECT o.stage as stage, COUNT(o.opportunityId) as totalCount, SUM(o.expectedValue) as totalValue " +
+            "FROM Opportunity o " +
+            "WHERE o.status = 'OPEN' " +
+            "GROUP BY o.stage " +
+            "ORDER BY o.stage")
+    List<SalesFunnelRepository> getFunnelStageSummaries();
 }
