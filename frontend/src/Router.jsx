@@ -20,7 +20,7 @@ import erpConfig from "./configs/erpConfig";
 import crmConfig from "./configs/crmConfig";
 import usersConfig from "./configs/usersConfig.jsx";
 import appListConfig from "./configs/appListConfig";
-import useUserStore from "./stores/userStore";
+import useUserStore from "./stores/useBackUserStore";
 import "antd/dist/reset.css";
 import BackLogin from "./backpages/BackLogin.jsx";
 //CRM相關頁面
@@ -47,7 +47,7 @@ import UsersManage from "./backpages/users/usersManage.jsx";
 import UsersLogs from "./backpages/users/usersLogs.jsx";
 
 const user = useUserStore.getState().user;
-const role = user?.role || "guest";
+const role = user?.role || "admin";
 const getFilteredAppList = (role) =>
   appListConfig.filter((item) => item.roles.includes(role));
 const filteredAppList = getFilteredAppList(role);

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../api/axiosFrontend';
 
 const useUserStore = create((set) => {
   const storedToken = localStorage.getItem('token');

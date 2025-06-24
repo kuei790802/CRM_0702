@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CategoryButton from "../components/Store/CategoryButton";
 import ProductCard from "../components/Store/ProductCardCard";
-import axios from "../api/axiosInstance";
+import axios from "../api/axiosFrontend";
 
 function Store() {
   const [storeData, setStoreData] = useState([]);

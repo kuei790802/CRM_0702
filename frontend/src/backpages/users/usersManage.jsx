@@ -3,7 +3,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { ProTable, TableDropdown } from "@ant-design/pro-components";
 import { Button, Pagination, Tag } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from "../../api/axiosInstance";
+import axios from "../../api/axiosBackend";
 
 const PAGE_SIZE = 10;
 

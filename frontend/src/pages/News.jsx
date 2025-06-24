@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from '../api/axiosInstance'
+import axios from '../api/axiosFrontend'
 import NewsSection from '../components/News/NewsSection.jsx'
 
 

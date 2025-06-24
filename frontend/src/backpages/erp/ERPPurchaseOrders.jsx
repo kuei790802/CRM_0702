@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ProList } from '@ant-design/pro-components';
 import { Button, Progress, Space, Tag } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../api/axiosInstance';
+import axios from '../../api/axiosBackend';
 
 const ERPPurchaseOrders = () => {
   const [dataSource, setDataSource] = useState([]);

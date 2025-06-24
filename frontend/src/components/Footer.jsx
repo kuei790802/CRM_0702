@@ -1,6 +1,6 @@
 import { FaFacebookF, FaInstagram, FaLine } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import useBackUserStore from "../stores/useBackUserStore"; // ✅ 引入狀態管理
+import useBackUserStore from "../stores/useBackUserStore"; 
 
 function Footer() {
   const navigate = useNavigate();

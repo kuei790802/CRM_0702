@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, DatePicker, Space, Tag, message } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
-import axios from '../../api/axiosInstance';
+import axios from '../../api/axiosBackend';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;

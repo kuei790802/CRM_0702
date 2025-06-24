@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import { Pagination, Tag } from 'antd';
-import axios from '../../api/axiosInstance';
+import axios from '../../api/axiosBackend';
 
 const PAGE_SIZE = 10;
 
