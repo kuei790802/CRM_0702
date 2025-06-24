@@ -54,12 +54,12 @@
 //            List<Unit> savedUnits = createAndSaveUnits();
 //            List<ProductCategory> savedCategories = createAndSaveCategories();
 //
-//            System.out.println("偵測到為 dev 環境且無商品資料，開始產生500筆商品假資料...");
+//            System.out.println("偵測到為 dev 環境且無商品資料，開始產生50筆商品假資料...");
 //
 //            Faker faker = new Faker(Locale.TAIWAN);
 //            List<Product> productList = new ArrayList<>();
 //
-//            for (int i = 0; i < 500; i++) {
+//            for (int i = 0; i < 50; i++) {
 //                Product product = new Product();
 //
 //                String name = ICE_CREAM_PREFIXES[ThreadLocalRandom.current().nextInt(ICE_CREAM_PREFIXES.length)] +
@@ -75,8 +75,8 @@
 //                Unit randomUnit = savedUnits.get(ThreadLocalRandom.current().nextInt(savedUnits.size()));
 //                ProductCategory randomCategory = savedCategories.get(ThreadLocalRandom.current().nextInt(savedCategories.size()));
 //
-//                product.setUnitId(randomUnit.getUnitId());
-//                product.setCategoryId(randomCategory.getCategoryId());
+//                product.setUnit(randomUnit);
+//                product.setCategory(randomCategory);
 //
 //                double price = ThreadLocalRandom.current().nextDouble(45.0, 350.0);
 //                product.setBasePrice(BigDecimal.valueOf(price).setScale(2, BigDecimal.ROUND_HALF_UP));
@@ -91,7 +91,7 @@
 //            }
 //
 //            productRepository.saveAll(productList);
-//            System.out.println("500筆商品假資料已成功寫入資料庫！");
+//            System.out.println("50筆商品假資料已成功寫入資料庫！");
 //        };
 //    }
 //

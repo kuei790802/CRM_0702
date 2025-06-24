@@ -13,7 +13,7 @@ function Store() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("/products");
+        const res = await axios.get("/cmsproducts");
         setStoreData(res.data);
       } catch (err) {
         console.error("抓取商品失敗", err);

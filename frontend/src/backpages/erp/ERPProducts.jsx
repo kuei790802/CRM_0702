@@ -16,72 +16,74 @@ const ERPProducts = () => {
   const navigate = useNavigate();
 
   const fetchData = async (page = 1) => {
-    setLoading(true);
-    try {
-      const res = await axios.get('/erp/products', {
-        params: { page, pageSize: PAGE_SIZE },
-      });
-      setData(res.data.data);
-      setTotal(res.data.total);
-    } catch (error) {
-      console.error('產品清單抓取失敗:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const res = await axios.get('/products', {
+      params: {
+        page: page - 1,           // 後端從 0 開始
+        size: PAGE_SIZE,
+        sort: 'productId',        // 根據需要排序的欄位
+      },
+    });
+    setData(res.data.content);     // 注意這邊是 content，不是 data.data
+    setTotal(res.data.totalElements); // 總筆數
+    console.log('產品清單:', res.data.content);
+  } catch (error) {
+    console.error('產品清單抓取失敗:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData(currentPage);
   }, [currentPage]);
 
   const columns = [
-    {
-      title: '產品名稱',
-      dataIndex: 'productName',
-      copyable: true,
-      ellipsis: true,
+  {
+    title: '產品名稱',
+    dataIndex: 'name',
+    copyable: true,
+    ellipsis: true,
+  },
+  {
+    title: '產品編號',
+    dataIndex: 'productCode',
+  },
+  {
+    title: '分類',
+    dataIndex: 'categoryName',
+  },
+  {
+    title: '價格',
+    dataIndex: 'basePrice',
+    render: (price) => <span>${price.toFixed(2)}</span>,
+  },
+  {
+    title: '狀態',
+    dataIndex: 'isSalable',
+    valueType: 'select',
+    valueEnum: {
+      true: { text: '上架中', status: 'Success' },
+      false: { text: '已下架', status: 'Default' },
     },
-    {
-      title: '產品編號',
-      dataIndex: 'sku',
-    },
-    {
-      title: '分類',
-      dataIndex: 'category',
-    },
-    {
-      title: '庫存數量',
-      dataIndex: 'stock',
-      render: (_, record) => (
-        <span>{record.stock} 件</span>
-      ),
-    },
-    {
-      title: '狀態',
-      dataIndex: 'status',
-      valueType: 'select',
-      valueEnum: {
-        active: { text: '上架中', status: 'Success' },
-        inactive: { text: '已下架', status: 'Default' },
-        lowstock: { text: '庫存不足', status: 'Warning' },
-      },
-    },
-    {
-      title: '操作',
-      valueType: 'option',
-      key: 'option',
-      render: (_, record) => [
-        <a key="edit" onClick={() => navigate(`/erp/product/${record.id}`)}>編輯</a>,
-        <TableDropdown
-          key="dropdown"
-          menus={[
-            { key: 'copy', name: '複製' },
-            { key: 'delete', name: '刪除' },
-          ]}
-        />,
-      ],
-    },
-  ];
+  },
+  {
+    title: '操作',
+    valueType: 'option',
+    key: 'option',
+    render: (_, record) => [
+      <a key="edit" onClick={() => navigate(`/erp/product/${record.productId}`)}>編輯</a>,
+      <TableDropdown
+        key="dropdown"
+        menus={[
+          { key: 'copy', name: '複製' },
+          { key: 'delete', name: '刪除' },
+        ]}
+      />,
+    ],
+  },
+];
 
   return (
     <div className="bg-white px-2">

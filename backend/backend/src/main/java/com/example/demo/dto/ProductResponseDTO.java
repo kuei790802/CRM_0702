@@ -16,6 +16,7 @@ public class ProductResponseDTO {
     private String description;
     private BigDecimal basePrice;
     private Boolean isActive;
+    private Boolean isSalable;
     private String taxType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -32,6 +33,7 @@ public class ProductResponseDTO {
         dto.setDescription(product.getDescription());
         dto.setBasePrice(product.getBasePrice());
         dto.setIsActive(product.getIsActive());
+        dto.setIsSalable(product.getIsSalable());
         dto.setTaxType(product.getTaxType());
         dto.setCreatedAt(product.getCreatedAt());
         dto.setUpdatedAt(product.getUpdatedAt());

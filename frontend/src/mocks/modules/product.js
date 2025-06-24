@@ -4,7 +4,7 @@ import product2 from "../../assets/product2.png";
 import product3 from "../../assets/product3.png";
 
 export const productHandlers = [
-  rest.get("/api/products", (req, res, ctx) => {
+  rest.get("/api/cmsproducts", (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json([
