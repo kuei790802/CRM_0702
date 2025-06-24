@@ -32,7 +32,7 @@ public class Message {
     // 客戶發的留言
     @ManyToOne
     @JoinColumn(name = "customer_id")
-    private CCustomer CCustomer;
+    private CCustomer cCustomer;
 
     // 哪個後台人員回覆
     @ManyToOne

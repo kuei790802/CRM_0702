@@ -36,5 +36,6 @@ public class Authority {
     private String moduleGroup;
 
     @ManyToMany(mappedBy = "authorities")
+    @ToString.Exclude
     private List<User> users;
 }

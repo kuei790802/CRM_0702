@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,26 +23,34 @@ public class User {
 
     @Column(nullable = false)
     private String userName;
+
     @Column(nullable = false, unique = true)
     private String account;
+
     @Column(nullable = false)
     private String password;
+
     @Column(nullable = false, unique = true)
     private String email;
 
+    // 還是保留，單純方便gui查看角色roleName
     private String roleName;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
-    private LocalDateTime accessStartTime;
-    private LocalDateTime accessEndTime;
+
+    private LocalDate accessStartDate;
+    private LocalDate accessEndDate;
 
     private boolean isDeleted;
     private boolean isActive;
 
     @PrePersist
     public void onCreate() {
+        this.isDeleted = false;
+        this.isActive = true;
+        this.accessStartDate = LocalDate.now();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -52,7 +61,8 @@ public class User {
     }
 
 
-    @ManyToMany
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_authority",
             joinColumns = @JoinColumn(name = "user_id"),

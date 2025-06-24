@@ -3,7 +3,9 @@ package com.example.demo.dto.response;
 import jakarta.persistence.Column;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Data
@@ -18,4 +20,5 @@ public class UserLoginResponse{
     private String email;
     private String roleName;
     private LocalDateTime lastLogin;
+    private LocalDate accessEndDate;
 }
