@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 ///login, /test, /get-token
 /// 登入、JWT、驗證類
 @RestController
-@RequestMapping("/customer/auth")
+@RequestMapping("/api/customer/auth")
 public class CCustomerAuthController {
 
     private final CCustomerService cCustomerService;

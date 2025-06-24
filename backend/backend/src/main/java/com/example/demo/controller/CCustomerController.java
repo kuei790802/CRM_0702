@@ -20,7 +20,7 @@ import java.util.Map;
 ///register, /update-profile, /delete-account
 /// 帳戶基本操作
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/api/customer")
 public class CCustomerController {
     private final CCustomerService cCustomerService;
     public CCustomerController(CCustomerService cCustomerService) {

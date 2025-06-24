@@ -188,6 +188,13 @@ public class UserService {
         );
     }
 
+    //ID找帳號
+    public Long getUserIdByAccount(String account) {
+        return userRepo.findByAccount(account)
+                .map(User::getUserId)
+                .orElseThrow(() -> new UsernameNotFoundException("找不到使用者: " + account));
+    }
+
 
     // 不同權限進入不同模組，如何管理權限?
 

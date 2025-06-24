@@ -168,6 +168,13 @@ public class CCustomerService {
         );
     }
 
+    // ID找帳號
+    public Long getCustomerIdByAccount(String account) {
+        return cCustomerRepo.findByAccount(account)
+                .map(CCustomer::getCustomerId)
+                .orElseThrow(() -> new UsernameNotFoundException("找不到顧客: " + account));
+    }
+
 
 
 
