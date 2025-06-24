@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.example.demo.entity.Users;
+import com.example.demo.entity.*;
 import com.example.demo.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import com.example.demo.entity.Product;
-import com.example.demo.entity.ProductCategory;
-import com.example.demo.entity.Unit;
 import com.github.javafaker.Faker;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -126,16 +123,16 @@ public class DataInitializer {
     private void createSystemUserIfNotExists() {
         if (userRepository.findById(SYSTEM_USER_ID).isEmpty()) {
             log.info("Creating system user with ID: {}", SYSTEM_USER_ID);
-            Users systemUser = new Users();
+            User systemUser = new User();
             systemUser.setUserId(SYSTEM_USER_ID);
-            systemUser.setUsername("system");
+            systemUser.setUserName("system");
             systemUser.setEmail("system@example.com");
 
             String systemPassword = "abc123456"; // You can change this to any password
             String hashedPassword = passwordEncoder.encode(systemPassword);
-            systemUser.setPasswordHash(hashedPassword);
+            systemUser.setPassword(hashedPassword);
 
-            systemUser.setRoleId(1L);
+            systemUser.setRoleName("SYSTEM_ADMIN");
 
 
             userRepository.save(systemUser);

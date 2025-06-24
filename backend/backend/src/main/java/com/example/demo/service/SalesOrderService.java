@@ -74,13 +74,12 @@ public class SalesOrderService {
             Product product = productRepository.findById(detailDTO.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + detailDTO.getProductId() + " 的產品"));
 
-            if (!product.getIsActive() || !product.isSalable()) {
+            if (!product.getIsActive() || !product.getIsSalable()) {
                 throw new DataConflictException("產品 '" + product.getName() + "' 非啟用或不可銷售狀態。");
             }
 
             SalesOrderDetail detail = new SalesOrderDetail();
             detail.setProduct(product);
-            detail.setProductId(detailDTO.getProductId());
             detail.setQuantity(detailDTO.getQuantity());
             detail.setUnitPrice(detailDTO.getUnitPrice());
             detail.setItemSequence(sequence++);

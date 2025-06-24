@@ -50,7 +50,7 @@ public class CCustomerService {
 
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
-                .customerName(customerName)
+                .name(customerName)
                 .password(encoder.encode(password))
                 .email(email)
                 .address(address)
@@ -85,7 +85,7 @@ public class CCustomerService {
 
         return new CCustomerProfileResponse(
                 customer.getAccount(),
-                customer.getCustomerName(),
+                customer.getName(),
                 customer.getEmail(),
                 customer.getAddress(),
                 customer.getBirthday()

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,12 +69,15 @@ public class OrderService {
         // 3. 檢查所有商品的庫存
         for (CartDetail detail : cart.getCartdetails()) {
             Product product = detail.getProduct();
-            int requiredQuantity = detail.getQuantity();
-            int availableStock = product.getInventories().stream()
-                    .mapToInt(inv -> inv.getUnitsinstock() - inv.getUnitsinreserved())
-                    .sum();
+            BigDecimal requiredQuantity = BigDecimal.valueOf(detail.getQuantity());
+            BigDecimal availableStock = getAvailableStock(product.getProductId());
+
+//            int requiredQuantity = detail.getQuantity();
+//            int availableStock = product.getInventories().stream()
+//                    .mapToInt(inv -> inv.getUnitsinstock() - inv.getUnitsinreserved())
+//                    .sum();
             if (availableStock < requiredQuantity) {
-                throw new IllegalStateException("商品 [" + product.getProductname() + "] 庫存不足");
+                throw new IllegalStateException("商品 [" + product.getName() + "] 庫存不足");
             }
         }
 

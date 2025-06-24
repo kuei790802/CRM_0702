@@ -36,6 +36,10 @@ public class Product {
     @JoinColumn(name = "unit_id", nullable = false)
     private Unit unit;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private Supplier preferredSupplier;
+
     @Column(name = "is_purchasable", nullable = false)
     private Boolean isPurchasable = true;
 
@@ -59,12 +63,19 @@ public class Product {
     private Boolean isActive = true;
 
 
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by", nullable = false, updatable = false)
     private Long createdBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    private User createdByUser;
 
     @Column(name = "updated_by", nullable = false)
     private Long updatedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", insertable = false, updatable = false)
+    private User updatedByUser;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

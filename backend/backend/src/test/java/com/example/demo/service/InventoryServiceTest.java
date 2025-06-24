@@ -57,12 +57,12 @@ class InventoryServiceTest {
     private Warehouse sampleWarehouse;
     private Inventory sampleInventory;
     private PurchaseOrder samplePurchaseOrder;
-    private Users receivingUser;
+    private User receivingUser;
 
     @BeforeEach
     void setUp() {
 
-        receivingUser = new Users();
+        receivingUser = new User();
         receivingUser.setUserId(1L);
         receivingUser.setUsername("TestUser");
 
@@ -146,7 +146,7 @@ class InventoryServiceTest {
         detail1.setQuantity(new BigDecimal("10"));
         salesOrder.addDetail(detail1);
 
-        Users operator = new Users();
+        User operator = new User();
         operator.setUserId(1L);
         operator.setUsername("TestUser");
 

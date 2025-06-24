@@ -66,7 +66,7 @@ public class InventoryService {
         for (PurchaseOrderDetail detail : purchaseOrder.getDetails()) {
             this.adjustInventory(
                     detail.getProduct().getProductId(),
-                    detail.getWarehouseId(),
+                    detail.getWarehouse().getWarehouseId(),
                     detail.getQuantity(),
                     detail.getUnitPrice(),
                     MovementType.PURCHASE_IN,

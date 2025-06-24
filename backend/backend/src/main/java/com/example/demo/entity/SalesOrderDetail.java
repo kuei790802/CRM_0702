@@ -27,11 +27,8 @@ public class SalesOrderDetail {
     private Integer itemSequence;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
-
-    @Column(name = "product_id", nullable = false)
-    private Long productId;
 
     @Column(name = "specification", length = 255)
     private String specification;
@@ -76,5 +73,15 @@ public class SalesOrderDetail {
 
     @Column(name = "updated_by",nullable = false)
     private Long updatedBy;
+
+    // Maintain backward compatibility with code using productId
+    public Long getProductId() {
+        return product != null ? product.getProductId() : null;
+    }
+
+    public void setProductId(Long productId) {
+        // This method intentionally left empty to maintain compatibility
+        // The product relationship should be set directly instead
+    }
 
 }
