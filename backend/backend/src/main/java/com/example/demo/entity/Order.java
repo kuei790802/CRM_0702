@@ -4,6 +4,7 @@ package com.example.demo.entity;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentMethod;
 import com.example.demo.enums.PaymentStatus;
+import com.example.demo.enums.ShippingMethod;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,11 +41,13 @@ public class Order {
     @Column(name = "orderstatus")
     private OrderStatus orderStatus;
 
-    // ====================== 【以下為新增的欄位】 ======================
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false) // 設定為不允許 null
     private PaymentMethod paymentMethod;
-    // ===============================================================
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shipping_method")
+    private ShippingMethod shippingMethod;
 
     @ManyToOne
     @JoinColumn(name = "addressid")

@@ -4,6 +4,7 @@ import com.example.demo.config.EcpayProperties;
 import com.example.demo.dto.ecpay.AioCheckoutDto;
 import com.example.demo.dto.ecpay.EcpayRequestDto;
 import com.example.demo.dto.ecpay.LogisticsAllInOneDto;
+import com.example.demo.entity.CCustomerAddress;
 import com.example.demo.entity.Order;
 import com.example.demo.enums.PaymentMethod;
 import com.example.demo.repository.OrderRepository;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Service
 public class EcpayService {
@@ -42,17 +44,23 @@ public class EcpayService {
 
     /**
      * 金流 AIO 結帳
+     * 【修改】方法簽名改變，直接接收 Order 物件
      */
-    public AioCheckoutDto createAioOrder(Integer totalAmount, String itemName, String merchantTradeNo) {
+    public AioCheckoutDto createAioOrder(Order order) { // 原本是 (Integer totalAmount, String itemName, String merchantTradeNo)
         AioCheckoutDto dto = new AioCheckoutDto();
         EcpayProperties.Aio aioConfig = ecpayProperties.getAio();
 
+        // === 【修改重點】從 Order 的 orderDetails 動態產生商品名稱 ===
+        String itemName = order.getOrderDetails().stream()
+                .map(detail -> detail.getProduct().getProductname()) // 取得每個品項的名稱
+                .collect(Collectors.joining("#")); // 用 # 符號組合起來
+
         dto.setMerchantID(aioConfig.getMerchantId());
-        dto.setMerchantTradeNo(merchantTradeNo);
+        dto.setMerchantTradeNo(order.getMerchantTradeNo()); // 從 order 物件取得
         dto.setMerchantTradeDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
-        dto.setTotalAmount(totalAmount);
-        dto.setTradeDesc("交易描述範例"); // 可自行修改
-        dto.setItemName(itemName);
+        dto.setTotalAmount(order.getTotalAmount().intValue()); // 從 order 物件取得
+        dto.setTradeDesc("訂單編號: " + order.getMerchantTradeNo()); // 交易描述也可以更具體
+        dto.setItemName(itemName); // 設定我們剛剛組合好的商品名稱字串
         dto.setReturnURL(aioConfig.getReturnUrl());
 
         // 將 DTO 轉換為 Map 並產生 CheckMacValue
@@ -173,5 +181,52 @@ public class EcpayService {
 
         ResponseEntity<String> response = restTemplate.postForEntity(createApiUrl, request, String.class);
         return response.getBody(); // 回傳綠界的結果，例如 "1|OK"
+    }
+
+    /**
+     * 【新增】專門用於建立「宅配」物流訂單的方法
+     * @param order 您的訂單實體
+     * @return 綠界回傳的結果
+     */
+    public String createHomeDeliveryOrder(Order order) {
+        String createApiUrl = "https://logistics-stage.ecpay.com.tw/Express/Create";
+
+        EcpayProperties.Logistics logisticsConfig = ecpayProperties.getLogistics();
+        Map<String, String> params = new TreeMap<>();
+        params.put("MerchantID", logisticsConfig.getMerchantId());
+        params.put("MerchantTradeNo", order.getMerchantTradeNo());
+        params.put("MerchantTradeDate", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
+        params.put("LogisticsType", "Home"); // <<--【關鍵差異】類型為 Home
+        params.put("LogisticsSubType", "TCAT"); // <<--【關鍵差異】子類型為 TCAT (黑貓)
+        params.put("GoodsAmount", String.valueOf(order.getTotalAmount().longValue()));
+        params.put("GoodsName", "網站商品一批");
+
+        // 收件人資訊，直接從訂單關聯的地址物件中取得
+        CCustomerAddress address = order.getCCustomerAddress();
+        params.put("ReceiverName", address.getName());
+        params.put("ReceiverCellPhone", address.getPhone());
+        params.put("ReceiverZipCode", address.getZipcode());
+        params.put("ReceiverAddress", address.getFullAddress());
+
+        // 寄件人資訊
+        params.put("SenderName", logisticsConfig.getSenderName());
+        params.put("SenderCellPhone", logisticsConfig.getSenderCellphone());
+
+        // 回調網址，用來接收後續的物流狀態更新
+        params.put("ServerReplyURL", logisticsConfig.getServerReplyUrl().replace("/store-reply", "/callback"));
+
+        // 計算 CheckMacValue
+        String checkMacValue = EcpayCheckMacValueUtil.generate(params, logisticsConfig.getHashKey(), logisticsConfig.getHashIv());
+        params.put("CheckMacValue", checkMacValue);
+
+        // 發送 Server-to-Server 請求
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.setAll(params);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(createApiUrl, request, String.class);
+        return response.getBody();
     }
 }

@@ -28,16 +28,16 @@ public class PaymentController {
     @Autowired
     private OrderRepository orderRepository;
 
-    @GetMapping("/pay") // test用
-    public String pay(Model model) {
-        String merchantTradeNo = "test" + UUID.randomUUID().toString().replaceAll("-", "").substring(0, 14);
-        AioCheckoutDto dto = ecpayService.createAioOrder(100, "範例商品一批", merchantTradeNo);
-
-        model.addAttribute("ecpayUrl", ecpayProperties.getAio().getUrl());
-        model.addAttribute("aioCheckoutDto", dto);
-
-        return "ecpay-checkout";
-    }
+//    @GetMapping("/pay") // test用
+//    public String pay(Model model) {
+//        String merchantTradeNo = "test" + UUID.randomUUID().toString().replaceAll("-", "").substring(0, 14);
+//        AioCheckoutDto dto = ecpayService.createAioOrder(100, "範例商品一批", merchantTradeNo);
+//
+//        model.addAttribute("ecpayUrl", ecpayProperties.getAio().getUrl());
+//        model.addAttribute("aioCheckoutDto", dto);
+//
+//        return "ecpay-checkout";
+//    }
 
     /**
      * 【建議新增】根據真實訂單 ID 發起金流支付
@@ -53,16 +53,11 @@ public class PaymentController {
 
         // 2. 檢查訂單狀態是否為 PENDING_PAYMENT
         if (order.getOrderStatus() != OrderStatus.PENDING_PAYMENT) {
-            // 或者可以導向到一個錯誤頁面，提示訂單狀態不符
             throw new IllegalStateException("此訂單狀態不是待付款，無法進行支付");
         }
 
-        // 3. 使用真實訂單的資訊來建立 AIO 物件
-        AioCheckoutDto dto = ecpayService.createAioOrder(
-                order.getTotalAmount().intValue(), // 使用真實總金額
-                "訂單 " + order.getMerchantTradeNo() + " 商品一批", // 使用真實訂單資訊
-                order.getMerchantTradeNo() // 使用真實訂單號
-        );
+        // === 【修改重點】將整個 order 物件傳遞給 service ===
+        AioCheckoutDto dto = ecpayService.createAioOrder(order);
 
         model.addAttribute("ecpayUrl", ecpayProperties.getAio().getUrl());
         model.addAttribute("aioCheckoutDto", dto);
