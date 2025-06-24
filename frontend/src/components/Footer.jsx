@@ -3,8 +3,8 @@ import { IoIosArrowForward } from "react-icons/io";
 
 function Footer() {
   return (
-    <footer className="bg-gray-100 text-gray-800 py-10">
-      <div className="max-w-7xl mx-auto px-4">
+     <footer className="bg-gray-100 text-gray-800 py-8 pt-1 pb-4 px-4 md:px-16">
+      <div className="max-w-7xl mx-auto ">
         {/* 上方 logo + hr */}
         <hr className="border-t border-gray-300 my-4" />
         <div className="flex items-center space-x-1 text-gray-700 hover:text-black mb-6">
@@ -16,9 +16,8 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* 聯絡我們 */}
           <div className="flex flex-col text-left">
-            <p className="font-semibold">聯絡我們</p>
+            <p className="font-semibold">哈根良野有限公司</p>
             <div className='text-sm space-y-1'>
-            <div className="font-semibold underline">哈根良野有限公司</div>
               <div>統編 55646980</div>
               <div>電話 02-23456617</div>
               <div>cs@vegsavage.com</div>
@@ -32,11 +31,11 @@ function Footer() {
 
           {/* 公司・店面位置 */}
           <div className="flex flex-col text-left">
-            <p className="font-semibold">公司位置</p>
+            <p className="font-semibold">良野豆乳冰品</p>
             <div className='text-sm space-y-1'>
-            <div className="font-semibold underline">良野豆乳冰品</div>
-            <div>大新里斗中路103號</div>
-            <div>週一至週五 09:00-18:00</div>
+            <div>(哈根良野有限公司)</div>
+            <div>彰化縣北斗鎮大新里斗中路103號</div>
+            <div>週一至週五 09:00-16:30</div>
             <div>(國定假日休息)</div>
             </div>
           </div>

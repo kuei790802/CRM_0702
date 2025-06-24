@@ -77,7 +77,8 @@ function Contact() {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+          className="w-full bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition focus:outline-none focus:ring-0"
+
         >
           送出
         </button>

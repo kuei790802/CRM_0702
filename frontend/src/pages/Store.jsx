@@ -37,40 +37,43 @@ function Store() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 p-4">
-      {/* 左側分類 */}
-      <div className="w-full md:w-1/4 space-y-3">
-        <CategoryButton
-          label="全部商品"
-          onClick={() => handleSelect("全部商品")}
-          active={isAll}
-        />
-        {storeData.map((section, index) => (
+    <div className="">
+      {/* 固定分類列區塊 */}
+      <div className="sticky top-[48px] z-40 bg-white shadow-md w-full">
+        <div className="flex flex-wrap items-end gap-4 justify-center pt-3 px-4 sm:px-6 md:px-8">
           <CategoryButton
-            key={index}
-            label={section.category}
-            onClick={() => handleSelect(section.category)}
-            active={selectedCategory === section.category}
+            label="全部商品"
+            onClick={() => handleSelect("全部商品")}
+            active={isAll}
           />
-        ))}
+          {storeData.map((section, index) => (
+            <CategoryButton
+              key={index}
+              label={section.category}
+              onClick={() => handleSelect(section.category)}
+              active={selectedCategory === section.category}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* 右側產品 */}
-      <div className="w-full md:w-3/4">
+      {/* 商品列表 */}
+      <div className="w-full p-10">
         {loading ? (
           <p>載入中...</p>
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[1100px] mx-auto px-2">
             {selectedSection.map((product, index) => (
-              <Link to="/Product" key={index}>
+              <Link to="/Product" key={index} className="w-full">
                 <ProductCard {...product} />
               </Link>
             ))}
           </div>
         )}
       </div>
+
     </div>
   );
 }

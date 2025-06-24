@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import useCartStore from "../../stores/cartStore";
 import CartModal from "./CartModel";
 import { FaUserCircle, FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
-import logo from "../../../public/images/logo04.png";
 
 const Navbar = () => {
   const location = useLocation();
@@ -45,7 +44,7 @@ const Navbar = () => {
         <div className="container mx-auto flex justify-between items-center">
           {/* 左側 logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <img src={logo} alt="Logo" className="h-10 w-auto object-contain" />
+            <img src="/images/logo04.png" alt="Logo" className="h-10 w-auto object-contain" />
           </Link>
 
           {/* 桌面導覽連結 */}
