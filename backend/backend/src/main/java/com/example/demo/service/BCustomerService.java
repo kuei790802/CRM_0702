@@ -1,7 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.request.BCustomerRequest;
+import com.example.demo.dto.request.OpportunityPriorityRequest;
 import com.example.demo.dto.response.BCustomerDto;
+import com.example.demo.dto.response.OpportunityDto;
 import com.example.demo.enums.BCustomerIndustry;
 import com.example.demo.enums.BCustomerLevel;
 import com.example.demo.enums.BCustomerType;
@@ -81,5 +83,4 @@ public interface BCustomerService {
      * @return 符合條件的客戶 DTO 分頁列表。
      */
     Page<BCustomerDto> findCustomersByCustomerLevel(BCustomerLevel BCustomerLevel, Pageable pageable);
-
 }

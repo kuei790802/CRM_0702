@@ -2,9 +2,7 @@ package com.example.demo.dto.request;
 
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -45,5 +43,9 @@ public class OpportunityRequest {
     private Long contactId;
 
     private List<Long> tagIds;
+
+    @Min(value = 0, message = "優先級不能小於 0")
+    @Max(value = 3, message = "優先級不能大於 3")
+    private int priority;
 
 }

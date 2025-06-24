@@ -31,7 +31,7 @@ public class OpportunityMapper {
                 .closeDate(request.getCloseDate())
                 .stage(request.getStage())
                 .status(request.getStatus())
-
+                .priority(request.getPriority())
                 .bCustomer(BCustomer.builder().customerId(request.getCustomerId()).build())
                 .contact(request.getContactId() != null ? Contact.builder().contactId(request.getContactId()).build() : null)
                 .totalRatingSum(0L) // 初始化總評分
@@ -56,7 +56,7 @@ public class OpportunityMapper {
         Long contactId = (opportunity.getContact() != null) ? opportunity.getContact().getContactId() : null;
         String contactName = (opportunity.getContact() != null) ? opportunity.getContact().getContactName() : null;
 
-        //計算平均評分
+        // 計算平均評分
         Double averageRating = 0.0;
         if (opportunity.getNumberOfRatings() != null && opportunity.getNumberOfRatings() > 0) {
             averageRating = (double) opportunity.getTotalRatingSum() / opportunity.getNumberOfRatings();
@@ -70,6 +70,7 @@ public class OpportunityMapper {
                 .closeDate(opportunity.getCloseDate())
                 .stage(opportunity.getStage())
                 .status(opportunity.getStatus())
+                .priority(opportunity.getPriority())
                 .customerId(customerId)
                 .customerName(customerName)
                 .contactId(contactId)
@@ -98,9 +99,7 @@ public class OpportunityMapper {
         existingOpportunity.setCloseDate(request.getCloseDate());
         existingOpportunity.setStage(request.getStage());
         existingOpportunity.setStatus(request.getStatus());
-
-        existingOpportunity.setBCustomer(BCustomer.builder().customerId(request.getCustomerId()).build());
-        existingOpportunity.setContact(request.getContactId() != null ? Contact.builder().contactId(request.getContactId()).build() : null);
+        existingOpportunity.setPriority(request.getPriority());
 
         return existingOpportunity;
         }

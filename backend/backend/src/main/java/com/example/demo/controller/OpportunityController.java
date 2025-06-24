@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.request.OpportunityPriorityRequest;
 import com.example.demo.dto.request.OpportunityRequest;
 import com.example.demo.dto.response.OpportunityDto;
 import com.example.demo.enums.OpportunityStage;
@@ -124,6 +125,7 @@ public class OpportunityController {
     public ResponseEntity<OpportunityDto> rateOpportunity(
             @PathVariable Long id,
             @RequestParam int ratingScore) { // 評分分數作為查詢參數或請求體中的字段
+
         // **** 這裡獲取當前用戶ID的邏輯至關重要且必須安全 ****
         // 這是 Spring Security 的標準做法：
         // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -139,6 +141,21 @@ public class OpportunityController {
         Long currentUserId = 1L; // <-- 臨時佔位符！在實際應用中，請替換為從 Spring Security 安全地獲取用戶ID
 
         OpportunityDto updatedOpportunity = opportunityService.rateOpportunity(id, currentUserId, ratingScore);
+        return ResponseEntity.ok(updatedOpportunity);
+    }
+
+    /**
+     * PUT /api/opportunities/{id}/priority : 設定商機的優先級 (星級)
+     * @param id 商機 ID
+     * @param request 包含優先級的請求 Body
+     * @return 更新後的商機 DTO
+     */
+    @PutMapping("/{id}/priority")
+    public ResponseEntity<OpportunityDto> setOpportunityPriority(
+            @PathVariable Long id,
+            @Valid @RequestBody OpportunityPriorityRequest request) {
+
+        OpportunityDto updatedOpportunity = opportunityService.setPriority(id, request);
         return ResponseEntity.ok(updatedOpportunity);
     }
 }

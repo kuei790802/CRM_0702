@@ -78,6 +78,10 @@ public class Opportunity {
     @Column(name = "number_of_ratings", nullable = false)
     private Integer numberOfRatings = 0;
 
+    // 星級
+    @Column(name = "priority")
+    private Integer priority; // 0: 無星級, 1: 一星, 2: 二星, 3: 三星
+
     // ----- 多對多關聯：一個商機可以有多個標籤 ----
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(

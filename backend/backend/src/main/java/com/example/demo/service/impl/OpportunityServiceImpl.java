@@ -1,5 +1,6 @@
 package com.example.demo.service.impl;
 
+import com.example.demo.dto.request.OpportunityPriorityRequest;
 import com.example.demo.dto.request.OpportunityRequest;
 import com.example.demo.dto.response.OpportunityDto;
 import com.example.demo.entity.BCustomer;
@@ -219,6 +220,20 @@ public class OpportunityServiceImpl implements OpportunityService {
 
         // 5. 將更新後的實體轉換為 DTO。
         // 同上，如果 toResponse 需要 currentUserId 但這裡沒有，請調整
+        return opportunityMapper.toResponse(updatedOpportunity, null);
+    }
+
+
+    @Override
+    @Transactional
+    public OpportunityDto setPriority(Long opportunityId, OpportunityPriorityRequest request) {
+        Opportunity opportunity = opportunityRepository.findById(opportunityId)
+                .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + opportunityId + " 的商機"));
+
+        opportunity.setPriority(request.getPriority());
+
+        Opportunity updatedOpportunity = opportunityRepository.save(opportunity);
+
         return opportunityMapper.toResponse(updatedOpportunity, null);
     }
 

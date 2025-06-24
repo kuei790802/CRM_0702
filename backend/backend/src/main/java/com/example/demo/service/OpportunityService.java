@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.request.OpportunityPriorityRequest;
 import com.example.demo.dto.request.OpportunityRequest;
 import com.example.demo.dto.response.OpportunityDto;
 import com.example.demo.enums.OpportunityStage;
@@ -105,4 +106,6 @@ public interface OpportunityService {
      * @throws IllegalArgumentException 如果評分分數無效 (例如不在 1-3 範圍內)。
      */
     OpportunityDto rateOpportunity(Long opportunityId, Long userId, int ratingScore);
+
+    OpportunityDto setPriority(Long opportunityId, OpportunityPriorityRequest request);
 }
