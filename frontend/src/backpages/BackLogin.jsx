@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useBackUserStore from "../stores/useBackUserStore";
 import backgroundImage from "../assets/LoginBackground.jpg";
 
 function BackLogin() {
   const navigate = useNavigate();
-  const { loginBackUser, backUser, isBackAuthenticated } = useBackUserStore();
+  const { loginBackUser } = useBackUserStore();
 
   const [account, setAccount] = useState("admin");
   const [password, setPassword] = useState("admin123");
@@ -20,15 +20,14 @@ function BackLogin() {
     }
 
     try {
-      await loginBackUser({ account, password });
+      // ✅ 改為等待 loginBackUser 回傳 user 物件
+      const user = await loginBackUser({ account, password });
 
       if (rememberMe) {
         localStorage.setItem("rememberedAccount", account);
       }
 
-      // ✅ 透過最新狀態取得角色後導向
-      const { backUser } = useBackUserStore.getState();
-      const role = backUser?.role;
+      const role = user?.role;
       if (role === "admin") navigate("/users");
       else if (role === "editor") navigate("/cms");
       else if (role === "manager") navigate("/erp");

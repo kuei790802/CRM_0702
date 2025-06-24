@@ -1,4 +1,3 @@
-// src/stores/useBackUserStore.js
 import { create } from 'zustand';
 import axiosInstance from '../api/axiosInstance';
 
@@ -25,6 +24,7 @@ const useBackUserStore = create((set) => {
         axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         set({ backUser: user, backToken: token, isBackAuthenticated: true });
+        return user; // ✅ 回傳 user，供 login 後導向使用
       } catch (error) {
         console.error('後台登入失敗:', error);
         throw error;
