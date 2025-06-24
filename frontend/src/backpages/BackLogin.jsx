@@ -33,6 +33,7 @@ function BackLogin() {
       else if (role === "manager") navigate("/erp");
       else navigate("/");
     } catch (err) {
+      console.error("登入失敗:", err);
       alert("登入失敗，請確認帳號與密碼");
     }
   };
