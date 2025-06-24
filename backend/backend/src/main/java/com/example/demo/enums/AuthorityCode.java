@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum AuthorityCode {
+    USER_READ("USER_READ", "使用者管理", "檢視帳號", "檢視使用者", "SYSTEM"),
     USER_CREATE("USER_CREATE", "使用者管理", "建立帳號", "新增使用者", "SYSTEM"),
     USER_UPDATE("USER_UPDATE", "使用者管理", "修改帳號", "編輯使用者", "SYSTEM"),
     USER_DELETE("USER_DELETE", "使用者管理", "刪除帳號", "移除使用者", "SYSTEM"),
@@ -12,6 +13,7 @@ public enum AuthorityCode {
     CUSTOMER_CREATE("CUSTOMER_CREATE", "客戶管理", "建立客戶", "建立客戶資料", "CRM"),
     CUSTOMER_UPDATE("CUSTOMER_UPDATE", "客戶管理", "更新客戶", "更改客戶資料", "CRM"),
     CUSTOMER_DELETE("CUSTOMER_DELETE", "客戶管理", "刪除客戶", "刪除客戶資料", "CRM"),
+    CUSTOMER_SUPPORT("CUSTOMER_SUPPORT", "客戶管理", "客戶服務", "客戶需求支援", "CRM"),
     ORDER_READ("ORDER_READ", "訂單管理", "檢視訂單", "檢視訂單", "ORDER"),
     ORDER_CREATE("ORDER_CREATE", "訂單管理", "建立訂單", "建立訂單", "ORDER"),
     ORDER_UPDATE("ORDER_UPDATE", "訂單管理", "更新訂單", "更改訂單", "ORDER"),

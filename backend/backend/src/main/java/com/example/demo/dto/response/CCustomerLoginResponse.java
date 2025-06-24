@@ -21,6 +21,4 @@ public class CCustomerLoginResponse{
     private LocalDate birthday;
     private LocalDateTime createdAt;
     private Long spending;
-
-
 }

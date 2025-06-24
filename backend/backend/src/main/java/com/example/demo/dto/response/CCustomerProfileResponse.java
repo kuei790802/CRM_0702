@@ -19,5 +19,4 @@ public class CCustomerProfileResponse {
     private List<Coupon> coupons;
     private Long spending;
     private VIPLevel vipLevel;
-
 }
