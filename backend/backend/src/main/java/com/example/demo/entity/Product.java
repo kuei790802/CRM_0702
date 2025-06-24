@@ -37,10 +37,10 @@ public class Product {
     private Unit unit;
 
     @Column(name = "is_purchasable", nullable = false)
-    private boolean isPurchasable = true;
+    private Boolean isPurchasable = true;
 
     @Column(name = "is_salable", nullable = false)
-    private boolean isSalable = true;
+    private Boolean isSalable = true;
 
     @Column(name = "base_price", nullable = false, precision = 18, scale = 2)
     private BigDecimal basePrice;

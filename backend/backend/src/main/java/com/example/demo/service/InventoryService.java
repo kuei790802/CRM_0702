@@ -8,10 +8,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.demo.dto.InventoryAdjustmentCreateDTO;
+import com.example.demo.dto.InventoryAdjustmentDetailCreateDTO;
+import com.example.demo.dto.InventoryViewDTO;
 import com.example.demo.entity.*;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.repository.*;
+import com.example.demo.specification.InventorySpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +36,8 @@ public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
     private final InventoryMovementRepository inventoryMovementRepository;
+    private final InventoryAdjustmentRepository adjustmentRepository;
+
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
@@ -44,7 +53,7 @@ public class InventoryService {
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + orderId + " 的採購單"));
 
-//        Users receivingUser = userRepository.findById(receivingUserId)
+//        User receivingUser = userRepository.findById(receivingUserId)
 //                .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + receivingUserId + " 的使用者"));
 
 
@@ -80,17 +89,25 @@ public class InventoryService {
         return inventoryRepository.findByProduct_ProductId(productId);
     }
 
-    /**
-     * 根據產品ID獲取當前庫存數量。
-     * @param productId 產品ID
-     * @return 如果找到庫存，返回庫存數量；如果沒有該產品的庫存紀錄，則返回 0。
-     */
+
     public BigDecimal getProductStock(Long productId) {
-        // 使用 inventoryRepository 根據 productId 查找庫存紀錄
+
         Optional<Inventory> inventoryOpt = inventoryRepository.findByProductId(productId);
-        // 如果存在庫存紀錄，則返回其 stock 數量；否則返回 0
+
         return inventoryOpt.map(Inventory::getCurrentStock).orElse(BigDecimal.valueOf(0));
     }
+
+    public Page<InventoryViewDTO> searchInventories(Long productId, Long warehouseId, Pageable pageable) {
+
+        Specification<Inventory> spec = InventorySpecification.findByCriteria(productId, warehouseId);
+
+
+        Page<Inventory> inventoryPage = inventoryRepository.findAll(spec, pageable);
+
+
+        return inventoryPage.map(InventoryViewDTO::fromEntity);
+    }
+
 
     @Transactional
     public Inventory adjustInventory(Long productId, Long warehouseId,
@@ -101,7 +118,7 @@ public class InventoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + productId + " 的產品"));
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + warehouseId + " 的倉庫"));
-        Users user = userRepository.getReferenceById(userId);
+        User user = userRepository.getReferenceById(userId);
 
         Inventory inventory = inventoryRepository.findByProductAndWarehouse(product, warehouse)
                 .orElseGet(() -> {
@@ -175,6 +192,107 @@ public class InventoryService {
     }
 
     @Transactional
+    public InventoryAdjustment createInventoryAdjustment(InventoryAdjustmentCreateDTO dto, Long operatorId) {
+
+        if (dto.getDetails() == null || dto.getDetails().isEmpty()) {
+            throw new DataConflictException("庫存調整單至少需要一筆明細。");
+        }
+
+        User operator = userRepository.findById(operatorId)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + operatorId + " 的操作員"));
+
+
+        Long warehouseId = dto.getDetails().get(0).getWarehouseId();
+        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + warehouseId + " 的倉庫"));
+
+
+        InventoryAdjustment adjustment = new InventoryAdjustment();
+        adjustment.setAdjustmentNumber("ADJ-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))); //TODO(joshkuei): check if duplicate.
+        adjustment.setAdjustmentDate(dto.getAdjustmentDate());
+        adjustment.setAdjustmentType(dto.getAdjustmentType());
+        adjustment.setRemarks(dto.getRemarks());
+        adjustment.setStatus("EXECUTED");
+        adjustment.setWarehouse(warehouse);
+
+        LocalDateTime now = LocalDateTime.now();
+        adjustment.setCreatedBy(operatorId);
+        adjustment.setUpdatedBy(operatorId);
+        adjustment.setCreatedAt(now);
+        adjustment.setUpdatedAt(now);
+
+
+        for (InventoryAdjustmentDetailCreateDTO detailDTO : dto.getDetails()) {
+
+            if (!detailDTO.getWarehouseId().equals(warehouseId)) {
+                throw new DataConflictException("單張調整單的所有明細必須屬於同一個倉庫。");
+            }
+
+            Product product = productRepository.findById(detailDTO.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + detailDTO.getProductId() + " 的產品"));
+
+
+            Inventory inventory = inventoryRepository.findByProductAndWarehouse(product,warehouse)
+                    .orElseGet(() -> {
+                        Inventory newInventory = new Inventory();
+                        newInventory.setProduct(product);
+                        newInventory.setWarehouse(warehouse);
+                        newInventory.setCurrentStock(BigDecimal.ZERO);
+                        newInventory.setAverageCost(BigDecimal.ZERO);
+                        newInventory.setCreatedBy(operatorId);
+                        newInventory.setCreatedAt(now);
+                        return newInventory;
+                    });
+
+            BigDecimal newStock = inventory.getCurrentStock().add(detailDTO.getAdjustedQuantity());
+            if (newStock.compareTo(BigDecimal.ZERO) < 0) {
+                throw new DataConflictException("庫存不足，產品 '" + product.getName() + "' 調整後庫存不可為負數。");
+            }
+            inventory.setCurrentStock(newStock);
+            inventory.setUpdatedBy(operatorId);
+            inventory.setUpdatedAt(now);
+            inventoryRepository.save(inventory);
+
+
+            InventoryAdjustmentDetail detail = new InventoryAdjustmentDetail();
+            detail.setProduct(product);
+            detail.setAdjustedQuantity(detailDTO.getAdjustedQuantity());
+            detail.setRemarks(detailDTO.getRemarks());
+            detail.setCreatedBy(operatorId);
+            detail.setUpdatedBy(operatorId);
+            detail.setCreatedAt(now);
+            detail.setUpdatedAt(now);
+            adjustment.addDetail(detail);
+
+
+            InventoryMovement movement = new InventoryMovement();
+            movement.setProduct(product);
+            movement.setWarehouse(warehouse);
+            movement.setMovementType("ADJUSTMENT_" + dto.getAdjustmentType().name()); // 例如 ADJUSTMENT_SCRAP
+            movement.setQuantityChange(detailDTO.getAdjustedQuantity());
+            movement.setCurrentStockAfterMovement(newStock);
+            movement.setDocumentType("InventoryAdjustment");
+            movement.setRecordedBy(operator);
+            movement.setMovementDate(now);
+            inventoryMovementRepository.save(movement);
+        }
+        String adjustmentNumber = "ADJ-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        adjustment.setAdjustmentNumber(adjustmentNumber);
+
+        InventoryAdjustment savedAdjustment = adjustmentRepository.save(adjustment);
+
+
+        savedAdjustment.getDetails().forEach(detail -> {
+            inventoryMovementRepository.findByDocumentItemId(detail.getItemId()).ifPresent(movement -> {
+                movement.setDocumentId(savedAdjustment.getAdjustmentId());
+                inventoryMovementRepository.save(movement);
+            });
+        });
+
+        return savedAdjustment;
+    }
+
+    @Transactional
     public SalesShipment shipSalesOrder(Long salesOrderId, Long warehouseId, Long operatorId) {
 
 
@@ -185,7 +303,7 @@ public class InventoryService {
             throw new DataConflictException("此銷售訂單狀態為 " + order.getOrderStatus() + "，不可執行出貨。");
         }
 
-        Users operator = userRepository.findById(operatorId)
+        User operator = userRepository.findById(operatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + operatorId + " 的操作員"));
         Warehouse shipmentWarehouse = warehouseRepository.findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + warehouseId + " 的出貨倉庫"));
@@ -277,7 +395,7 @@ public class InventoryService {
 
     private void createInventoryMovement(Product product, Warehouse warehouse, String movementType,
                                          BigDecimal quantityChange, BigDecimal unitCost, BigDecimal stockAfterMovement,
-                                         String documentType, Long documentId, Long documentItemId, Users recordedBy) {
+                                         String documentType, Long documentId, Long documentItemId, User recordedBy) {
         InventoryMovement movement = new InventoryMovement();
         movement.setProduct(product);
         movement.setWarehouse(warehouse);

@@ -37,10 +37,10 @@ public class InventoryMovement {
     @Column(name = "movement_type", nullable = false)
     private String movementType;
 
-    @Column(name = "quantity_change", nullable = false)
+    @Column(name = "quantity_change", nullable = false, precision = 18, scale = 2)
     private BigDecimal quantityChange;
 
-    @Column(name = "current_stock_after_movement", nullable = false)
+    @Column(name = "current_stock_after_movement", precision = 18, scale = 2)
     private BigDecimal currentStockAfterMovement;
 
     @Column(name = "document_type")
@@ -54,7 +54,7 @@ public class InventoryMovement {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recorded_by", nullable = false)
-    private Users recordedBy;
+    private User recordedBy;
 
     @Column(name = "movement_date", nullable = false)
     private LocalDateTime movementDate;

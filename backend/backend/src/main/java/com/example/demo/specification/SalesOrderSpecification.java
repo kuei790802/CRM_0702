@@ -38,12 +38,12 @@ public class SalesOrderSpecification {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("orderDate"), endDate));
             }
 
-            // 關鍵字可以搜尋訂單號
+
             if (StringUtils.hasText(keyword)) {
                 predicates.add(criteriaBuilder.like(root.get("orderNumber"), "%" + keyword + "%"));
             }
 
-            // 預設的排序，可以讓最新的訂單在最前面
+
             query.orderBy(criteriaBuilder.desc(root.get("orderDate")), criteriaBuilder.desc(root.get("salesOrderId")));
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

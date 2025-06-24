@@ -30,8 +30,8 @@ public class ProductCreateDTO {
     private BigDecimal basePrice;
 
     @NotEmpty(message = "稅別不可為空")
-    private String taxType;
+    private String taxType = "TAXABLE";
 
-    private String costMethod;
-    
+    private String costMethod = "AVERAGE";
+
 }

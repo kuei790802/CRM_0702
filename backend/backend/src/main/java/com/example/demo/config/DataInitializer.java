@@ -9,7 +9,7 @@ import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.example.demo.entity.Users;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -20,9 +20,6 @@ import org.springframework.context.annotation.Profile;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.ProductCategory;
 import com.example.demo.entity.Unit;
-import com.example.demo.repository.ProductCategoryRepository;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UnitRepository;
 import com.github.javafaker.Faker;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -41,7 +38,7 @@ public class DataInitializer {
     private ProductCategoryRepository categoryRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepo userRepository;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;

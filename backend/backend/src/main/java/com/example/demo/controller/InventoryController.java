@@ -1,9 +1,12 @@
 package com.example.demo.controller;
 
 
+import com.example.demo.dto.InventoryAdjustmentCreateDTO;
 import com.example.demo.dto.InventoryAdjustmentDTO;
+import com.example.demo.dto.InventoryViewDTO;
 import com.example.demo.dto.ShipmentRequestDTO;
 import com.example.demo.entity.Inventory;
+import com.example.demo.entity.InventoryAdjustment;
 import com.example.demo.entity.SalesShipment;
 import com.example.demo.service.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +42,7 @@ public class InventoryController {
             @Parameter(description = "ID of the purchase order to receive") @PathVariable Long orderId
             // @Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails // Example for real auth
     ) {
-// TODO: Replace hardcoded user ID with the authenticated user from the security context.
+// TODO(joshkuei): Replace hardcoded user ID with the authenticated user from the security context.
         // Example using Spring Security:
         // Long currentUserId = userDetails.getId();
         Long currentUserId = 1L;
@@ -47,21 +53,32 @@ public class InventoryController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/product/{productId}")
-    @Operation(summary = "Get Inventory by Product", description = "Fetches inventory records for a given product across all warehouses.")
-    public ResponseEntity<List<Inventory>> getInventoryByProductId(
-            @Parameter(description = "ID of the product") @PathVariable Long productId) {
-        List<Inventory> inventoryList = inventoryService.getInventoryByProductId(productId);
-        return ResponseEntity.ok(inventoryList);
+//    @GetMapping("/product/{productId}") //TODO(joshkuei): replaced by the method below.
+//    @Operation(summary = "Get Inventory by Product", description = "Fetches inventory records for a given product across all warehouses.")
+//    public ResponseEntity<List<Inventory>> getInventoryByProductId(
+//            @Parameter(description = "ID of the product") @PathVariable Long productId) {
+//        List<Inventory> inventoryList = inventoryService.getInventoryByProductId(productId);
+//        return ResponseEntity.ok(inventoryList);
+//    }
+
+    @GetMapping
+    public ResponseEntity<Page<InventoryViewDTO>> searchInventories(
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) Long warehouseId,
+            @PageableDefault(size = 20) Pageable pageable) {
+
+        Page<InventoryViewDTO> inventoryPage = inventoryService.searchInventories(productId, warehouseId, pageable);
+
+        return ResponseEntity.ok(inventoryPage);
     }
 
     @PostMapping("/adjust")
     @Operation(summary = "Adjust Inventory Manually", description = "Performs a manual inventory adjustment, e.g., for stock counts or write-offs.")
     public ResponseEntity<Inventory> adjustInventory(
             @Valid @RequestBody InventoryAdjustmentDTO adjustmentDTO) {
-        // TODO: The user ID for the adjustment should ideally come from the security context,
+        // TODO(joshkuei): The user ID for the adjustment should ideally come from the security context,
         // not from the request body, to ensure the action is performed by the authenticated user.
-        Long operatorId = adjustmentDTO.getUserId() != null ? adjustmentDTO.getUserId() : 1L; // Fallback for now
+        Long operatorId = adjustmentDTO.getUserId() != null ? adjustmentDTO.getUserId() : 1L;
         Inventory updatedInventory = inventoryService.adjustInventory(
                 adjustmentDTO.getProductId(),
                 adjustmentDTO.getWarehouseId(),
@@ -75,6 +92,14 @@ public class InventoryController {
         );
         return ResponseEntity.ok(updatedInventory);
     }
+
+    @PostMapping("/adjustments")
+    public ResponseEntity<InventoryAdjustment> createInventoryAdjustment(@Valid @RequestBody InventoryAdjustmentCreateDTO dto) {
+        Long currentUserId = 1L; // TODO(joshkuei): MUST From Security Context
+        InventoryAdjustment adjustment = inventoryService.createInventoryAdjustment(dto, currentUserId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(adjustment);
+    }
+
 
     @PostMapping("/sales-orders/{orderId}/ship")
     @Operation(summary = "Ship a Sales Order", description = "Creates a shipment and deducts stock for a confirmed sales order.")

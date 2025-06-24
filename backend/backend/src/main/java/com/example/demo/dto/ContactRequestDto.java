@@ -3,6 +3,10 @@ package com.example.demo.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
 
 // 用於接收前端建立或更新聯絡人的請求
 public class ContactRequestDto {
@@ -71,4 +75,5 @@ public class ContactRequestDto {
     public void setNotes(String notes) {
         this.notes = notes;
     }
+
 }

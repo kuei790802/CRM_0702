@@ -38,10 +38,8 @@ public class BCustomer extends CustomerBase{
     @Column(name = "customerlevel")
     private String level;
 
-
-
-    @Column(name = "customertel")
-    private String tel;
+    @Column(name = "TIN_number")
+    private String tinNumber;
 
 
 

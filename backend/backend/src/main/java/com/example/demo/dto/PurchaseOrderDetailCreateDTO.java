@@ -19,10 +19,10 @@ public class PurchaseOrderDetailCreateDTO {
     private BigDecimal quantity;
 
     @NotNull(message = "單價不可為空")
-    @Min(value = 0, message = "單價不可為負數")
+    @Min(value = 0, message = "單價不可為負數") //TODO(josh): delete
     private BigDecimal unitPrice;
     
-    @NotNull(message = "倉庫ID不可為空")
+    @NotNull(message = "倉庫ID不可為空") //TODO(josh): delete or null
     private Long warehouseId;
 
 

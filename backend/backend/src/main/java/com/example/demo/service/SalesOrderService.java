@@ -1,8 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.SalesOrderCreateDTO;
-import com.example.demo.dto.SalesOrderDetailCreateDTO;
-import com.example.demo.dto.SalesOrderSummaryDTO;
+import com.example.demo.dto.*;
 import com.example.demo.entity.CustomerBase;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.SalesOrder;
@@ -29,6 +27,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +58,7 @@ public class SalesOrderService {
 
 
         newOrder.setOrderStatus(SalesOrderStatus.CONFIRMED);
-        newOrder.setPaymentStatus(PaymentStatus.NONPAYMENT);
+        newOrder.setPaymentStatus(PaymentStatus.UNPAID);
 
 
         LocalDateTime now = LocalDateTime.now();
@@ -123,6 +122,8 @@ public class SalesOrderService {
         return salesOrderRepository.save(newOrder);
     }
 
+
+
     public Page<SalesOrderSummaryDTO> searchSalesOrders(
             Long customerId, SalesOrderStatus status,
             LocalDate startDate, LocalDate endDate,
@@ -134,5 +135,30 @@ public class SalesOrderService {
         Page<SalesOrder> orderPage = salesOrderRepository.findAll(spec, pageable);
 
         return orderPage.map(SalesOrderSummaryDTO::fromEntity);
+    }
+
+    public SalesOrderViewDTO getSalesOrderById(Long orderId){
+        SalesOrder order = salesOrderRepository.findById(orderId)
+                .orElseThrow(()->new ResourceNotFoundException("找不到 ID 為 " + orderId + " 的銷售訂單"));
+
+        return SalesOrderViewDTO.fromEntity(order);
+    }
+
+    @Transactional
+    public SalesOrderViewDTO deleteSalesOrder(Long orderId, Long userId) {
+        SalesOrder order = salesOrderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + orderId + " 的銷售訂單"));
+
+        if (order.getOrderStatus() != SalesOrderStatus.CONFIRMED) {
+            throw new DataConflictException("訂單狀態為 " + order.getOrderStatus() + "，無法取消。只有已確認的訂單才能被取消。");
+        }
+
+        order.setOrderStatus(SalesOrderStatus.CANCELLED);
+        order.setUpdatedBy(userId);
+        order.setUpdatedAt(LocalDateTime.now());
+
+        SalesOrder cancelledOrder = salesOrderRepository.save(order);
+
+        return SalesOrderViewDTO.fromEntity(cancelledOrder);
     }
 }

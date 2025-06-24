@@ -3,6 +3,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.SalesOrderCreateDTO;
 import com.example.demo.dto.SalesOrderSummaryDTO;
+import com.example.demo.dto.SalesOrderViewDTO;
 import com.example.demo.entity.SalesOrder;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.service.SalesOrderService;
@@ -49,5 +50,21 @@ public class SalesOrderController {
         return ResponseEntity.ok(resultPage);
 
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SalesOrderViewDTO> getSalesOrderById(@PathVariable Long id) {
+        SalesOrderViewDTO orderDetails = salesOrderService.getSalesOrderById(id);
+        return ResponseEntity.ok(orderDetails);
+    }
+
+
+    @DeleteMapping("/{id}/")
+    public ResponseEntity<SalesOrderViewDTO> deleteSalesOrder(@PathVariable Long id) {
+        Long currentUserId = 1L;
+        SalesOrderViewDTO deletedOrder = salesOrderService.deleteSalesOrder(id, currentUserId);
+        return ResponseEntity.ok(deletedOrder);
+    }
+
+
 
 }
