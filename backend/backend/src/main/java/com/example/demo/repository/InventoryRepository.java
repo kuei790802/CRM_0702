@@ -38,6 +38,14 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
             @Param("quantity") BigDecimal quantity
     );
 
+
+    @Query("SELECT i FROM Inventory i WHERE i.currentStock < i.product.safetyStockQuantity")
+    List<Inventory> findLowStockInventories();
+
+
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.currentStock < i.product.safetyStockQuantity")
+    Long countLowStockInventories();
+
     //TODO(joshkuei): Rename to make property path valid: Inventory -> product -> productId
     Optional<Inventory> findTopByProduct_ProductId(Long productId);
 }

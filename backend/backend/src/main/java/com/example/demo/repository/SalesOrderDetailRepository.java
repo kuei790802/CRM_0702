@@ -1,0 +1,21 @@
+package com.example.demo.repository;
+
+
+import com.example.demo.dto.ProductRankDTO;
+import com.example.demo.entity.SalesOrderDetail;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.time.LocalDate;
+import java.util.List;
+
+public interface SalesOrderDetailRepository extends JpaRepository<SalesOrderDetail, Long> {
+    // [新增] 查詢熱銷商品排行
+    @Query("SELECT new com.example.demo.dto.ProductRankDTO(d.product.productId, d.product.name, SUM(d.quantity)) " +
+            "FROM SalesOrderDetail d " +
+            "WHERE d.salesOrder.orderStatus = 'SHIPPED' AND d.salesOrder.orderDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY d.product.productId, d.product.name " +
+            "ORDER BY SUM(d.quantity) DESC")
+    List<ProductRankDTO> findTopSellingProducts(LocalDate startDate, LocalDate endDate, Pageable pageable);
+}

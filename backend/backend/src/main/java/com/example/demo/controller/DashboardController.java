@@ -1,0 +1,24 @@
+package com.example.demo.controller;
+
+
+import com.example.demo.dto.ErpDashboardDTO;
+import com.example.demo.service.DashboardService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/dashboard")
+@RequiredArgsConstructor
+public class DashboardController {
+
+    private final DashboardService dashboardService;
+
+    @GetMapping("/erp-summary")
+    public ResponseEntity<ErpDashboardDTO> getErpDashboardSummary() {
+        ErpDashboardDTO summary = dashboardService.getErpDashboardSummary();
+        return ResponseEntity.ok(summary);
+    }
+}
