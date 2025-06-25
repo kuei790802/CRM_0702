@@ -7,7 +7,6 @@ import com.example.demo.dto.response.dashboard.NameValueDto;
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.repository.OpportunityRepository;
-import com.example.demo.repository.SalesFunnelRepository;
 import com.example.demo.service.DashboardService;
 import org.springframework.stereotype.Service;
 
