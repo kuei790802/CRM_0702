@@ -251,7 +251,6 @@ public class OpportunityServiceImpl implements OpportunityService {
         for (OpportunityStage stage : OpportunityStage.values()) {
             SalesFunnelDto stageDto = new SalesFunnelDto();
             stageDto.setStage(stage);
-            // 這裡可以自訂顯示名稱，或在 Enum 中定義
             stageDto.setStageDisplayName(stage.name());
 
             // 從 summaryMap 中獲取匯總數據，如果不存在則設為 0

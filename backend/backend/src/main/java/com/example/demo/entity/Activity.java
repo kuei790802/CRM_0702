@@ -57,11 +57,11 @@ public class Activity {
     private Contact contact;
 
 
-    @CreatedDate // 當實體被建立時，自動填入當前時間。
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate // 當實體被更新時，自動填入當前時間。
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 

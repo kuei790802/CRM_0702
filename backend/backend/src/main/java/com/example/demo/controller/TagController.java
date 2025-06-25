@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.dto.request.TagRequest;
 import com.example.demo.dto.response.TagDto;
 import com.example.demo.service.TagService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

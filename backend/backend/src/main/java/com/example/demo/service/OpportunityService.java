@@ -72,7 +72,7 @@ public interface OpportunityService {
                                                   LocalDate closeDateBefore,
                                                   Pageable pageable);
 
-    // ----- 以下是基於 Repository 方法的直接查詢，通常由 searchOpportunities 方法整合或用於特定查詢 -----
+    // ----- searchOpportunities 方法整合或用於特定查詢 -----
 
     /**
      * 根據客戶ID查詢其所有商機的分頁列表。

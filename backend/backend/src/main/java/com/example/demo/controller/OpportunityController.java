@@ -103,7 +103,7 @@ public class OpportunityController {
      */
     @GetMapping("/search")
     public ResponseEntity<Page<OpportunityDto>> searchOpportunities(
-            @RequestParam(required = false) String name, // @RequestParam 綁定 URL 查詢參數
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) OpportunityStatus status,
             @RequestParam(required = false) OpportunityStage stage,
             @RequestParam(required = false) Long customerId,
@@ -126,21 +126,9 @@ public class OpportunityController {
     @PostMapping("/{id}/rate")
     public ResponseEntity<OpportunityDto> rateOpportunity(
             @PathVariable Long id,
-            @RequestParam int ratingScore) { // 評分分數作為查詢參數或請求體中的字段
+            @RequestParam int ratingScore) {
 
-        // **** 這裡獲取當前用戶ID的邏輯至關重要且必須安全 ****
-        // 這是 Spring Security 的標準做法：
-        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // Long currentUserId = null;
-        // if (authentication != null && authentication.getPrincipal() instanceof YourCustomUserDetails) {
-        //     currentUserId = ((YourCustomUserDetails) authentication.getPrincipal()).getId();
-        // }
-        // if (currentUserId == null) {
-        //     // 如果無法獲取用戶 ID，可能是未登錄或安全配置問題，返回 401 Unauthorized
-        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        // }
-
-        Long currentUserId = 1L; // <-- 臨時佔位符！在實際應用中，請替換為從 Spring Security 安全地獲取用戶ID
+        Long currentUserId = 1L;
 
         OpportunityDto updatedOpportunity = opportunityService.rateOpportunity(id, currentUserId, ratingScore);
         return ResponseEntity.ok(updatedOpportunity);

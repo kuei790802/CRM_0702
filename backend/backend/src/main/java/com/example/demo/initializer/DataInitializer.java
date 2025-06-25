@@ -100,7 +100,6 @@ public class DataInitializer implements CommandLineRunner {
         List<Long> generatedIds = new ArrayList<>();
         for (BCustomerRequest request : fakeRequests) {
             try {
-                // 可以在這裡加入關聯標籤的邏輯
                 BCustomerDto created = bCustomerService.create(request);
                 generatedIds.add(created.getCustomerId());
             } catch (Exception e) {
@@ -133,7 +132,6 @@ public class DataInitializer implements CommandLineRunner {
         List<Long> generatedIds = new ArrayList<>();
         for (OpportunityRequest request : fakeRequests) {
             try {
-                // 可以在這裡加入關聯標籤的邏輯
                 OpportunityDto created = opportunityService.create(request);
                 generatedIds.add(created.getOpportunityId());
             } catch (Exception e) {

@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
-import static jakarta.xml.bind.DatatypeConverter.parseDateTime;
 
 @RestController
 @RequestMapping("/api/activities")
@@ -38,7 +37,7 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
-    // --- 私有輔助方法，用來解析日期時間字串 ---
+    // --- 輔助方法，用來解析日期時間字串 ---
     private LocalDateTime parseDateTime(String dateTimeString, boolean isStart) {
         try {
             // 優先嘗試解析為完整的日期時間
