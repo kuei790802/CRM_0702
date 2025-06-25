@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import com.example.demo.enums.CustomerType;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,14 +35,18 @@ public abstract class CustomerBase {
     private String customerCode;
 
     @Column(name = "name", nullable = false)
-    private String name;
-
+    private String customerName;
+    //TODO(joshkuei): Changed from customerName() to name().
     @Enumerated(EnumType.STRING)
     @Column(name = "customer_type", nullable = false, length = 10, insertable = false, updatable = false)
     private CustomerType customerType;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
 
     @Column(name = "address", length = 500)
     private String address;

@@ -56,7 +56,7 @@ public class SalesOrderViewDTO {
         CustomerBase customer = order.getCustomer();
         if (customer != null) {
             dto.setCustomerId(customer.getCustomerId());
-            dto.setCustomerName(customer.getName());
+            dto.setCustomerName(customer.getCustomerName());
             dto.setCustomerPhone(customer.getTel());
             dto.setCustomerType(customer.getCustomerType().name());
 

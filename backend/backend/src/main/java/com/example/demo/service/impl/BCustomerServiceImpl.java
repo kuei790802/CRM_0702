@@ -196,9 +196,9 @@ public class BCustomerServiceImpl implements BCustomerService {
         dto.setIndustry(BCustomer.getIndustry());
         dto.setBCustomerType(BCustomer.getBCustomerType());
         dto.setBCustomerLevel(BCustomer.getBCustomerLevel());
-        dto.setCustomerAddress(BCustomer.getCustomerAddress());
-        dto.setCustomerTel(BCustomer.getCustomerTel());
-        dto.setCustomerEmail(BCustomer.getCustomerEmail());
+        dto.setCustomerAddress(BCustomer.getAddress());//TODO(joshkuie): Align to CustomerBase.
+        dto.setCustomerTel(BCustomer.getTel());//TODO(joshkuie): Align to CustomerBase.
+        dto.setCustomerEmail(BCustomer.getEmail());//TODO(joshkuie): Align to CustomerBase.
         dto.setCreatedAt(BCustomer.getCreatedAt());
         dto.setUpdatedAt(BCustomer.getUpdatedAt());
 
@@ -222,9 +222,9 @@ public class BCustomerServiceImpl implements BCustomerService {
         BCustomer.setIndustry(request.getIndustry());
         BCustomer.setBCustomerType(request.getBCustomerType());
         BCustomer.setBCustomerLevel(request.getBCustomerLevel());
-        BCustomer.setCustomerAddress(request.getCustomerAddress());
-        BCustomer.setCustomerTel(request.getCustomerTel());
-        BCustomer.setCustomerEmail(request.getCustomerEmail());
+        BCustomer.setAddress(request.getCustomerAddress()); //TODO(joshkuie): Align to CustomerBase.
+        BCustomer.setTel(request.getCustomerTel()); //TODO(joshkuie): Align to CustomerBase.
+        BCustomer.setEmail(request.getCustomerEmail());//TODO(joshkuie): Align to CustomerBase.
 
         if (request.getTagIds() != null) {
             HashSet<Tag> tags = new HashSet<>();

@@ -27,7 +27,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +42,7 @@ public class SalesOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + dto.getCustomerId() + " 的客戶"));
 
         if (!Boolean.TRUE.equals(customer.isActive())) {
-            throw new DataConflictException("客戶 '" + customer.getName() + "' 為非啟用狀態，無法建立訂單。");
+            throw new DataConflictException("客戶 '" + customer.getCustomerName() + "' 為非啟用狀態，無法建立訂單。");
         }
 
 

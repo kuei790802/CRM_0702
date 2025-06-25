@@ -3,26 +3,38 @@ package com.example.demo.service;
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
+import com.example.demo.entity.Order;
+import com.example.demo.enums.CustomerType;
+import com.example.demo.enums.OrderStatus;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.CCustomerRepo;
+import com.example.demo.repository.OrderRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
+@RequiredArgsConstructor //TODO(joshkuei): Added for simplifying code.
 @Service
 public class CCustomerService {
     private final CCustomerRepo cCustomerRepo;
     private final BCryptPasswordEncoder encoder;
+    private final OrderRepository orderRepository;
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo) {
-        this.cCustomerRepo = cCustomerRepo;
-        this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
-    }
+//    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository) {
+//        this.cCustomerRepo = cCustomerRepo;
+//        this.orderRepository = orderRepository;
+//        this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
+//    }
 
     // 檢視帳號是否已存在
     public Boolean checkAccountExist(String account){
@@ -74,8 +86,13 @@ public class CCustomerService {
 
         validatePasswordStrength(password);
 
+        // TODO: Implemented for createdBy and updatedBy.
+        Long currentAuditorId = 0L; //TODO(joshkuei): Using placeholder 0L for now. Must use getCurrentAuditor() later.
+
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
+                .customerCode("CUST-" + account + "-" + UUID.randomUUID().toString().substring(0, 4)) //TODO(joshkuei): Added customerCode for customerBase.
+                .customerType(CustomerType.B2C) //TODO(joshkuei): Added customerCode for customerBase.
                 .customerName(customerName)
                 .password(encoder.encode(password))
                 .email(email)
@@ -83,12 +100,19 @@ public class CCustomerService {
                 .birthday(birthday)
                 .isActive(true)
                 .isDeleted(false)
+                .createdBy(currentAuditorId) //TODO(joshkuei): Added customerCode for customerBase.
+                .updatedBy(currentAuditorId) //TODO(joshkuei): Added customerCode for customerBase.
                 .build();
+
+
 
         return cCustomerRepo.save(newCCustomer);
     }
 
-
+    private Long getCurrentAuditorId() {
+        // TODO(joshkuei): Implement proper auditing-get from security context
+    return null;
+    }
 
     // 登入驗證 (JWT + OUATH2)+ 拋給別人我已經登入的資訊供後續開發
     public CCustomer login(String account, String password){
@@ -175,16 +199,34 @@ public class CCustomerService {
                 .orElseThrow(() -> new UsernameNotFoundException("找不到顧客: " + account));
     }
 
+    // ✨✨✨ 新增這個完整的方法 ✨✨✨
+    /**
+     * 更新客戶的總消費金額。
+     * 此方法會查找客戶所有狀態為 COMPLETE 的訂單，並加總其金額。
+     * @param customerId 要更新的客戶ID
+     */
+    @Transactional
+    public void updateCustomerSpending(Long customerId) {
+        // 1. 先找到對應的客戶實體，若不存在則立即失敗 (採用我的版本優點)
+        CCustomer customer = cCustomerRepo.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("更新消費金額時找不到客戶 ID: " + customerId));
 
+        // 2. 根據 customerId 查找其所有歷史訂單
+        List<Order> orders = orderRepository.findByCCustomer_CustomerIdOrderByOrderdateDesc(customerId);
 
+        // 3. 過濾出狀態為 COMPLETE 的訂單，並安全地加總其 totalAmount (採用您的版本優點)
+        double totalSpending = orders.stream()
+                .filter(order -> order.getOrderStatus() == OrderStatus.COMPLETE)
+                .mapToDouble(order -> order.getTotalAmount() != null ? order.getTotalAmount() : 0.0) // 處理 null
+                .sum();
+
+        // 4. 更新客戶的 spending 欄位並儲存
+        customer.setSpending((long) totalSpending); // 將 double 轉為 Long
+        cCustomerRepo.save(customer);
+    }
 
 //    todo: 6/11繼續
     // 刪除帳號
-
-
-
-
-
 
     // 留言給課服: 前台用戶對商品、客服、社區的留言與回覆，留言CRUD，留言屬性包含userId, productId等，防止惡意留言
 
@@ -192,10 +234,5 @@ public class CCustomerService {
     // VIP互動: 針對VIP用戶提供額外功能（專屬優惠、積分），VIP等級判斷、積分管理、VIP專屬訊息提醒
 
     // 開api給系統管理者: 註冊時紀錄註冊時間、修改實紀錄修改時間、下單時紀錄下單時間
-
-
-
-
-
 
 }
