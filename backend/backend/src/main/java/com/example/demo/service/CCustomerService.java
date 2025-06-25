@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
+import com.example.demo.dto.response.CustomerCouponDto;
 import com.example.demo.entity.CCustomer;
+import com.example.demo.entity.CouponTemplate;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
@@ -12,15 +14,24 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CCustomerService {
     private final CCustomerRepo cCustomerRepo;
     private final BCryptPasswordEncoder encoder;
+    private final CouponTemplateService couponTemplateService;
+    private final CustomerCouponService customerCouponService;
+
+    // 註冊禮優惠券的代碼
+    private static final String NEW_MEMBER_COUPON_CODE = "NEW_MEMBER_90";
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo) {
+    public CCustomerService(CCustomerRepo cCustomerRepo, CouponTemplateService couponTemplateService, CustomerCouponService customerCouponService) {
         this.cCustomerRepo = cCustomerRepo;
+        this.couponTemplateService = couponTemplateService;
+        this.customerCouponService = customerCouponService;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
     }
 
@@ -85,8 +96,33 @@ public class CCustomerService {
                 .isDeleted(false)
                 .build();
 
-        return cCustomerRepo.save(newCCustomer);
+        // --- 您原有的儲存用戶邏輯，完全保留 ---
+        CCustomer savedCustomer = cCustomerRepo.save(newCCustomer);
+
+        // ==========================================================
+        // 【新功能】在此處新增發送優惠券的邏輯
+        // ==========================================================
+        try {
+//            log.info("嘗試為新用戶(ID:{})發送註冊禮優惠券...", savedCustomer.getCustomerId());
+            CouponTemplate welcomeCouponTemplate = couponTemplateService.findTemplateByCode(NEW_MEMBER_COUPON_CODE);
+
+            if (welcomeCouponTemplate.getIssuedQuantity() < welcomeCouponTemplate.getTotalQuantity()) {
+                customerCouponService.grantCouponToCustomer(savedCustomer, welcomeCouponTemplate);
+//                log.info("成功發送註冊禮優惠券(Code:{})給用戶(ID:{})。", NEW_MEMBER_COUPON_CODE, savedCustomer.getCustomerId());
+            } else {
+//                log.warn("註冊禮優惠券(Code:{})庫存不足，無法發送給新用戶(ID:{})。", NEW_MEMBER_COUPON_CODE, savedCustomer.getCustomerId());
+            }
+        } catch (Exception e) {
+            // 如果發券失敗，只記錄錯誤，不影響用戶註冊成功。
+//            log.error("為用戶(ID:{})發送註冊禮優惠券時發生預期外的錯誤。", savedCustomer.getCustomerId(), e);
+        }
+        // ==========================================================
+        // 【新功能結束】
+        // ==========================================================
+
+        return savedCustomer; // 返回儲存後的用戶實體
     }
+
 
 
 
@@ -110,13 +146,28 @@ public class CCustomerService {
         CCustomer customer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(()-> new UsernameNotFoundException("找不到使用者: " + account));
 
+        // 【重要修改】將 Set<CustomerCoupon> 轉換為 List<CustomerCouponDto>
+        List<CustomerCouponDto> couponDtos = customer.getCustomerCoupons().stream()
+                .map(customerCoupon -> CustomerCouponDto.builder()
+                        .customerCouponId(customerCoupon.getId())
+                        .name(customerCoupon.getCouponTemplate().getName())
+                        .description(customerCoupon.getCouponTemplate().getDescription())
+                        .couponType(customerCoupon.getCouponTemplate().getCouponType())
+                        .discountValue(customerCoupon.getCouponTemplate().getDiscountValue())
+                        .minPurchaseAmount(customerCoupon.getCouponTemplate().getMinPurchaseAmount())
+                        .validTo(customerCoupon.getCouponTemplate().getValidTo())
+                        .status(customerCoupon.getStatus())
+                        .build())
+                .collect(Collectors.toList());
+
+
         return new CCustomerProfileResponse(
                 customer.getAccount(),
                 customer.getCustomerName(),
                 customer.getEmail(),
                 customer.getAddress(),
                 customer.getBirthday(),
-                customer.getCoupons(),
+                couponDtos, // <<-- 傳入轉換後的 DTO 列表
                 customer.getSpending(),
                 customer.getVipLevel()
         );
@@ -156,13 +207,28 @@ public class CCustomerService {
 
         CCustomer savedCustomer = cCustomerRepo.save(customer);
 
+        // 【重要修改】將 Set<CustomerCoupon> 轉換為 List<CustomerCouponDto>
+        List<CustomerCouponDto> couponDtos = savedCustomer.getCustomerCoupons().stream()
+                .map(customerCoupon -> CustomerCouponDto.builder()
+                        .customerCouponId(customerCoupon.getId())
+                        .name(customerCoupon.getCouponTemplate().getName())
+                        .description(customerCoupon.getCouponTemplate().getDescription())
+                        .couponType(customerCoupon.getCouponTemplate().getCouponType())
+                        .discountValue(customerCoupon.getCouponTemplate().getDiscountValue())
+                        .minPurchaseAmount(customerCoupon.getCouponTemplate().getMinPurchaseAmount())
+                        .validTo(customerCoupon.getCouponTemplate().getValidTo())
+                        .status(customerCoupon.getStatus())
+                        .build())
+                .collect(Collectors.toList());
+
+
         return new CCustomerProfileResponse(
                 savedCustomer.getAccount(),
                 savedCustomer.getCustomerName(),
                 savedCustomer.getEmail(),
                 savedCustomer.getAddress(),
                 savedCustomer.getBirthday(),
-                savedCustomer.getCoupons(),
+                couponDtos, // <<-- 傳入轉換後的 DTO 列表
                 savedCustomer.getSpending(),
                 savedCustomer.getVipLevel()
         );
