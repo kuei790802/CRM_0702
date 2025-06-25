@@ -28,6 +28,7 @@ public class Coupon {
     private double discountRate;
 
     private Integer usageLimit;
+    @Builder.Default
     private Integer usedCount = 0;
 
     private LocalDateTime validFrom;
@@ -44,5 +45,6 @@ public class Coupon {
     private VIPLevel targetVipLevel;
 
     @ManyToMany(mappedBy = "coupons")
+    @Builder.Default
     private List<CCustomer> CCustomers = new ArrayList<>();
 }

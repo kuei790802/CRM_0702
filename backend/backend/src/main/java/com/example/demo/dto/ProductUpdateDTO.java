@@ -28,7 +28,7 @@ public class ProductUpdateDTO {
     private BigDecimal basePrice;
 
     @NotEmpty(message = "稅別不可為空")
-    private String taxType;
+    private String taxType = "TAXABLE";
 
     @NotNull(message = "啟用狀態不可為空")
     private Boolean isActive;
