@@ -2,6 +2,9 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,55 +14,72 @@ import java.util.List;
 
 @Entity
 @Table(name = "customer")
+@DiscriminatorValue("B2C")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class CCustomer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long customerId;
+@SuperBuilder
+public class CCustomer extends CustomerBase{
 
-    @Column(nullable = false)
-    private String customerName;
+
+
     @Column(nullable = false, unique = true)
     private String account;
     @Column(nullable = false)
     private String password;
-    @Column(nullable = false, unique = true)
-    private String email;
 
-    private String address;
+
+
+
     private LocalDate birthday;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+//    private LocalDateTime createdAt;
+//    private LocalDateTime updatedAt;
+
+    @CreatedDate // Use annotation
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt; //TODO(joshkuei): Add for test.
+
+    @LastModifiedDate // Use annotation
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt; //TODO(joshkuei): Add for test.
+
     private LocalDateTime lastLogin;
     private LocalDateTime accessStartTime;
     private LocalDateTime accessEndTime;
     private Long spending;
 
 
-    private boolean isDeleted;
-    private boolean isActive;
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
 
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+//    @Column(name = "is_active", nullable = false)
+//    @Builder.Default
+//    private Boolean isActive = true;
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+
+//    @PrePersist
+//    public void onCreate() {
+//        this.createdAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+//        if (this.isDeleted == null) this.isDeleted = false;
+//        if (this.isActive == null) this.isActive = true;
+//
+//    }
+//
+//    @PreUpdate
+//    public void onUpdate() {
+//        this.updatedAt = LocalDateTime.now();
+//    }
 
 
     @OneToOne(mappedBy = "CCustomer")
     private Cart cart;
 
     @OneToMany(mappedBy = "CCustomer")
+    @Builder.Default
     private List<CCustomerAddress> CCustomerAddress = new ArrayList<>();
 
     @ManyToOne
@@ -72,5 +92,7 @@ public class CCustomer {
             joinColumns = @JoinColumn(name = "customer_id"),
             inverseJoinColumns = @JoinColumn(name = "coupon_id")
     )
+
+    @Builder.Default
     private List<Coupon> coupons = new ArrayList<>();
 }
