@@ -3,8 +3,6 @@ package com.example.demo.service.impl;
 import com.example.demo.dto.request.BCustomerRequest;
 import com.example.demo.dto.response.BCustomerDto;
 import com.example.demo.entity.BCustomer;
-
-
 import com.example.demo.entity.Tag;
 import com.example.demo.enums.BCustomerIndustry;
 import com.example.demo.enums.BCustomerLevel;
@@ -12,12 +10,11 @@ import com.example.demo.enums.BCustomerType;
 import com.example.demo.repository.BCustomerRepository;
 import com.example.demo.repository.TagRepository;
 import com.example.demo.service.BCustomerService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -27,12 +24,12 @@ import java.util.stream.Collectors;
 @Service
 public class BCustomerServiceImpl implements BCustomerService {
 
-    private final BCustomerRepository BCustomerRepository;
+    private final BCustomerRepository bCustomerRepository;
     private final TagRepository tagRepository;
 
-    public BCustomerServiceImpl(BCustomerRepository BCustomerRepository,
+    public BCustomerServiceImpl(BCustomerRepository bCustomerRepository,
                                 TagRepository tagRepository) {
-        this.BCustomerRepository = BCustomerRepository;
+        this.bCustomerRepository = bCustomerRepository;
         this.tagRepository = tagRepository;
     }
 
@@ -44,7 +41,7 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional(readOnly = true)
     public Page<BCustomerDto> findAll(Pageable pageable) {
-        return BCustomerRepository.findAll(pageable)
+        return bCustomerRepository.findAll(pageable)
                 .map(this::convertToDto);
     }
 
@@ -57,9 +54,9 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional(readOnly = true)
     public BCustomerDto findById(Long id) {
-        BCustomer BCustomer = BCustomerRepository.findById(id)
+        BCustomer bCustomer = bCustomerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + id));
-        return convertToDto(BCustomer);
+        return convertToDto(bCustomer);
     }
 
     /**
@@ -70,25 +67,25 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional
     public BCustomerDto create(BCustomerRequest request) {
-        BCustomer BCustomer = new BCustomer();
-        mapRequestToEntity(request, BCustomer);
+        BCustomer bCustomer = new BCustomer();
+        mapRequestToEntity(request, bCustomer);
 
-        if (BCustomer.getBCustomerType() == null) {
-            BCustomer.setBCustomerType(BCustomerType.REGULAR); // 預設客戶類型
+        if (bCustomer.getBCustomerType() == null) {
+            bCustomer.setBCustomerType(BCustomerType.REGULAR); // 預設客戶類型
         }
-        if (BCustomer.getBCustomerLevel() == null) {
-            BCustomer.setBCustomerLevel(BCustomerLevel.BRONZE); // 預設客戶等級
+        if (bCustomer.getBCustomerLevel() == null) {
+            bCustomer.setBCustomerLevel(BCustomerLevel.BRONZE); // 預設客戶等級
         }
-        if (BCustomer.getIndustry() == null) {
-            BCustomer.setIndustry(BCustomerIndustry.OTHER); // 預設客戶行業
+        if (bCustomer.getIndustry() == null) {
+            bCustomer.setIndustry(BCustomerIndustry.OTHER); // 預設客戶行業
         }
 
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
             List<Tag> tags = tagRepository.findAllById(request.getTagIds());
-            BCustomer.setTags(new HashSet<>(tags));
+            bCustomer.setTags(new HashSet<>(tags));
         }
 
-        BCustomer savedBCustomer = BCustomerRepository.save(BCustomer);
+        BCustomer savedBCustomer = bCustomerRepository.save(bCustomer);
         return convertToDto(savedBCustomer);
     }
 
@@ -102,17 +99,17 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional
     public BCustomerDto update(Long id, BCustomerRequest request) {
-        BCustomer BCustomer = BCustomerRepository.findById(id)
+        BCustomer bCustomer = bCustomerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + id));
 
-        mapRequestToEntity(request, BCustomer);
+        mapRequestToEntity(request, bCustomer);
 
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
             List<Tag> tags = tagRepository.findAllById(request.getTagIds());
-            BCustomer.setTags(new HashSet<>(tags));
+            bCustomer.setTags(new HashSet<>(tags));
         }
 
-        BCustomer updatedBCustomer = BCustomerRepository.save(BCustomer);
+        BCustomer updatedBCustomer = bCustomerRepository.save(bCustomer);
         return convertToDto(updatedBCustomer);
     }
 
@@ -124,10 +121,10 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (!BCustomerRepository.existsById(id)) {
+        if (!bCustomerRepository.existsById(id)) {
             throw new EntityNotFoundException("找不到客戶，ID: " + id);
         }
-        BCustomerRepository.deleteById(id);
+        bCustomerRepository.deleteById(id);
     }
 
     /**
@@ -139,7 +136,7 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional(readOnly = true)
     public Page<BCustomerDto> findCustomersByNameContaining(String name, Pageable pageable) {
-        return BCustomerRepository.findByCustomerNameContainingIgnoreCase(name, pageable)
+        return bCustomerRepository.findByCustomerNameContainingIgnoreCase(name, pageable)
                 .map(this::convertToDto);
     }
 
@@ -152,33 +149,33 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional(readOnly = true)
     public Page<BCustomerDto> findCustomersByIndustry(BCustomerIndustry industry, Pageable pageable) {
-        return BCustomerRepository.findByIndustry(industry, pageable)
+        return bCustomerRepository.findByIndustry(industry, pageable)
                 .map(this::convertToDto);
     }
 
     /**
      * 根據客戶類型查詢客戶。
-     * @param BCustomerType 客戶類型 Enum。
+     * @param bCustomerType 客戶類型 Enum。
      * @param pageable 分頁和排序資訊。
      * @return 符合條件的客戶 DTO 分頁列表。
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<BCustomerDto> findCustomersByCustomerType(BCustomerType BCustomerType, Pageable pageable) {
-        return BCustomerRepository.findByBCustomerType(BCustomerType, pageable)
+    public Page<BCustomerDto> findCustomersByCustomerType(BCustomerType bCustomerType, Pageable pageable) {
+        return bCustomerRepository.findByBCustomerType(bCustomerType, pageable)
                 .map(this::convertToDto);
     }
 
     /**
      * 根據客戶等級查詢客戶。
-     * @param BCustomerLevel 客戶等級 Enum。
+     * @param bCustomerLevel 客戶等級 Enum。
      * @param pageable 分頁和排序資訊。
      * @return 符合條件的客戶 DTO 分頁列表。
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<BCustomerDto> findCustomersByCustomerLevel(BCustomerLevel BCustomerLevel, Pageable pageable) {
-        return BCustomerRepository.findByBCustomerLevel(BCustomerLevel, pageable)
+    public Page<BCustomerDto> findCustomersByCustomerLevel(BCustomerLevel bCustomerLevel, Pageable pageable) {
+        return bCustomerRepository.findByBCustomerLevel(bCustomerLevel, pageable)
                 .map(this::convertToDto);
     }
 
@@ -186,24 +183,26 @@ public class BCustomerServiceImpl implements BCustomerService {
     /**
      * 將 Customer 實體轉換為 CustomerDto。
      * 此方法用於向前端返回資料，只包含前端所需的資訊。
-     * @param BCustomer 要轉換的 Customer 實體。
+     * @param bCustomer 要轉換的 Customer 實體。
      * @return 轉換後的 CustomerDto。
      */
-    private BCustomerDto convertToDto(BCustomer BCustomer) {
+    private BCustomerDto convertToDto(BCustomer bCustomer) {
         BCustomerDto dto = new BCustomerDto();
-        dto.setCustomerId(BCustomer.getCustomerId());
-        dto.setCustomerName(BCustomer.getCustomerName());
-        dto.setIndustry(BCustomer.getIndustry());
-        dto.setBCustomerType(BCustomer.getBCustomerType());
-        dto.setBCustomerLevel(BCustomer.getBCustomerLevel());
-        dto.setCustomerAddress(BCustomer.getCustomerAddress());
-        dto.setCustomerTel(BCustomer.getCustomerTel());
-        dto.setCustomerEmail(BCustomer.getCustomerEmail());
-        dto.setCreatedAt(BCustomer.getCreatedAt());
-        dto.setUpdatedAt(BCustomer.getUpdatedAt());
+        dto.setCustomerId(bCustomer.getCustomerId());
+        // ✨ 修改 #1: 使用繼承自 CustomerBase 的 getter
+        dto.setCustomerName(bCustomer.getName());
+        dto.setIndustry(bCustomer.getIndustry());
+        dto.setBCustomerType(bCustomer.getBCustomerType());
+        dto.setBCustomerLevel(bCustomer.getBCustomerLevel());
+        // ✨ 修改 #2: 使用繼承自 CustomerBase 的 getter
+        dto.setCustomerAddress(bCustomer.getAddress());
+        dto.setCustomerTel(bCustomer.getTel());
+        dto.setCustomerEmail(bCustomer.getEmail());
+        dto.setCreatedAt(bCustomer.getCreatedAt());
+        dto.setUpdatedAt(bCustomer.getUpdatedAt());
 
-        List<Long> tagIds = (BCustomer.getTags() != null && !BCustomer.getTags().isEmpty())
-                ? BCustomer.getTags().stream()
+        List<Long> tagIds = (bCustomer.getTags() != null && !bCustomer.getTags().isEmpty())
+                ? bCustomer.getTags().stream()
                 .map(Tag::getTagId)
                 .collect(Collectors.toList())
                 : List.of();
@@ -215,16 +214,18 @@ public class BCustomerServiceImpl implements BCustomerService {
      * 將 CustomerRequest DTO 中的資料映射到 Customer 實體。
      * 此方法主要處理簡單的屬性複製。
      * @param request 包含請求資料的 DTO。
-     * @param BCustomer 要映射的目標 Customer 實體。
+     * @param bCustomer 要映射的目標 Customer 實體。
      */
-    private void mapRequestToEntity(BCustomerRequest request, BCustomer BCustomer) {
-        BCustomer.setCustomerName(request.getCustomerName());
-        BCustomer.setIndustry(request.getIndustry());
-        BCustomer.setBCustomerType(request.getBCustomerType());
-        BCustomer.setBCustomerLevel(request.getBCustomerLevel());
-        BCustomer.setCustomerAddress(request.getCustomerAddress());
-        BCustomer.setCustomerTel(request.getCustomerTel());
-        BCustomer.setCustomerEmail(request.getCustomerEmail());
+    private void mapRequestToEntity(BCustomerRequest request, BCustomer bCustomer) {
+        // ✨ 修改 #3: 使用繼承自 CustomerBase 的 setter
+        bCustomer.setName(request.getCustomerName());
+        bCustomer.setIndustry(request.getIndustry());
+        bCustomer.setBCustomerType(request.getBCustomerType());
+        bCustomer.setBCustomerLevel(request.getBCustomerLevel());
+        // ✨ 修改 #4: 使用繼承自 CustomerBase 的 setter
+        bCustomer.setAddress(request.getCustomerAddress());
+        bCustomer.setTel(request.getCustomerTel());
+        bCustomer.setEmail(request.getCustomerEmail());
 
         if (request.getTagIds() != null) {
             HashSet<Tag> tags = new HashSet<>();
@@ -233,7 +234,7 @@ public class BCustomerServiceImpl implements BCustomerService {
                         .orElseThrow(() -> new EntityNotFoundException("找不到標籤，ID: " + tagId));
                 tags.add(tag);
             }
-            BCustomer.setTags(tags);
+            bCustomer.setTags(tags);
         }
     }
 }

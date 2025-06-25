@@ -38,7 +38,7 @@ public class CCustomerAuthController {
         CCustomerLoginResponse res = CCustomerLoginResponse.builder()
                 .token(token)
                 .account(cCustomer.getAccount())
-                .customerName(cCustomer.getCustomerName())
+                .customerName(cCustomer.getName())
                 .email(cCustomer.getEmail())
                 .birthday(cCustomer.getBirthday())
                 .createdAt(cCustomer.getCreatedAt())

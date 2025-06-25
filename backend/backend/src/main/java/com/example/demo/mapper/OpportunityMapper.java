@@ -51,7 +51,7 @@ public class OpportunityMapper {
         }
 
         Long customerId = (opportunity.getBCustomer() != null) ? opportunity.getBCustomer().getCustomerId() : null;
-        String customerName = (opportunity.getBCustomer() != null) ? opportunity.getBCustomer().getCustomerName() : null;
+        String customerName = (opportunity.getBCustomer() != null) ? opportunity.getBCustomer().getName() : null;
 
         Long contactId = (opportunity.getContact() != null) ? opportunity.getContact().getContactId() : null;
         String contactName = (opportunity.getContact() != null) ? opportunity.getContact().getContactName() : null;
