@@ -95,8 +95,8 @@ public class ProductService {
         existingProduct.setCategory(category);
         existingProduct.setUnit(unit);
         existingProduct.setBasePrice(updatedInfo.getBasePrice());
-        existingProduct.setTaxType(updatedInfo.getTaxType());
-        existingProduct.setIsActive(updatedInfo.getIsActive());
+//        existingProduct.setTaxType(updatedInfo.getTaxType());
+        existingProduct.setIsSalable(updatedInfo.getIsSalable());
         existingProduct.setUpdatedBy(userId);
 
         Product updatedProduct = productRepository.save(existingProduct);

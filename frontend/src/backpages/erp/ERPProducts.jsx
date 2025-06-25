@@ -108,11 +108,14 @@ const ERPProducts = () => {
       const res = await axios.get(`/products/${id}`);
       const product = res.data;
       setEditProduct(product);
+      console.log("編輯產品資料:", product);
       form.setFieldsValue({
         name: product.name,
         description: product.description,
         basePrice: product.basePrice,
         isSalable: product.isSalable,
+        categoryId: product.categoryId,
+        unitId: product.unitId,
       });
       setEditVisible(true);
     } catch (err) {
@@ -318,22 +321,61 @@ const ERPProducts = () => {
             }}
           >
             <Form.Item
-              label="產品名稱"
+              label="商品名稱"
               name="name"
               rules={[{ required: true }]}
             >
               <Input />
             </Form.Item>
+
             <Form.Item label="描述" name="description">
               <Input.TextArea />
             </Form.Item>
+
             <Form.Item
-              label="價格"
-              name="basePrice"
-              rules={[{ required: true }]}
+              label="分類"
+              name="categoryId"
+              rules={[{ required: true, message: "請選擇分類" }]}
             >
-              <InputNumber min={0} style={{ width: "100%" }} />
+              <Select placeholder="請選擇分類">
+                <Select.Option value={2}>經典冰淇淋</Select.Option>
+                <Select.Option value={3}>水果雪酪</Select.Option>
+                <Select.Option value={4}>雪糕系列</Select.Option>
+                <Select.Option value={5}>巧酥雪糕系列</Select.Option>
+                <Select.Option value={6}>季節限定</Select.Option>
+                <Select.Option value={7}>純素系列</Select.Option>
+                <Select.Option value={8}>品牌聯名系列</Select.Option>
+                <Select.Option value={9}>週邊商品</Select.Option>
+              </Select>
             </Form.Item>
+
+            <Form.Item
+              label="單位"
+              name="unitId"
+              rules={[{ required: true, message: "請選擇單位" }]}
+            >
+              <Select placeholder="請選擇單位">
+                <Select.Option value={1}>個</Select.Option>
+                <Select.Option value={2}>箱</Select.Option>
+                <Select.Option value={3}>打</Select.Option>
+                <Select.Option value={4}>公克</Select.Option>
+                <Select.Option value={5}>支</Select.Option>
+                <Select.Option value={6}>杯</Select.Option>
+                <Select.Option value={7}>盒</Select.Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="售價"
+              name="basePrice"
+              rules={[
+                { required: true },
+                { type: "number", min: 0.01, message: "售價必須大於 0" },
+              ]}
+            >
+              <InputNumber min={0.01} style={{ width: "100%" }} />
+            </Form.Item>
+
             <Form.Item
               label="是否上架"
               name="isSalable"

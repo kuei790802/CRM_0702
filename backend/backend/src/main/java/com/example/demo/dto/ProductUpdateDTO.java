@@ -27,9 +27,9 @@ public class ProductUpdateDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "售價必須大於 0")
     private BigDecimal basePrice;
 
-    @NotEmpty(message = "稅別不可為空")
-    private String taxType;
+//    @NotEmpty(message = "稅別不可為空")
+//    private String taxType;
 
-    @NotNull(message = "啟用狀態不可為空")
-    private Boolean isActive;
+    @NotNull(message = "上架狀態不可為空")
+    private Boolean isSalable;
 }

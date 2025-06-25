@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash, FaFacebook } from "react-icons/fa";
-import { SiLine } from "react-icons/si";
 import { Link, useNavigate } from "react-router-dom";
 import useUserStore from "../stores/userStore";
 
 function Login() {
-  const [email, setEmail] = useState("test@example.com");
-  const [password, setPassword] = useState("123456");
+  const [account, setAccount] = useState("kevin_lin88");
+  const [password, setPassword] = useState("MyStr0ngP@sswd#1");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -25,7 +24,7 @@ function Login() {
     setError(null);
 
     try {
-      await login({ email, password });
+      await login({ account, password });
       navigate("/User");
     } catch (err) {
       setError("登入失敗，請確認帳號密碼");
@@ -41,8 +40,8 @@ function Login() {
           <input
             type="text"
             placeholder="電郵或手機號碼"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
             className="w-full border-b border-gray-300 py-2 focus:outline-none"
             required
           />

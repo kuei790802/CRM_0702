@@ -1,7 +1,7 @@
 import { rest } from 'msw';
 
 export const loginHandlers = [
-  rest.post('/api/auth/login', async (req, res, ctx) => {
+  rest.post('/api/customer/auth/login', async (req, res, ctx) => {
     const { email, password } = await req.json();
 
     if (email === 'test@example.com' && password === '123456') {
