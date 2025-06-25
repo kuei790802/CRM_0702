@@ -123,19 +123,20 @@ public class DataInitializer {
     private void createSystemUserIfNotExists() {
         if (userRepository.findById(SYSTEM_USER_ID).isEmpty()) {
             log.info("Creating system user with ID: {}", SYSTEM_USER_ID);
-            User systemUser = new User();
-            systemUser.setUserId(SYSTEM_USER_ID);
-            systemUser.setUserName("system");
+            User systemUser = new User(); // Changed from Users to User
+            systemUser.setUserId(SYSTEM_USER_ID); // Assuming User has setUserId or it's handled by DB
+            systemUser.setUserName("system"); // Changed from setUsername
+            systemUser.setAccount("system"); // User entity has 'account', Users had 'username' for this typically
             systemUser.setEmail("system@example.com");
 
             String systemPassword = "abc123456"; // You can change this to any password
             String hashedPassword = passwordEncoder.encode(systemPassword);
-            systemUser.setPassword(hashedPassword);
+            systemUser.setPassword(hashedPassword); // Changed from setPasswordHash
 
-            systemUser.setRoleName("SYSTEM_ADMIN");
+            // systemUser.setRoleId(1L); // User entity uses List<Authority> authorities. Skipping for now.
+            // TODO: Set authorities if needed, e.g. find or create an Authority and add to systemUser.getAuthorities()
 
-
-            userRepository.save(systemUser);
+            userRepository.save(systemUser); // Should now match UserRepository<User, Long>
             log.info("System user created successfully");
         } else {
             log.info("System user already exists");

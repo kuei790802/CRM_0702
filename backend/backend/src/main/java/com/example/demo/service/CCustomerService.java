@@ -22,6 +22,7 @@ public class CCustomerService {
     private final CCustomerRepo cCustomerRepo; // <<--【修改】將名稱改為 cCustomerRepo 較符合慣例
     private final BCryptPasswordEncoder encoder;
 
+
     // <<--【新增】注入 OrderRepository -->>
     @Autowired
     private OrderRepository orderRepository;
@@ -50,7 +51,7 @@ public class CCustomerService {
 
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
-                .name(customerName)
+                .name(customerName) //TODO(joshkuei): Change from customerName to name (adopt to CustomerBase)
                 .password(encoder.encode(password))
                 .email(email)
                 .address(address)
@@ -85,7 +86,7 @@ public class CCustomerService {
 
         return new CCustomerProfileResponse(
                 customer.getAccount(),
-                customer.getName(),
+                customer.getName(), //TODO(joshkuei): Change from customerName to name (adopt to CustomerBase)
                 customer.getEmail(),
                 customer.getAddress(),
                 customer.getBirthday()

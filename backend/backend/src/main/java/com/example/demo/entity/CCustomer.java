@@ -3,6 +3,8 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +36,15 @@ public class CCustomer extends CustomerBase{
 
 //    private LocalDateTime createdAt;
 //    private LocalDateTime updatedAt;
+
+    @CreatedDate // Use annotation
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt; //TODO(joshkuei): Add for test.
+
+    @LastModifiedDate // Use annotation
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt; //TODO(joshkuei): Add for test.
+
     private LocalDateTime lastLogin;
     private LocalDateTime accessStartTime;
     private LocalDateTime accessEndTime;

@@ -23,7 +23,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("""
             SELECT DISTINCT o FROM Order o JOIN o.orderDetails od WHERE 
             o.orderdate BETWEEN :startTime AND :endTime AND 
-            (:productName IS NULL OR od.product.productname LIKE %:productName%)
+            (:productName IS NULL OR od.product.name LIKE %:productName%)
             """)
     List<Order> searchOrders(
             @Param("startTime") LocalDate startTime,

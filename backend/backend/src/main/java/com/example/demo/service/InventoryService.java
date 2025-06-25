@@ -16,6 +16,7 @@ import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.repository.*;
 import com.example.demo.specification.InventorySpecification;
+import org.aspectj.weaver.ast.Call;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -64,17 +65,20 @@ public class InventoryService {
 
 
         for (PurchaseOrderDetail detail : purchaseOrder.getDetails()) {
-            this.adjustInventory(
-                    detail.getProduct().getProductId(),
-                    detail.getWarehouse().getWarehouseId(),
-                    detail.getQuantity(),
-                    detail.getUnitPrice(),
-                    MovementType.PURCHASE_IN,
-                    "PURCHASE_ORDER",
-                    purchaseOrder.getPurchaseOrderId(),
-                    detail.getItemId(),
-                    receivingUserId);
-
+//            this.adjustInventory(
+//                    detail.getProduct().getProductId(),
+//                    detail.getWarehouse().getWarehouseId(),
+//                    detail.getQuantity(),
+//                    detail.getUnitPrice(),
+//                    MovementType.PURCHASE_IN,
+//                    "PURCHASE_ORDER",
+//                    purchaseOrder.getPurchaseOrderId(),
+//                    detail.getItemId(),
+//                    receivingUserId);
+//
+//        }
+            //TODO(joshkuei): Call the more specific method for handling PO line receipts
+            this.receivePurchaseOrderLine(detail, receivingUserId);
         }
 
 
@@ -82,6 +86,66 @@ public class InventoryService {
         purchaseOrder.setUpdatedAt(LocalDateTime.now());
         purchaseOrder.setUpdatedBy(receivingUserId);
         purchaseOrderRepository.save(purchaseOrder);
+    }
+
+    //TODO(joshkuei): Helper to get or create inventory record
+    private Inventory getOrCreateInventory(Product product, Warehouse warehouse, Long userId) {
+        return inventoryRepository.findByProductAndWarehouse(product, warehouse)
+                .orElseGet(() -> {
+                    Inventory newInventory = new Inventory();
+                    newInventory.setProduct(product);
+                    newInventory.setWarehouse(warehouse);
+                    newInventory.setCurrentStock(BigDecimal.ZERO);
+                    newInventory.setUnitsOnOrder(BigDecimal.ZERO);
+                    newInventory.setUnitsAllocated(BigDecimal.ZERO);
+                    newInventory.setAverageCost(BigDecimal.ZERO);
+                    newInventory.setCreatedAt(LocalDateTime.now());
+                    newInventory.setCreatedBy(userId);
+                    newInventory.setUpdatedAt(LocalDateTime.now());
+                    newInventory.setUpdatedBy(userId);
+                    return inventoryRepository.save(newInventory); //TODO(joshkuei): Save immediately to ensure it has an ID if needed later in same transaction
+                });
+    }
+
+    @Transactional
+    public void receivePurchaseOrderLine(PurchaseOrderDetail detail, Long receivingUserId) {
+        Product product = detail.getProduct();
+        Warehouse warehouse = warehouseRepository.findById(detail.getWarehouseId())
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for ID: " + detail.getWarehouseId()));
+
+        Inventory inventory = getOrCreateInventory(product, warehouse, receivingUserId);
+
+        // Increase current stock
+        inventory.setCurrentStock(inventory.getCurrentStock().add(detail.getQuantity()));
+        // Decrease units on order
+        inventory.setUnitsOnOrder(inventory.getUnitsOnOrder().subtract(detail.getQuantity()));
+        if (inventory.getUnitsOnOrder().compareTo(BigDecimal.ZERO) < 0) {
+            // This case should ideally not happen if unitsOnOrder was managed correctly when PO was created/confirmed
+            inventory.setUnitsOnOrder(BigDecimal.ZERO);
+        }
+
+        // Recalculate average cost (simplified from adjustInventory)
+        BigDecimal oldStock = inventory.getCurrentStock().subtract(detail.getQuantity()); // Stock before this receipt line
+        BigDecimal oldTotalValue = oldStock.multiply(inventory.getAverageCost());
+        BigDecimal incomingValue = detail.getQuantity().multiply(detail.getUnitPrice());
+        if (inventory.getCurrentStock().compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal newAverageCost = (oldTotalValue.add(incomingValue)).divide(inventory.getCurrentStock(), 4, RoundingMode.HALF_UP);
+            inventory.setAverageCost(newAverageCost);
+        } else if (detail.getQuantity().compareTo(BigDecimal.ZERO) > 0) { // If current stock becomes non-zero only due to this receipt
+            inventory.setAverageCost(detail.getUnitPrice());
+        } else {
+            inventory.setAverageCost(BigDecimal.ZERO);
+        }
+
+        inventory.setUpdatedAt(LocalDateTime.now());
+        inventory.setUpdatedBy(receivingUserId);
+        inventoryRepository.save(inventory);
+
+        createInventoryMovement(
+                product, warehouse, MovementType.PURCHASE_IN.name(), detail.getQuantity(), detail.getUnitPrice(),
+                inventory.getCurrentStock(), "PURCHASE_ORDER", detail.getPurchaseOrder().getPurchaseOrderId(), detail.getItemId(),
+                userRepository.getReferenceById(receivingUserId)
+        );
     }
 
 
@@ -92,9 +156,69 @@ public class InventoryService {
 
     public BigDecimal getProductStock(Long productId) {
 
-        Optional<Inventory> inventoryOpt = inventoryRepository.findByProductId(productId);
+        // This method sums current stock across all warehouses for a given product.
+        List<Inventory> inventories = inventoryRepository.findByProduct_ProductId(productId);
+        return inventories.stream()
+                .map(Inventory::getCurrentStock)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
-        return inventoryOpt.map(Inventory::getCurrentStock).orElse(BigDecimal.valueOf(0));
+    // New method as per plan
+    public BigDecimal getAvailableStock(Long productId, Long warehouseId) {
+        Optional<Inventory> inventoryOpt = inventoryRepository.findByProduct_ProductIdAndWarehouse_WarehouseId(productId, warehouseId);
+        if (inventoryOpt.isPresent()) {
+            Inventory inventory = inventoryOpt.get();
+            return inventory.getCurrentStock().subtract(inventory.getUnitsAllocated());
+        }
+        return BigDecimal.ZERO;
+    }
+
+    // Overloaded for product total available stock across all warehouses
+    public BigDecimal getAvailableStock(Long productId) {
+        List<Inventory> inventories = inventoryRepository.findByProduct_ProductId(productId);
+        BigDecimal totalCurrentStock = inventories.stream()
+                .map(Inventory::getCurrentStock)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalUnitsAllocated = inventories.stream()
+                .map(Inventory::getUnitsAllocated)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return totalCurrentStock.subtract(totalUnitsAllocated);
+    }
+
+
+    // New method as per plan
+    @Transactional
+    public void reserveStock(Long productId, Long warehouseId, BigDecimal quantityToReserve,
+                             String documentType, Long documentId, Long documentDetailId, Long userId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + productId));
+        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for ID: " + warehouseId));
+        User user = userRepository.getReferenceById(userId);
+
+        Inventory inventory = getOrCreateInventory(product, warehouse, userId);
+
+        BigDecimal currentStock = inventory.getCurrentStock();
+        BigDecimal currentAllocated = inventory.getUnitsAllocated();
+        BigDecimal availableToReserve = currentStock.subtract(currentAllocated);
+
+        if (availableToReserve.compareTo(quantityToReserve) < 0) {
+            throw new DataConflictException("Insufficient available stock for product " + product.getName() +
+                    " in warehouse " + warehouse.getName() +
+                    ". Available: " + availableToReserve + ", Requested: " + quantityToReserve);
+        }
+
+        inventory.setUnitsAllocated(currentAllocated.add(quantityToReserve));
+        inventory.setUpdatedAt(LocalDateTime.now());
+        inventory.setUpdatedBy(userId);
+        inventoryRepository.save(inventory);
+
+        createInventoryMovement(
+                product, warehouse, MovementType.STOCK_RESERVE.name(), quantityToReserve,
+                inventory.getAverageCost(), // Use current average cost for informational value of reservation
+                inventory.getCurrentStock(), // Current physical stock doesn't change on reservation
+                documentType, documentId, documentDetailId, user
+        );
     }
 
     public Page<InventoryViewDTO> searchInventories(Long productId, Long warehouseId, Pageable pageable) {
@@ -120,40 +244,40 @@ public class InventoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + warehouseId + " 的倉庫"));
         User user = userRepository.getReferenceById(userId);
 
-        Inventory inventory = inventoryRepository.findByProductAndWarehouse(product, warehouse)
-                .orElseGet(() -> {
-                    Inventory newInventory = new Inventory();
-                    newInventory.setProduct(product);
-                    newInventory.setWarehouse(warehouse);
-                    newInventory.setCurrentStock(BigDecimal.ZERO);
-                    newInventory.setAverageCost(BigDecimal.ZERO);
-                    newInventory.setCreatedAt(LocalDateTime.now());
-                    newInventory.setCreatedBy(userId);
-                    newInventory.setUpdatedAt(LocalDateTime.now());
-                    newInventory.setUpdatedBy(userId);
+        Inventory inventory = getOrCreateInventory(product, warehouse, userId); // Use helper
 
-                    return newInventory;
-                });
+        BigDecimal oldStock = inventory.getCurrentStock();
+        BigDecimal newStock = oldStock.add(quantityChange);
 
-        BigDecimal currentQuantity = inventory.getCurrentStock();
-        BigDecimal newQuantity = currentQuantity.add(quantityChange);
-
-        if (newQuantity.compareTo(BigDecimal.ZERO)<0) {
-            throw new IllegalArgumentException("庫存不足。產品 '" + product.getName() + "' 在倉庫 '" + warehouse.getName()
-                    + "' 的目前庫存為 " + currentQuantity + ", 無法扣減 " + quantityChange.abs());
+        if (newStock.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("庫存調整後數量不可為負。產品 '" + product.getName() + "' 在倉庫 '" + warehouse.getName()
+                    + "' 的目前庫存為 " + oldStock + ", 調整量 " + quantityChange);
         }
-        if(movementType == MovementType.PURCHASE_IN && quantityChange.compareTo(BigDecimal.ZERO)>0){
-            BigDecimal currentTotalValue = currentQuantity.multiply(inventory.getAverageCost());
-            BigDecimal newItemsValue = quantityChange.multiply(unitCost);
 
-            if(newQuantity.compareTo(BigDecimal.ZERO)!= 0){
-                BigDecimal newAverageCost = (currentTotalValue.add(newItemsValue))
-                        .divide(newQuantity, 4, RoundingMode.HALF_UP);
+        // Recalculate average cost for incoming positive adjustments with cost
+        if (movementType == MovementType.ADJUSTMENT_IN && quantityChange.compareTo(BigDecimal.ZERO) > 0 && unitCost != null) {
+            BigDecimal oldTotalValue = oldStock.multiply(inventory.getAverageCost());
+            BigDecimal incomingValue = quantityChange.multiply(unitCost);
+            if (newStock.compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal newAverageCost = (oldTotalValue.add(incomingValue)).divide(newStock, 4, RoundingMode.HALF_UP);
                 inventory.setAverageCost(newAverageCost);
+            } else {
+                inventory.setAverageCost(BigDecimal.ZERO);
             }
+        } else if (movementType == MovementType.PURCHASE_IN) {
+            // Average cost for PURCHASE_IN is now handled by receivePurchaseOrderLine or a more specific method
+            // This generic adjustInventory might not change average cost for POs unless explicitly told to.
+            // For now, let's assume unitCost for PURCHASE_IN here is for movement record only, avg cost is handled elsewhere for PO.
         }
 
-        inventory.setCurrentStock(newQuantity);
+
+        inventory.setCurrentStock(newStock);
+        // This generic adjustInventory primarily affects currentStock.
+        // unitsOnOrder and unitsAllocated are typically managed by more specific business process methods.
+        // For example, a positive ADJUSTMENT_IN might also need to affect unitsOnOrder if it's correcting a PO receipt.
+        // A negative ADJUSTMENT_OUT might need to affect unitsAllocated if it's for stock found damaged that was reserved.
+        // These would require more parameters or more specific service methods.
+
         inventory.setUpdatedAt(LocalDateTime.now());
         inventory.setUpdatedBy(userId);
 
@@ -179,7 +303,7 @@ public class InventoryService {
                 movementType.name(),
                 quantityChange,
                 unitCost,
-                newQuantity,
+                newStock,
                 documentType,
                 documentId,
                 documentItemId,
@@ -208,11 +332,11 @@ public class InventoryService {
 
 
         InventoryAdjustment adjustment = new InventoryAdjustment();
-        adjustment.setAdjustmentNumber("ADJ-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))); //TODO(joshkuei): check if duplicate.
+        adjustment.setAdjustmentNumber("ADJ-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         adjustment.setAdjustmentDate(dto.getAdjustmentDate());
-        adjustment.setAdjustmentType(dto.getAdjustmentType());
+        adjustment.setAdjustmentType(dto.getAdjustmentType()); // This should be an Enum in InventoryAdjustment entity ideally
         adjustment.setRemarks(dto.getRemarks());
-        adjustment.setStatus("EXECUTED");
+        adjustment.setStatus("EXECUTED"); // Or "PENDING" then "EXECUTED" if there's an approval step
         adjustment.setWarehouse(warehouse);
 
         LocalDateTime now = LocalDateTime.now();
@@ -232,21 +356,13 @@ public class InventoryService {
                     .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + detailDTO.getProductId() + " 的產品"));
 
 
-            Inventory inventory = inventoryRepository.findByProductAndWarehouse(product,warehouse)
-                    .orElseGet(() -> {
-                        Inventory newInventory = new Inventory();
-                        newInventory.setProduct(product);
-                        newInventory.setWarehouse(warehouse);
-                        newInventory.setCurrentStock(BigDecimal.ZERO);
-                        newInventory.setAverageCost(BigDecimal.ZERO);
-                        newInventory.setCreatedBy(operatorId);
-                        newInventory.setCreatedAt(now);
-                        return newInventory;
-                    });
+            Inventory inventory = getOrCreateInventory(product, warehouse, operatorId);
+            BigDecimal adjustedQuantity = detailDTO.getAdjustedQuantity();
+            BigDecimal oldStock = inventory.getCurrentStock();
+            BigDecimal newStock = oldStock.add(adjustedQuantity);
 
-            BigDecimal newStock = inventory.getCurrentStock().add(detailDTO.getAdjustedQuantity());
             if (newStock.compareTo(BigDecimal.ZERO) < 0) {
-                throw new DataConflictException("庫存不足，產品 '" + product.getName() + "' 調整後庫存不可為負數。");
+                throw new DataConflictException("庫存調整後數量不可為負。產品 '" + product.getName() + "' 目前庫存 " + oldStock + ", 調整量 " + adjustedQuantity);
             }
             inventory.setCurrentStock(newStock);
             inventory.setUpdatedBy(operatorId);
@@ -263,32 +379,37 @@ public class InventoryService {
             detail.setCreatedAt(now);
             detail.setUpdatedAt(now);
             adjustment.addDetail(detail);
-
-
-            InventoryMovement movement = new InventoryMovement();
-            movement.setProduct(product);
-            movement.setWarehouse(warehouse);
-            movement.setMovementType("ADJUSTMENT_" + dto.getAdjustmentType().name()); // 例如 ADJUSTMENT_SCRAP
-            movement.setQuantityChange(detailDTO.getAdjustedQuantity());
-            movement.setCurrentStockAfterMovement(newStock);
-            movement.setDocumentType("InventoryAdjustment");
-            movement.setRecordedBy(operator);
-            movement.setMovementDate(now);
-            inventoryMovementRepository.save(movement);
         }
-        String adjustmentNumber = "ADJ-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        adjustment.setAdjustmentNumber(adjustmentNumber);
-
-        InventoryAdjustment savedAdjustment = adjustmentRepository.save(adjustment);
 
 
-        savedAdjustment.getDetails().forEach(detail -> {
-            inventoryMovementRepository.findByDocumentItemId(detail.getItemId()).ifPresent(movement -> {
-                movement.setDocumentId(savedAdjustment.getAdjustmentId());
-                inventoryMovementRepository.save(movement);
-            });
-        });
+        InventoryAdjustment savedAdjustment = adjustmentRepository.saveAndFlush(adjustment); // Save parent and cascade save details
 
+        // Now create movements as details have IDs
+        for (InventoryAdjustmentDetail savedDetail : savedAdjustment.getDetails()) {
+            Product product = savedDetail.getProduct();
+            Inventory currentInventoryState = inventoryRepository.findByProductAndWarehouse(product, warehouse)
+                    .orElseThrow(() -> new IllegalStateException("Inventory missing for product " + product.getProductId() + " wh: " + warehouse.getWarehouseId()));
+
+            MovementType movementType;
+            if (savedDetail.getAdjustedQuantity().compareTo(BigDecimal.ZERO) > 0) {
+                movementType = MovementType.ADJUSTMENT_IN;
+            } else {
+                movementType = MovementType.ADJUSTMENT_OUT;
+            }
+
+            createInventoryMovement(
+                    product,
+                    warehouse,
+                    movementType.name(),
+                    savedDetail.getAdjustedQuantity(),
+                    currentInventoryState.getAverageCost(), // Value of adjustment is at current average cost
+                    currentInventoryState.getCurrentStock(), // Stock after this specific adjustment
+                    "InventoryAdjustment",
+                    savedAdjustment.getAdjustmentId(),
+                    savedDetail.getItemId(),
+                    operator
+            );
+        }
         return savedAdjustment;
     }
 
@@ -324,7 +445,7 @@ public class InventoryService {
         for (SalesOrderDetail detail : order.getDetails()) {
 
 
-            int updatedRows = inventoryRepository.deductStock(
+            int updatedRows = inventoryRepository.deductStockAndAllocation(
                     detail.getProduct().getProductId(),
                     warehouseId,
                     detail.getQuantity()
@@ -358,13 +479,18 @@ public class InventoryService {
 
 //            for(SalesShipmentDetail salesShipmentDetail : savedSh)
 
+// After successfully deducting stock via repository (which only touches currentStock)
+            // We also need to reduce unitsAllocated for the shipped quantity.
+            inventory.setUnitsAllocated(inventory.getUnitsAllocated().subtract(savedShipmentDetail.getShippedQuantity()));
+            inventoryRepository.save(inventory); // Save the change to unitsAllocated
+
             createInventoryMovement(
                     product,
                     shipmentWarehouse,
-                    "OUT_SALE",
+                    MovementType.SALE_SHIPMENT_OUT.name(), // Using enum for MovementType
                     savedShipmentDetail.getShippedQuantity().negate(),
                     inventory.getAverageCost(), // Cost for sales is the current average cost
-                    inventory.getCurrentStock(),
+                    inventory.getCurrentStock(), // Current stock after deduction by deductStock
                     "SalesShipment",
                     savedShipment.getShipmentId(),
                     savedShipmentDetail.getItemId(),
@@ -411,6 +537,52 @@ public class InventoryService {
         movement.setMovementDate(LocalDateTime.now());
 
         inventoryMovementRepository.save(movement);
+    }
+
+    @Transactional
+    public Inventory receiveMiscellaneousGoods(Long productId, Long warehouseId, BigDecimal quantity, BigDecimal unitCost, Long userId) {
+        if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity for miscellaneous receipt must be positive.");
+        }
+        if (unitCost != null && unitCost.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Unit cost cannot be negative.");
+        }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + productId));
+        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for ID: " + warehouseId));
+        User user = userRepository.getReferenceById(userId);
+
+        Inventory inventory = getOrCreateInventory(product, warehouse, userId);
+
+        BigDecimal oldStock = inventory.getCurrentStock();
+        BigDecimal newStock = oldStock.add(quantity);
+
+        // Recalculate average cost
+        if (unitCost != null) { // Only update average cost if a cost is provided
+            BigDecimal oldTotalValue = oldStock.multiply(inventory.getAverageCost());
+            BigDecimal incomingValue = quantity.multiply(unitCost);
+            if (newStock.compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal newAverageCost = (oldTotalValue.add(incomingValue)).divide(newStock, 4, RoundingMode.HALF_UP);
+                inventory.setAverageCost(newAverageCost);
+            } else { // Should not happen if quantity is positive
+                inventory.setAverageCost(unitCost); // Or BigDecimal.ZERO if preferred when stock becomes zero then positive
+            }
+        }
+
+        inventory.setCurrentStock(newStock);
+        inventory.setUpdatedAt(LocalDateTime.now());
+        inventory.setUpdatedBy(userId);
+        Inventory savedInventory = inventoryRepository.save(inventory);
+
+        createInventoryMovement(
+                product, warehouse, MovementType.MISCELLANEOUS_RECEIPT.name(), quantity,
+                unitCost != null ? unitCost : inventory.getAverageCost(), // Use provided cost, or new avg cost if null
+                newStock, "MISC_RECEIPT", null, null, // No specific document/item ID for misc receipt unless further defined
+                user
+        );
+        return savedInventory;
     }
 }
 

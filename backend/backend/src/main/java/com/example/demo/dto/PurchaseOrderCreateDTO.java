@@ -14,13 +14,13 @@ import lombok.Setter;
 @Setter
 public class PurchaseOrderCreateDTO {
 
-//    @NotNull(message = "供應商ID不可為空") //TODO(joshkuei): delete
-//    private Long supplierId;
+    @NotNull(message = "供應商ID不可為空") //TODO(joshkuei): delete
+    private Long supplierId;
 
     @NotNull(message = "進貨日期不可為空")
     private LocalDate orderDate;
     
-//    private String currency = "TWD"; //TODO(joshkuei): delete
+    private String currency = "TWD"; //TODO(joshkuei): delete
 
 
     @Size(max = 200, message = "備註不可超過200字")

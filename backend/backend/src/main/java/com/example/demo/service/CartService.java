@@ -34,18 +34,21 @@ public class CartService {
     private final CCustomerRepo cCustomerRepo;
     private final InventoryService inventoryService;
 
-    private EntityManager entityManager;
+    //    private EntityManager entityManager;
+//
+//
+//    public CartService(CartRepository cartRepository, CartDetailRepository cartDetailRepository,
+//                       ProductRepository productRepository, CCustomerRepo cCustomerRepo,
+//                       InventoryService inventoryService) {
+//        this.cartRepository = cartRepository;
+//        this.cartDetailRepository = cartDetailRepository;
+//        this.productRepository = productRepository;
+//        this.cCustomerRepo = cCustomerRepo;
+//        this.inventoryService = inventoryService;
+//    }
+    private final EntityManager entityManager; //TODO(joshkuei): Made final
 
-
-    public CartService(CartRepository cartRepository, CartDetailRepository cartDetailRepository,
-                       ProductRepository productRepository, CCustomerRepo cCustomerRepo,
-                       InventoryService inventoryService) {
-        this.cartRepository = cartRepository;
-        this.cartDetailRepository = cartDetailRepository;
-        this.productRepository = productRepository;
-        this.cCustomerRepo = cCustomerRepo;
-        this.inventoryService = inventoryService;
-    }
+    //TODO(joshkuei): Manual constructor removed, @AllArgsConstructor will handle all final fields.
 
 
     /**
@@ -69,116 +72,173 @@ public class CartService {
         Product product = productRepository.findById(requestDto.getProductid())
                 .orElseThrow(() -> new EntityNotFoundException("找不到商品 ID: " + requestDto.getProductid()));
 
+//        // === 以下是庫存檢查邏輯 ===
+//        // 1. 從 Product 物件中取得所有相關的 Inventory 紀錄列表
+////        List<Inventory> inventories = product.getInventory;
+//
+//        BigDecimal currentStock = inventoryService.getProductStock(product.getProductId());
+//        if (currentStock.intValue() < requestDto.getQuantity()) {
+//            throw new RuntimeException("Insufficient stock for product: " + product.getName());
+//        }
+//        // 2. 使用 Stream API 將所有庫存地點的 unitsinstock 加總
+////        int totalStock = inventories.stream()
+////                .mapToInt(Inventory::getUnitsinstock) // 將每個 Inventory 物件轉換成它的庫存數量(int)
+////                .sum(); // 將所有的 int 數字加總
 
-        // === 以下是庫存檢查邏輯 ===
-        // 1. 從 Product 物件中取得所有相關的 Inventory 紀錄列表
-//        List<Inventory> inventories = product.getInventory;
+////        int reservedStock = inventories.stream()
+////                .mapToInt(Inventory::getUnitsinreserved)
+////                .sum();
+////
+////        int usableStock = totalStock - reservedStock;
+////
+////        // 3. 用計算出來的總庫存進行比較
+////        if (usableStock < requestDto.getQuantity()) {
+////            throw new IllegalStateException("商品庫存不足，目前可下訂庫存為: " + usableStock);
+////        }
+//        // 如果您在 Product Entity 中新增了 getTotalStock() 方法，這裡也可以簡化為：
+//        // if (product.getTotalStock() < requestDto.getQuantity()) {
+//        //     throw new IllegalStateException("商品庫存不足，目前總庫存為: " + product.getTotalStock());
+//        // }
+//        // 查找購物車是否已存在此商品
+////        Optional<CartDetail> existingDetailOpt = cart.getCartdetails().stream()
+////                .filter(d -> d.getProduct().getProductid().equals(requestDto.getProductid()))
+////                .findFirst();
+//        Optional<CartDetail> existingDetail = cartDetailRepository.findByCartAndProduct(cart, product);
+////        if (existingDetailOpt.isPresent()) {
+////            // 如果存在，則更新數量
+////            CartDetail existingDetail = existingDetailOpt.get();
+////            int newQuantity = existingDetail.getQuantity() + requestDto.getQuantity();
+//        if (existingDetail.isPresent()) {
+//            CartDetail detail = existingDetail.get();
+//            detail.setQuantity(detail.getQuantity() + requestDto.getQuantity());
+//            int newQuantity = existingDetail.get().getQuantity() + requestDto.getQuantity(); //TODO(joshkuei): Make sure the`get().getQuantity()` it's right.
+//
+//            cartDetailRepository.save(detail);
+////            if (newQuantity > usableStock) {
+////            throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + usableStock);
+////        }
+//            if (currentStock.compareTo(BigDecimal.valueOf(newQuantity)) < 0) {
+//                throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + currentStock);
+//            }
+//            existingDetail.get().setQuantity(newQuantity); //TODO(joshkuei): Make sure the `get().setQuantity()` it's right.
+//            cartRepository.saveAndFlush(cart);
+//        } else {
+//            // 如果不存在，則新增一個 CartDetail
+//            CartDetail newDetail = new CartDetail();
+//            newDetail.setProduct(product);
+//            newDetail.setQuantity(requestDto.getQuantity());
+//            newDetail.setAddat(LocalDateTime.now());
+//            newDetail.setCart(cart); // 明確設定它屬於哪個 cart
+//            cartDetailRepository.saveAndFlush(newDetail);
+//
+////            CartDetail newDetail = new CartDetail();
+////            newDetail.setCart(cart);
+////            newDetail.setProduct(product);
+////            newDetail.setQuantity(request.getQuantity());
+////            cartDetailRepository.save(newDetail);
+//        }
+//
+//        entityManager.refresh(cart);
 
-        BigDecimal currentStock = inventoryService.getProductStock(product.getProductId());
-        if (currentStock.intValue() < requestDto.getQuantity()) {
-            throw new RuntimeException("Insufficient stock for product: " + product.getName());
+//        return mapToCartViewDto(cart);
+////        return getCartView(cart.getId());
+//    }
+
+        // === 新的庫存檢查邏輯 using InventoryService ===
+        BigDecimal requestedQuantity = BigDecimal.valueOf(requestDto.getQuantity());
+        // Get total available stock for the product across all warehouses.
+        BigDecimal availableStock = inventoryService.getAvailableStock(product.getProductId());
+
+        if (availableStock.compareTo(requestedQuantity) < 0) {
+            throw new IllegalStateException("商品 [" + product.getName() + "] 庫存不足 (需求: " + requestedQuantity + ", 可用: " + availableStock + ")");
         }
-        // 2. 使用 Stream API 將所有庫存地點的 unitsinstock 加總
-//        int totalStock = inventories.stream()
-//                .mapToInt(Inventory::getUnitsinstock) // 將每個 Inventory 物件轉換成它的庫存數量(int)
-//                .sum(); // 將所有的 int 數字加總
 
-//        int reservedStock = inventories.stream()
-//                .mapToInt(Inventory::getUnitsinreserved)
-//                .sum();
-//
-//        int usableStock = totalStock - reservedStock;
-//
-//        // 3. 用計算出來的總庫存進行比較
-//        if (usableStock < requestDto.getQuantity()) {
-//            throw new IllegalStateException("商品庫存不足，目前可下訂庫存為: " + usableStock);
-//        }
+        Optional<CartDetail> existingDetailOpt = cartDetailRepository.findByCartAndProduct(cart, product);
 
-        // 如果您在 Product Entity 中新增了 getTotalStock() 方法，這裡也可以簡化為：
-        // if (product.getTotalStock() < requestDto.getQuantity()) {
-        //     throw new IllegalStateException("商品庫存不足，目前總庫存為: " + product.getTotalStock());
-        // }
+        if (existingDetailOpt.isPresent()) {
+            CartDetail detail = existingDetailOpt.get();
+            int newQuantityInt = detail.getQuantity() + requestDto.getQuantity();
+            BigDecimal newQuantityBigDecimal = BigDecimal.valueOf(newQuantityInt);
 
-        // 查找購物車是否已存在此商品
-//        Optional<CartDetail> existingDetailOpt = cart.getCartdetails().stream()
-//                .filter(d -> d.getProduct().getProductid().equals(requestDto.getProductid()))
-//                .findFirst();
-        Optional<CartDetail> existingDetail = cartDetailRepository.findByCartAndProduct(cart, product);
-//        if (existingDetailOpt.isPresent()) {
-//            // 如果存在，則更新數量
-//            CartDetail existingDetail = existingDetailOpt.get();
-//            int newQuantity = existingDetail.getQuantity() + requestDto.getQuantity();
-        if (existingDetail.isPresent()) {
-            CartDetail detail = existingDetail.get();
-            detail.setQuantity(detail.getQuantity() + requestDto.getQuantity());
-            int newQuantity = existingDetail.get().getQuantity() + requestDto.getQuantity(); //TODO(joshkuei): Make sure the`get().getQuantity()` it's right.
-
-            cartDetailRepository.save(detail);
-//            if (newQuantity > usableStock) {
-//            throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + usableStock);
-//        }
-            if (currentStock.compareTo(BigDecimal.valueOf(newQuantity)) < 0) {
-                throw new IllegalStateException("商品庫存不足，累加後超過可下訂庫存: " + currentStock);
+            // Re-check available stock against the new total quantity for this item
+            // This check should ideally be against the *remaining* available stock if multiple items are added,
+            // but for a single item type addition/update, this check is against total available.
+            if (availableStock.compareTo(newQuantityBigDecimal) < 0) {
+                throw new IllegalStateException("商品 [" + product.getName() + "] 庫存不足，累加後超過可下訂庫存 (需求: " + newQuantityBigDecimal + ", 可用: " + availableStock + ")");
             }
-            existingDetail.get().setQuantity(newQuantity); //TODO(joshkuei): Make sure the `get().setQuantity()` it's right.
-            cartRepository.saveAndFlush(cart);
+            detail.setQuantity(newQuantityInt);
+            cartDetailRepository.save(detail);
         } else {
-            // 如果不存在，則新增一個 CartDetail
+            // If new item, initial stock check (already done above) is sufficient for this specific item.
             CartDetail newDetail = new CartDetail();
             newDetail.setProduct(product);
             newDetail.setQuantity(requestDto.getQuantity());
             newDetail.setAddat(LocalDateTime.now());
-            newDetail.setCart(cart); // 明確設定它屬於哪個 cart
-            cartDetailRepository.saveAndFlush(newDetail);
-
-//            CartDetail newDetail = new CartDetail();
-//            newDetail.setCart(cart);
-//            newDetail.setProduct(product);
-//            newDetail.setQuantity(request.getQuantity());
-//            cartDetailRepository.save(newDetail);
+            newDetail.setCart(cart);
+            cart.getCartdetails().add(newDetail); // Add to in-memory collection
+            cartDetailRepository.save(newDetail); // Persist new detail
         }
 
-        entityManager.refresh(cart);
-
-
+        entityManager.flush(); // Ensure changes are written to DB before refresh
+        entityManager.refresh(cart); // Refresh cart to get latest state of details
         return mapToCartViewDto(cart);
-//        return getCartView(cart.getId());
     }
-
     /**
      * 更新購物車項目數量
      */
     @Transactional
     public CartViewDto updateItemQuantity(Long customerId, Long cartDetailId, int newQuantity) {
         Cart cart = findCartByUser(customerId);
-        CartDetail detail = findCartDetailInCart(cart, cartDetailId);
-
+//        CartDetail detail = findCartDetailInCart(cart, cartDetailId);
+        CartDetail detailToUpdate = findCartDetailInCart(cart, cartDetailId); //TDOO(joshkuei): change name.
+//        if (newQuantity <= 0) {
+//            // 如果數量小於等於0，則移除該項目
+//            removeItemFromCartInternal(cart, detail);
+//        } else {
+//
+//            // 檢查庫存
+//            // 1. 從購物車項目(detail)中取得對應的商品(Product)物件
+//            Product product = detail.getProduct();
+//
+//            // 2. 加總該商品在所有庫存地點的庫存量
+//            int totalStock = product.getInventories().stream()
+//                    .mapToInt(Inventory::getUnitsinstock)
+//                    .sum();
+//
+//            // 3. 比較總庫存與使用者想更新的數量
+//            if (totalStock < newQuantity) {
+//                throw new IllegalStateException("商品庫存不足，目前總庫存為: " + totalStock);
+//            }
+//
+//            // 4. 如果庫存充足，才更新數量
+//            detail.setQuantity(newQuantity);
+//        }
+//
+//        Cart updatedCart = cartRepository.save(cart);
+//        return mapToCartViewDto(updatedCart);
+//    }
         if (newQuantity <= 0) {
-            // 如果數量小於等於0，則移除該項目
-            removeItemFromCartInternal(cart, detail);
+            // removeItemFromCartInternal(cart, detailToUpdate); // Helper might be redundant
+            cart.getCartdetails().remove(detailToUpdate); // Remove from managed collection
+            cartDetailRepository.delete(detailToUpdate); // Explicitly delete
         } else {
+            Product product = detailToUpdate.getProduct();
+            BigDecimal requestedNewQuantity = BigDecimal.valueOf(newQuantity);
+            // Get total available stock for the product across all warehouses.
+            BigDecimal availableStock = inventoryService.getAvailableStock(product.getProductId());
 
-            // 檢查庫存
-            // 1. 從購物車項目(detail)中取得對應的商品(Product)物件
-            Product product = detail.getProduct();
-
-            // 2. 加總該商品在所有庫存地點的庫存量
-            int totalStock = product.getInventories().stream()
-                    .mapToInt(Inventory::getUnitsinstock)
-                    .sum();
-
-            // 3. 比較總庫存與使用者想更新的數量
-            if (totalStock < newQuantity) {
-                throw new IllegalStateException("商品庫存不足，目前總庫存為: " + totalStock);
+            if (availableStock.compareTo(requestedNewQuantity) < 0) {
+                throw new IllegalStateException("商品 [" + product.getName() + "] 庫存不足 (需求: " + requestedNewQuantity + ", 可用: " + availableStock + ")");
             }
-
-            // 4. 如果庫存充足，才更新數量
-            detail.setQuantity(newQuantity);
+            detailToUpdate.setQuantity(newQuantity);
+            cartDetailRepository.save(detailToUpdate); // Save the updated detail
         }
 
-        Cart updatedCart = cartRepository.save(cart);
-        return mapToCartViewDto(updatedCart);
+        entityManager.flush();
+        entityManager.refresh(cart); // Refresh to get updated cart details for DTO mapping
+        return mapToCartViewDto(cart); // Corrected: use cart variable
     }
+
 
     /**
      * 從購物車移除單一項目
@@ -207,34 +267,67 @@ public class CartService {
 
     //----------以下為拉出來撰寫的方法
     private CartViewDto mapToCartViewDto(Cart cart) {
-        List<CartDetailDto> detailDtosDtos = cart.getCartdetails().stream()
+//        List<CartDetailDto> detailDtosDtos = cart.getCartdetails().stream()
+//                .map(detail -> {
+//                    List<ProductImg> imgs = detail.getProduct().getProductimgs();
+//                    String ImgUrl;
+//                    if (imgs != null && !imgs.isEmpty()) {
+//                        ImgUrl = imgs.get(0).getImgurl();
+//                    } else {
+//                        ImgUrl = "/images/default_product.jpg";
+//                    }
+//
+//                    return CartDetailDto.builder()
+//                            .cartdetailid(detail.getCartdetailid())
+//                            .productid(detail.getProduct().getProductid())
+//                            .productname(detail.getProduct().getProductname())
+//                            .productimgurl(ImgUrl)
+//                            .unitprice(detail.getProduct().getUnitprice())
+//                            .quantity(detail.getQuantity())
+//                            .totalprice(detail.getProduct().getUnitprice() * detail.getQuantity())
+//                            .build();
+//                })
+//                .collect(Collectors.toList());
+//
+//        double grandTotal = detailDtosDtos.stream().mapToDouble(CartDetailDto::getTotalprice).sum();
+//        int totalItems = detailDtosDtos.stream().mapToInt(CartDetailDto::getQuantity).sum();
+//
+//        return CartViewDto.builder()
+//                .cartid(cart.getCartid())
+//                .cartdetails(detailDtosDtos)
+//                .totalprice(grandTotal)
+//                .quantity(totalItems)
+//                .build();
+//    }
+        List<CartDetailDto> detailDtos = cart.getCartdetails().stream()
                 .map(detail -> {
-                    List<ProductImg> imgs = detail.getProduct().getProductimgs();
-                    String ImgUrl;
+                    List<ProductImg> imgs = detail.getProduct().getProductimgs(); // Should now work
+                    String imgUrl; // Variable name consistency
                     if (imgs != null && !imgs.isEmpty()) {
-                        ImgUrl = imgs.get(0).getImgurl();
+                        imgUrl = imgs.get(0).getImgurl();
                     } else {
-                        ImgUrl = "/images/default_product.jpg";
+                        imgUrl = "/images/default_product.jpg"; // Default image path
                     }
 
+                    Product product = detail.getProduct();
                     return CartDetailDto.builder()
                             .cartdetailid(detail.getCartdetailid())
-                            .productid(detail.getProduct().getProductid())
-                            .productname(detail.getProduct().getProductname())
-                            .productimgurl(ImgUrl)
-                            .unitprice(detail.getProduct().getUnitprice())
+                            .productid(product.getProductId()) // Changed getProductid to getProductId
+                            .productname(product.getName()) // Changed getProductname to getName
+                            .productimgurl(imgUrl)
+                            .unitprice(product.getBasePrice().doubleValue()) // Changed getUnitprice to getBasePrice().doubleValue()
                             .quantity(detail.getQuantity())
-                            .totalprice(detail.getProduct().getUnitprice() * detail.getQuantity())
+                            .totalprice(product.getBasePrice().doubleValue() * detail.getQuantity()) // Changed getUnitprice
                             .build();
                 })
                 .collect(Collectors.toList());
 
-        double grandTotal = detailDtosDtos.stream().mapToDouble(CartDetailDto::getTotalprice).sum();
-        int totalItems = detailDtosDtos.stream().mapToInt(CartDetailDto::getQuantity).sum();
+        double grandTotal = detailDtos.stream().mapToDouble(CartDetailDto::getTotalprice).sum();
+        int totalItems = detailDtos.stream().mapToInt(CartDetailDto::getQuantity).sum(); // Corrected variable name
 
         return CartViewDto.builder()
                 .cartid(cart.getCartid())
-                .cartdetails(detailDtosDtos)
+                .cartdetails(detailDtos) // Corrected variable name
                 .totalprice(grandTotal)
                 .quantity(totalItems)
                 .build();
@@ -251,10 +344,11 @@ public class CartService {
     private Cart findOrCreateCartByUser(Long customerId) {
         return cartRepository.findByCCustomer_CustomerId(customerId)
                 .orElseGet(() -> {
-                    CCustomer CCustomer = CCsutomerRepository.findById(customerId)
+//                    CCustomer CCustomer = CCsutomerRepository.findById(customerId)
+                    CCustomer cCustomer = cCustomerRepo.findById(customerId) //TODO(joshkuei): Correcte typo CCsutomerRepository to cCustomerRepo
                             .orElseThrow(() -> new EntityNotFoundException("找不到使用者 ID: " + customerId));
                     Cart newCart = new Cart();
-                    newCart.setCCustomer(CCustomer);
+                    newCart.setCCustomer(cCustomer); // TODO(joshkuei): Correcte variable name
                     newCart.setCreateat(LocalDateTime.now());
                     newCart.setUpdateat(LocalDateTime.now());
                     return cartRepository.save(newCart);

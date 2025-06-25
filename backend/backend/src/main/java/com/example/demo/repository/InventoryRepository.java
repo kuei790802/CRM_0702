@@ -26,14 +26,21 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     //prevent overbooking
     @Modifying
     @Query("UPDATE Inventory i " +
-            "SET i.currentStock = i.currentStock - :quantity " +
-            "WHERE i.product.productId = :productId AND i.warehouse.warehouseId = :warehouseId AND i.currentStock >= :quantity")
-    int deductStock(
+            "SET i.currentStock = i.currentStock - :quantity, " +
+            "    i.unitsAllocated = i.unitsAllocated - :quantity " + // Also deduct from allocated
+            "WHERE i.product.productId = :productId " +
+            "  AND i.warehouse.warehouseId = :warehouseId " +
+            "  AND i.currentStock >= :quantity " +
+            "  AND i.unitsAllocated >= :quantity") // Add check for allocated units
+    int deductStockAndAllocation(
             @Param("productId") Long productId,
             @Param("warehouseId") Long warehouseId,
             @Param("quantity") BigDecimal quantity
     );
 
-    Optional<Inventory> findByProductId(Long productId);
+    //TODO(joshkuei): Rename to make property path valid: Inventory -> product -> productId
+    Optional<Inventory> findTopByProduct_ProductId(Long productId);
 }
+
+
 

@@ -36,7 +36,7 @@ public class OrderService {
     @Autowired
     private CCustomerAddressRepository CCustomerAddressRepository;
     @Autowired
-    private InventoryRepository inventoryRepository;
+    private InventoryService inventoryService;
     @Autowired
     private PlatformRepository platformRepository;
     @Autowired
@@ -69,15 +69,18 @@ public class OrderService {
         // 3. 檢查所有商品的庫存
         for (CartDetail detail : cart.getCartdetails()) {
             Product product = detail.getProduct();
-            BigDecimal requiredQuantity = BigDecimal.valueOf(detail.getQuantity());
-            BigDecimal availableStock = getAvailableStock(product.getProductId());
-
 //            int requiredQuantity = detail.getQuantity();
 //            int availableStock = product.getInventories().stream()
 //                    .mapToInt(inv -> inv.getUnitsinstock() - inv.getUnitsinreserved())
 //                    .sum();
-            if (availableStock < requiredQuantity) {
-                throw new IllegalStateException("商品 [" + product.getName() + "] 庫存不足");
+//            if (availableStock < requiredQuantity) {
+//                throw new IllegalStateException("商品 [" + product.getName() + "] 庫存不足");
+//            }
+            BigDecimal requiredQuantity = BigDecimal.valueOf(detail.getQuantity());
+            // Assuming warehouse 1L for stock checking for now, or use getAvailableStock(productId) for total
+            BigDecimal availableStock = inventoryService.getAvailableStock(product.getProductId(), 1L);
+            if (availableStock.compareTo(requiredQuantity) < 0) {
+                throw new IllegalStateException("商品 [" + product.getName() + "] 庫存不足 (需求: " + requiredQuantity + ", 可用: " + availableStock + ")");
             }
         }
 
@@ -132,31 +135,50 @@ public class OrderService {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setProduct(detail.getProduct());
             orderDetail.setQuantity(detail.getQuantity());
-            orderDetail.setUnitprice(detail.getProduct().getUnitprice());
+            orderDetail.setUnitprice(detail.getProduct().getBasePrice().doubleValue()); //TODO(joshkuei): Changed getUnitprice to getBasePrice().doubleValue()
             orderDetail.setCreateat(LocalDateTime.now());
             orderDetail.setUpdateat(LocalDateTime.now());
             newOrder.addOrderDetail(orderDetail);
 
-            calculatedTotalAmount += detail.getProduct().getUnitprice() * detail.getQuantity();
+//            calculatedTotalAmount += detail.getProduct().getUnitprice() * detail.getQuantity();
+//
+//            List<Inventory> inventories = detail.getProduct().getInventories();
+//            if (!inventories.isEmpty()) {
+//                Inventory inventoryToUpdate = inventories.get(0);
+//                inventoryToUpdate.setUnitsinreserved(inventoryToUpdate.getUnitsinreserved() + detail.getQuantity());
+//                inventoryRepository.save(inventoryToUpdate);
+//            }
+            calculatedTotalAmount += detail.getProduct().getBasePrice().doubleValue() * detail.getQuantity();
 
-            List<Inventory> inventories = detail.getProduct().getInventories();
-            if (!inventories.isEmpty()) {
-                Inventory inventoryToUpdate = inventories.get(0);
-                inventoryToUpdate.setUnitsinreserved(inventoryToUpdate.getUnitsinreserved() + detail.getQuantity());
-                inventoryRepository.save(inventoryToUpdate);
-            }
         }
         newOrder.setTotalAmount(calculatedTotalAmount);
 
         // 6. 儲存訂單
         Order savedOrder = orderRepository.saveAndFlush(newOrder);
+        entityManager.refresh(savedOrder); // Ensure OrderDetails get their IDs if generated
+
 
         // 7. 清空購物車
-        cart.getCartdetails().clear();
-        cartRepository.save(cart);
+//        cart.getCartdetails().clear();
+//        cartRepository.save(cart);
+
+        final Long DEFAULT_WAREHOUSE_ID_FOR_RESERVATION = 1L; //TODO(joshkuei): Remain a default warehouse (e.g., ID 1L) for reservation. This needs proper business logic.
+        for (OrderDetail savedOrderDetail : savedOrder.getOrderDetails()) {
+            inventoryService.reserveStock(
+                    savedOrderDetail.getProduct().getProductId(),
+                    DEFAULT_WAREHOUSE_ID_FOR_RESERVATION,
+                    BigDecimal.valueOf(savedOrderDetail.getQuantity()),
+                    "SALES_ORDER",
+                    savedOrder.getOrderid(),
+                    null, // Passing null for documentDetailId as OrderDetail has a composite PK.
+                    // The product ID is part of the reserveStock call itself.
+                    customerId // User initiating the order
+            );
+        }
 
         // 8. 刷新狀態並回傳 DTO
-        entityManager.refresh(savedOrder);
+        cart.getCartdetails().clear();
+        cartRepository.save(cart);
 
         return mapToOrderDto(savedOrder);
     }
@@ -248,9 +270,9 @@ public class OrderService {
     private OrderDto mapToOrderDto(Order order) {
         List<OrderDetailDto> detailDtos = order.getOrderDetails().stream()
                 .map(detail -> OrderDetailDto.builder()
-                        .productName(detail.getProduct().getProductname())
+                        .productName(detail.getProduct().getName()) //TODO(joshkuei): Change getProductname to getName
                         .quantity(detail.getQuantity())
-                        .unitPrice(detail.getUnitprice())
+                        .unitPrice(detail.getUnitprice()) //TODO(joshkuei): Use OrderDetail.unitprice (Double), which was set using basePrice.doubleValue()
                         .build())
                 .collect(Collectors.toList());
 

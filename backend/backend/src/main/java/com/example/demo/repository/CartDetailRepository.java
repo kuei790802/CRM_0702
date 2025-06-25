@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
     // 根據購物車ID和商品ID查找購物車項目
-    Optional<CartDetail> findByCart_CartidAndProduct_Productid(Long cartid, Long productid);
+    Optional<CartDetail> findByCart_CartidAndProduct_ProductId(Long cartid, Long productId); //TODO(joshkuei): Rename productid to productId
 
-    Optional<CartDetail> findByCartAndProduct(Cart cart, Product product); //TODO(joshkuei): add for CartService.
+    Optional<CartDetail> findByCartAndProduct(Cart cart, Product product); //TODO(joshkuei): Add for CartService.
 }

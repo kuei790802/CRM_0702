@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -94,7 +96,14 @@ public class Product {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
 
-        // 尚未加入所有欄位和完整的 @ManyToOne 關聯，先專注在核心功能上
-
+        //TODO(joshkuei): 尚未加入所有欄位和完整的 @ManyToOne 關聯，先專注在核心功能上
     }
+
+    //TODO(joshkuei):  Add relationships
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductImg> productimgs = new ArrayList<>();
+
+
 }
+
+
