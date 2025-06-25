@@ -19,7 +19,7 @@ function Section() {
       {/* 左側文字區塊 */}
       <div className="md:w-1/2 mb-8 md:mb-0">
         <p className="text-lg leading-relaxed text-gray-800">
-          <strong className="text-logo-tan">
+          <strong className="text-logo-tan text-3xl">
             「我們不只是做冰淇淋，我們正在重新定義人們對食物的想像。」
           </strong>
           <br />

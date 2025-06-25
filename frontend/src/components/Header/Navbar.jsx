@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import useCartStore from "../../stores/cartStore";
 import CartModal from "./CartModel";
 import { FaUserCircle, FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
-import logo from "../../assets/logo2.png";
+import logo from "../../assets/logo3.png";
 
 const Navbar = () => {
   const location = useLocation();
@@ -43,17 +43,17 @@ const Navbar = () => {
                 to={to}
                 className="relative group transition-colors duration-300"
               >
-                <span className="hover:text-logo-tan">{label}</span>
-                <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-logo-tan transition-all duration-300 group-hover:w-full"></span>
+                <span className="hover:text-gray-600">{label}</span>
+                <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-logo-lightBlue transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
 
-            <Link to="/login" className="text-2xl hover:text-logo-tan">
+            <Link to="/login" className="text-gray-700 text-2xl hover:text-logo-blue">
               <FaUserCircle />
             </Link>
 
             <button onClick={toggleCart} className="relative">
-              <FaShoppingCart className="text-2xl hover:text-logo-tan" />
+              <FaShoppingCart className="text-gray-700 text-2xl hover:text-logo-blue" />
               {cartItemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full shadow ring-2 ring-white">
                   {cartItemCount > 99 ? "99+" : cartItemCount}
