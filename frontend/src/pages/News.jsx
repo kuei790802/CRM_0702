@@ -14,7 +14,7 @@ function News() {
   }, [])
 
   return (
-    <div className="py-8 bg-[#f9f5f0]">
+    <div className="py-8">
       <h1 className="text-3xl font-semibold text-center mb-6">最新消息</h1>
       {newsData.map((item, index) => (
         <NewsSection

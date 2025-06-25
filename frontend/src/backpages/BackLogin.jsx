@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useBackUserStore from "../stores/useBackUserStore";
-import backgroundImage from "../assets/LoginBackground.jpg";
+import backgroundImage from "../assets/signbackground.jpg";
 
 function BackLogin() {
   const navigate = useNavigate();
@@ -43,9 +43,9 @@ function BackLogin() {
       className="relative w-full h-screen bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="absolute inset-0 bg-white/30 backdrop-blur-md flex justify-center items-center">
-        <div className="bg-white/80 p-10 rounded-2xl shadow-2xl w-[90%] max-w-md">
-          <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+      <div className="absolute inset-0 flex justify-center items-center">
+        <div className="bg-black/100 p-10 rounded-2xl shadow-2xl w-[90%] max-w-md">
+          <h2 className="text-3xl font-bold text-center mb-6 text-white">
             後台登入
           </h2>
 
@@ -65,7 +65,7 @@ function BackLogin() {
               className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
 
-            <div className="flex items-center justify-between text-sm text-gray-600">
+            <div className="flex items-center justify-between text-sm text-gray-400">
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -82,16 +82,16 @@ function BackLogin() {
 
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-200"
+              className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded-lg transition duration-200"
             >
               登入
             </button>
           </form>
 
           <div className="text-center text-sm text-gray-600 mt-6">
-            返回前台網站？{" "}
+            {" "}
             <Link to="/" className="text-blue-600 hover:underline">
-              點我前往
+              返回前台
             </Link>
           </div>
         </div>

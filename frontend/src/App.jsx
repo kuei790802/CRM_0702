@@ -11,7 +11,7 @@ export default function App() {
     <div className="min-h-screen bg-white">
       <ScrollToTop />
       <Header />
-      <main className={isHome ? "pt-[0px]" : "pt-[120px]"}>
+      <main className={isHome ? "pt-[0px]" : "pt-[100px]"}>
         <Outlet />
       </main>
       <Footer />

@@ -41,6 +41,12 @@ public class Inventory {
     @Column(name = "average_cost", nullable = false)
     private BigDecimal averageCost;
 
+    @Column(name = "units_on_order", nullable = false)
+    private BigDecimal unitsOnOrder = BigDecimal.ZERO;
+
+    @Column(name = "units_allocated", nullable = false) // For units reserved for SOs
+    private BigDecimal unitsAllocated = BigDecimal.ZERO;
+
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
