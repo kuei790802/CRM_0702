@@ -3,6 +3,7 @@ import Footer from './components/Footer';
 import Header from './components/Header';
 import ScrollToTop from './components/ScorllToTop';
 import BackToTop from "./components/tabs/BackToTop";
+import ModelViewer from './components/tabs/ModelViewer';
 
 
 export default function App() {
@@ -13,9 +14,11 @@ export default function App() {
     <div className="min-h-screen bg-white">
       <ScrollToTop />
       <Header />
+     
       <main className={isHome ? "pt-[35px]" : "pt-[35px]"}>
         <Outlet />
-      </main>
+      </main> 
+      <ModelViewer />
       <BackToTop />
       <Footer />
     </div>
