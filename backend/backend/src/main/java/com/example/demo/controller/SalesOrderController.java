@@ -1,9 +1,9 @@
 package com.example.demo.controller;
 
 
-import com.example.demo.dto.SalesOrderCreateDTO;
-import com.example.demo.dto.SalesOrderSummaryDTO;
-import com.example.demo.dto.SalesOrderViewDTO;
+import com.example.demo.dto.erp.SalesOrderCreateDTO;
+import com.example.demo.dto.erp.SalesOrderSummaryDTO;
+import com.example.demo.dto.erp.SalesOrderViewDTO;
 import com.example.demo.entity.SalesOrder;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.service.SalesOrderService;

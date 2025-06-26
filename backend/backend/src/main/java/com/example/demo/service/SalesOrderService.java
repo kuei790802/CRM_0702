@@ -1,6 +1,9 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.*;
+import com.example.demo.dto.erp.SalesOrderCreateDTO;
+import com.example.demo.dto.erp.SalesOrderDetailCreateDTO;
+import com.example.demo.dto.erp.SalesOrderSummaryDTO;
+import com.example.demo.dto.erp.SalesOrderViewDTO;
 import com.example.demo.entity.CustomerBase;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.SalesOrder;

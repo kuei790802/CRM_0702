@@ -1,4 +1,4 @@
-package com.example.demo.dto;
+package com.example.demo.dto.erp;
 
 import com.example.demo.entity.SalesOrderDetail;
 import lombok.Getter;

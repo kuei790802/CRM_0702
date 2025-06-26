@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.*;
+
+import com.example.demo.dto.erp.dashboard.*;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.repository.InventoryRepository;
 import com.example.demo.repository.SalesOrderDetailRepository;
@@ -28,7 +29,7 @@ public class DashboardService {
     public ErpDashboardDTO getErpDashboardSummary() {
         ErpDashboardDTO dashboard = new ErpDashboardDTO();
 
-        dashboard.setKpis(getKpiData());
+        dashboard.setKpis(getKpis());
         dashboard.setSalesTrend(getSalesTrendForLast7Days());
         dashboard.setTopSellingProducts(getTopSellingProducts());
         dashboard.setLowStockProducts(getLowStockProducts());
@@ -98,7 +99,7 @@ public class DashboardService {
                     dto.setWarehouseId(inventory.getWarehouse().getWarehouseId());
                     dto.setWarehouseName(inventory.getWarehouse().getName());
                     dto.setCurrentStock(inventory.getCurrentStock());
-                    dto.setSafetyStockQuantity(inventory.getProduct().getSafetyStockQuantity());
+                    dto.setSafetyStockQuantity(new BigDecimal(inventory.getProduct().getSafetyStockQuantity()));
                     return dto;
                 }).collect(Collectors.toList());
     }

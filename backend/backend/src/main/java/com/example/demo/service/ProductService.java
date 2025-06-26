@@ -1,20 +1,19 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ProductResponseDTO;
+import com.example.demo.dto.erp.ProductResponseDTO;
 import com.example.demo.entity.ProductCategory;
 import com.example.demo.entity.Unit;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ProductCategoryRepository;
 import com.example.demo.repository.UnitRepository;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.ProductCreateDTO;
-import com.example.demo.dto.ProductUpdateDTO;
+import com.example.demo.dto.erp.ProductCreateDTO;
+import com.example.demo.dto.erp.ProductUpdateDTO;
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.specification.ProductSpecification;

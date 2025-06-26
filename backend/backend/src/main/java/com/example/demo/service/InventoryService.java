@@ -8,15 +8,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.demo.dto.InventoryAdjustmentCreateDTO;
-import com.example.demo.dto.InventoryAdjustmentDetailCreateDTO;
-import com.example.demo.dto.InventoryViewDTO;
+import com.example.demo.dto.erp.InventoryAdjustmentCreateDTO;
+import com.example.demo.dto.erp.InventoryAdjustmentDetailCreateDTO;
+import com.example.demo.dto.erp.InventoryViewDTO;
 import com.example.demo.entity.*;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.repository.*;
 import com.example.demo.specification.InventorySpecification;
-import org.aspectj.weaver.ast.Call;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -481,16 +480,16 @@ public class InventoryService {
 
 // After successfully deducting stock via repository (which only touches currentStock)
             // We also need to reduce unitsAllocated for the shipped quantity.
-            inventory.setUnitsAllocated(inventory.getUnitsAllocated().subtract(savedShipmentDetail.getShippedQuantity()));
-            inventoryRepository.save(inventory); // Save the change to unitsAllocated
+//            inventory.setUnitsAllocated(inventory.getUnitsAllocated().subtract(savedShipmentDetail.getShippedQuantity()));
+//            inventoryRepository.save(inventory); // Save the change to unitsAllocated
 
             createInventoryMovement(
                     product,
                     shipmentWarehouse,
-                    MovementType.SALE_SHIPMENT_OUT.name(), // Using enum for MovementType
+                    MovementType.SALE_SHIPMENT_OUT.name(),
                     savedShipmentDetail.getShippedQuantity().negate(),
-                    inventory.getAverageCost(), // Cost for sales is the current average cost
-                    inventory.getCurrentStock(), // Current stock after deduction by deductStock
+                    inventory.getAverageCost(),
+                    inventory.getCurrentStock(),
                     "SalesShipment",
                     savedShipment.getShipmentId(),
                     savedShipmentDetail.getItemId(),

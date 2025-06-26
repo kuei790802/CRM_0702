@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ProductResponseDTO;
+import com.example.demo.dto.erp.ProductResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dto.ProductCreateDTO;
-import com.example.demo.dto.ProductUpdateDTO;
+import com.example.demo.dto.erp.ProductCreateDTO;
+import com.example.demo.dto.erp.ProductUpdateDTO;
 //import com.example.demo.entity.Product;
 import com.example.demo.service.ProductService;
 

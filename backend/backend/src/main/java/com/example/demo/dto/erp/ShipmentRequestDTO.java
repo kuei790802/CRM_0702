@@ -1,9 +1,8 @@
-package com.example.demo.dto;
+package com.example.demo.dto.erp;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.java.Log;
 
 @Getter
 @Setter

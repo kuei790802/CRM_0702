@@ -1,11 +1,10 @@
 package com.example.demo.service;
 
 
-import com.example.demo.dto.SalesOrderCreateDTO;
-import com.example.demo.dto.SalesOrderDetailCreateDTO;
-import com.example.demo.dto.SalesOrderSummaryDTO;
+import com.example.demo.dto.erp.SalesOrderCreateDTO;
+import com.example.demo.dto.erp.SalesOrderDetailCreateDTO;
+import com.example.demo.dto.erp.SalesOrderSummaryDTO;
 import com.example.demo.entity.BCustomer;
-import com.example.demo.entity.CustomerBase;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.SalesOrder;
 import com.example.demo.enums.PaymentStatus;
@@ -31,7 +30,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;

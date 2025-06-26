@@ -8,8 +8,8 @@ import com.example.demo.entity.Product;
 import com.example.demo.exception.DataConflictException;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.PurchaseOrderCreateDTO;
-import com.example.demo.dto.PurchaseOrderDetailCreateDTO;
+import com.example.demo.dto.erp.PurchaseOrderCreateDTO;
+import com.example.demo.dto.erp.PurchaseOrderDetailCreateDTO;
 import com.example.demo.entity.PurchaseOrder;
 import com.example.demo.entity.PurchaseOrderDetail;
 // import com.example.demo.entity.Warehouse; // 如果 PurchaseOrder 層級的 warehouseId 不再使用，可以移除

@@ -1,4 +1,4 @@
-package com.example.demo.dto;
+package com.example.demo.dto.erp;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;

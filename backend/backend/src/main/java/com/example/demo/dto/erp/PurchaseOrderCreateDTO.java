@@ -1,4 +1,4 @@
-package com.example.demo.dto;
+package com.example.demo.dto.erp;
 
 import java.time.LocalDate;
 import java.util.List;

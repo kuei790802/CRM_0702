@@ -1,10 +1,10 @@
 package com.example.demo.controller;
 
 
-import com.example.demo.dto.InventoryAdjustmentCreateDTO;
-import com.example.demo.dto.InventoryAdjustmentDTO;
-import com.example.demo.dto.InventoryViewDTO;
-import com.example.demo.dto.ShipmentRequestDTO;
+import com.example.demo.dto.erp.InventoryAdjustmentCreateDTO;
+import com.example.demo.dto.erp.InventoryAdjustmentDTO;
+import com.example.demo.dto.erp.InventoryViewDTO;
+import com.example.demo.dto.erp.ShipmentRequestDTO;
 import com.example.demo.entity.Inventory;
 import com.example.demo.entity.InventoryAdjustment;
 import com.example.demo.entity.SalesShipment;
@@ -21,8 +21,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/inventory")
