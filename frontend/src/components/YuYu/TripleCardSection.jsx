@@ -27,7 +27,7 @@ const cardData = [
 
 const TripleCardSection = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4 md:p-10">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 px-6 sm:px-10 lg:px-16 py-6">
       {cardData.map((card, index) => (
         <Link
           to={card.link}
@@ -48,7 +48,7 @@ const TripleCardSection = () => {
               {card.description}
             </p>
             <div className="mt-4 animate-slideInUp delay-200">
-              <span className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-100 text-sm font-medium">
+              <span className="bg-white text-black px-5 py-2 rounded shadow hover:bg-gray-100 text-sm font-medium">
                 {card.button}
               </span>
             </div>

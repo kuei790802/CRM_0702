@@ -8,16 +8,19 @@ export default {
     extend: {
       colors: {
         logo: {
-          lightBlue: '#9DCCF3', // 淺藍色
-          blue: '#6DA1CD',      // 較深藍色
-          tan: '#DDB675',       // 淡棕黃色
+          lightBlue: '#9DCCF3',
+          blue: '#6DA1CD',
+          tan: '#DDB675',
         },
+      },
+      cursor: {
+        icepop: "url('/cursors/cursor01.cur') 0 0, auto",
       },
     },
     container: {
       center: true,
       padding: {
-        DEFAULT: '1rem', // base padding
+        DEFAULT: '1rem',
         sm: '1.5rem',
         lg: '2rem',
         xl: '2.5rem',
@@ -33,4 +36,4 @@ export default {
     },
   },
   plugins: [],
-}
+};

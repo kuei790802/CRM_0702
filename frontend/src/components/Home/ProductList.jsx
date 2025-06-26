@@ -50,7 +50,7 @@ function ProductList({ products }) {
         {/* 左箭頭 */}
         {canScrollLeft && (
           <button
-            onClick={() => scroll(-300)}
+            onClick={() => scroll(-400)}
             className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 bg-white/70 hover:bg-white text-gray-700 rounded-full shadow w-9 h-9 flex items-center justify-center"
           >
             <FaChevronLeft size={16} />
@@ -72,7 +72,7 @@ function ProductList({ products }) {
         {/* 右箭頭 */}
         {canScrollRight && (
           <button
-            onClick={() => scroll(300)}
+            onClick={() => scroll(400)}
             className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 bg-white/70 hover:bg-white text-gray-700 rounded-full shadow w-9 h-9 flex items-center justify-center"
           >
             <FaChevronRight size={16} />

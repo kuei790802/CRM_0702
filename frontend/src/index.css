@@ -1,3 +1,7 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+
+html, body, input, textarea, button, select, a, div, span, p {
+  cursor: url('/cursors/cursor01.cur') 0 0, auto !important;
+}
