@@ -6,11 +6,8 @@ import com.example.demo.enums.BCustomerType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +24,7 @@ import java.util.Set;
 @DiscriminatorValue("B2B")
 @ToString(exclude = {"contacts", "tags"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class BCustomer extends CustomerBase{
+public class BCustomer extends CustomerBase {
 
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -33,5 +33,11 @@ public class ProductCreateDTO {
     private String taxType = "TAXABLE";
 
     private String costMethod = "AVERAGE";
+
+    private Boolean isSalable = true;
+
+    private Integer SafetyStockQuantity;
+
+    private Boolean isActive = true;
     
 }

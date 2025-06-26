@@ -9,6 +9,7 @@ import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentMethod;
 import com.example.demo.enums.PaymentStatus;
 import com.example.demo.repository.*;
+import com.example.demo.service.erp.InventoryService;
 import com.example.demo.util.EcpayCheckMacValueUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;

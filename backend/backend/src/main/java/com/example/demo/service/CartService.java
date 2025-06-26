@@ -9,16 +9,15 @@ import com.example.demo.repository.CartDetailRepository;
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.ProductRepository;
 
+import com.example.demo.service.erp.InventoryService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.example.demo.service;
+package com.example.demo.service.erp;
 
 import com.example.demo.dto.erp.ProductResponseDTO;
 import com.example.demo.entity.ProductCategory;

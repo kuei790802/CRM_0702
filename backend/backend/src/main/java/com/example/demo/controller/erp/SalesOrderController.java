@@ -1,4 +1,4 @@
-package com.example.demo.controller;
+package com.example.demo.controller.erp;
 
 
 import com.example.demo.dto.erp.SalesOrderCreateDTO;
@@ -6,7 +6,7 @@ import com.example.demo.dto.erp.SalesOrderSummaryDTO;
 import com.example.demo.dto.erp.SalesOrderViewDTO;
 import com.example.demo.entity.SalesOrder;
 import com.example.demo.enums.SalesOrderStatus;
-import com.example.demo.service.SalesOrderService;
+import com.example.demo.service.erp.SalesOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

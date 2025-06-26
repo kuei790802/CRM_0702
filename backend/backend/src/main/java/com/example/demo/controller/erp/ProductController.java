@@ -1,4 +1,4 @@
-package com.example.demo.controller;
+package com.example.demo.controller.erp;
 
 import com.example.demo.dto.erp.ProductResponseDTO;
 import org.springframework.data.domain.Page;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.erp.ProductCreateDTO;
 import com.example.demo.dto.erp.ProductUpdateDTO;
 //import com.example.demo.entity.Product;
-import com.example.demo.service.ProductService;
+import com.example.demo.service.erp.ProductService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

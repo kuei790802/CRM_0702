@@ -6,8 +6,11 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.example.demo.entity.*;
+import com.example.demo.entity.Inventory;
+import com.example.demo.entity.InventoryMovement;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.repository.*;
+import com.example.demo.service.erp.InventoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

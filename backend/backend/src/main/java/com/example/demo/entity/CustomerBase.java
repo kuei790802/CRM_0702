@@ -41,8 +41,10 @@ public abstract class CustomerBase {
     @Column(name = "customer_type", nullable = false, length = 10, insertable = false, updatable = false)
     private CustomerType customerType;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default

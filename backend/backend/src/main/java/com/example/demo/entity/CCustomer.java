@@ -1,11 +1,8 @@
 package com.example.demo.entity;
 
-import com.example.demo.enums.CustomerType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class CCustomer extends CustomerBase{
+public class CCustomer extends CustomerBase {
 
     @Column(nullable = false, unique = true)
     private String account;

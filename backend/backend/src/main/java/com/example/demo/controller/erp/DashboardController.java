@@ -1,8 +1,8 @@
-package com.example.demo.controller;
+package com.example.demo.controller.erp;
 
 
 import com.example.demo.dto.erp.dashboard.ErpDashboardDTO;
-import com.example.demo.service.DashboardService;
+import com.example.demo.service.erp.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

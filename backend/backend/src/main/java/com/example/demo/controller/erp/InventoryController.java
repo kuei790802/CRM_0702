@@ -1,4 +1,4 @@
-package com.example.demo.controller;
+package com.example.demo.controller.erp;
 
 
 import com.example.demo.dto.erp.InventoryAdjustmentCreateDTO;
@@ -8,7 +8,7 @@ import com.example.demo.dto.erp.ShipmentRequestDTO;
 import com.example.demo.entity.Inventory;
 import com.example.demo.entity.InventoryAdjustment;
 import com.example.demo.entity.SalesShipment;
-import com.example.demo.service.InventoryService;
+import com.example.demo.service.erp.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

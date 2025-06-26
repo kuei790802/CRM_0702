@@ -236,4 +236,11 @@ public class BCustomerServiceImpl implements BCustomerService {
             BCustomer.setTags(tags);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BCustomer getBCustomerEntityById(Long id) {
+        return BCustomerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + id));
+    }
 }

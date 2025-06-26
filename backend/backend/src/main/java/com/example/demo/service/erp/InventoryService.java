@@ -1,4 +1,4 @@
-package com.example.demo.service;
+package com.example.demo.service.erp;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -12,6 +12,10 @@ import com.example.demo.dto.erp.InventoryAdjustmentCreateDTO;
 import com.example.demo.dto.erp.InventoryAdjustmentDetailCreateDTO;
 import com.example.demo.dto.erp.InventoryViewDTO;
 import com.example.demo.entity.*;
+import com.example.demo.entity.Inventory;
+import com.example.demo.entity.InventoryAdjustment;
+import com.example.demo.entity.InventoryAdjustmentDetail;
+import com.example.demo.entity.InventoryMovement;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.repository.*;
