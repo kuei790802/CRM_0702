@@ -3,6 +3,7 @@ import Footer from './components/Footer';
 import Header from './components/Header';
 import ScrollToTop from './components/ScorllToTop';
 
+
 export default function App() {
   const location = useLocation();
   const isHome = location.pathname === '/';

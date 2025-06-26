@@ -60,10 +60,10 @@ function ProductList({ products }) {
         {/* 滾動卡片區 */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth snap-x snap-mandatory pb-6 no-scrollbar"
+          className="flex gap-0 overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth snap-x snap-mandatory pb-6 no-scrollbar"
         >
           {products.map((product) => (
-            <div key={product.id} className="snap-start shrink-0 w-[280px]">
+            <div key={product.id} className="snap-start shrink-0 w-[250px]">
               <ProductCard product={product} />
             </div>
           ))}

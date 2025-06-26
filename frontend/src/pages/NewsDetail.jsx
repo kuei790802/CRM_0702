@@ -46,7 +46,6 @@ function NewsDetail() {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-700 text-center mb-6">
           {news.title}
         </h1>
-
         <img
           src={news.imageUrl}
           alt={news.title}
