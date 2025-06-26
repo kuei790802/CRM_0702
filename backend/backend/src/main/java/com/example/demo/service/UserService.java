@@ -199,11 +199,46 @@ public class UserService {
     // 不同權限進入不同模組，如何管理權限?
 
     // admin查閱所有user, findbyaccount, findbyauthorities?
-    // 更動權限、更動激活時間、使用者忘記密碼，可通知admin，強制重設為一次姓密碼
+    // 更動使用者權限、更動激活時間、使用者忘記密碼，可通知admin，強制重設為一次姓密碼
+    // todo
+//    public UserProfileResponse updateProfileByAdmin(String account, UpdateUserProfileRequest request){
+//        User user = userRepo.findByAccount(account)
+//                .orElseThrow(() -> new UsernameNotFoundException("帳號不存在: " + account));
+//
+//        user.setUserName(request.getUserName());
+//        user.setEmail(request.getEmail());
+//        user.setAccessEndDate(request.getAccessEndDate());
+//        user.setAuthorities(request.getAuthorityCodes());
+//
+//        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+//            if (!encoder.matches(request.getOldPassword(), user.getPassword())) {
+//                throw new IllegalArgumentException("舊密碼驗證失敗");
+//            }
+//            validatePasswordStrength(request.getNewPassword());
+//            user.setPassword(encoder.encode(request.getNewPassword()));
+//        }
+//
+//        User saveduser = userRepo.save(user);
+//
+//        return new UserProfileResponse(
+//                saveduser.getUserId(),
+//                saveduser.getAccount(),
+//                saveduser.getEmail(),
+//                saveduser.getUserName(),
+//                saveduser.isActive(),
+//                saveduser.getRoleName(),
+//                saveduser.getAuthorities().stream()
+//                        .map(Authority::getCode)
+//                        .collect(Collectors.toList()),
+//                saveduser.getAccessStartDate(),
+//                saveduser.getAccessEndDate(),
+//                saveduser.getLastLogin()
+//        );
+    }
 
     // admin, 小編(cms agent?)進行前台內容管理，刪除下嫁文章、跑馬燈、輪播圖、管理活動等
 
-    // admin, 小編(cms agent?)與ccustomer進行互動，回覆留言，更改訂單等等
+    // admin, 小編(cms agent?)與ccustomer進行互動，更改訂單
 
     // admin調閱log
 
