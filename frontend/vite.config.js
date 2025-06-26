@@ -1,12 +1,15 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "http://localhost:8080", // 假設 Spring Boot 執行在 8080
+      '/api': {
+        target: 'http://localhost:8080', // 你的 Spring Boot 後端
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });
