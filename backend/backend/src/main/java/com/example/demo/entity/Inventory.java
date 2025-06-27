@@ -1,83 +1,61 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
-
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
-@Table(name = "inventory")
+@Table(name = "inventories")
+@Getter
+@Setter
 public class Inventory {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long inventoryid;
-    private String location;
-    private Integer unitsinstock;
-    private Integer unitsinreserved;
-    private LocalDate lastrestockdate;
-    private LocalDateTime updateat;
+    @Column(name = "inventory_id", nullable = false)
+    private Long inventoryId;
 
-    public Long getInventoryid() {
-        return inventoryid;
-    }
-
-    public void setInventoryid(Long inventoryid) {
-        this.inventoryid = inventoryid;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public Integer getUnitsinstock() {
-        return unitsinstock;
-    }
-
-    public void setUnitsinstock(Integer unitsinstock) {
-        this.unitsinstock = unitsinstock;
-    }
-
-    public Integer getUnitsinreserved() {
-        return unitsinreserved;
-    }
-
-    public void setUnitsinreserved(Integer unitsinreserved) {
-        this.unitsinreserved = unitsinreserved;
-    }
-
-    public LocalDate getLastrestockdate() {
-        return lastrestockdate;
-    }
-
-    public void setLastrestockdate(LocalDate lastrestockdate) {
-        this.lastrestockdate = lastrestockdate;
-    }
-
-    public LocalDateTime getUpdateat() {
-        return updateat;
-    }
-
-    public void setUpdateat(LocalDateTime updateat) {
-        this.updateat = updateat;
-    }
-
-    //---------------
-    @ManyToOne
-    @JoinColumn(name = "productid")
-    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    public Product getProduct() {
-        return product;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "warehouse_id", nullable = false)
+    private Warehouse warehouse;
 
-    public void setProduct(Product product) {
-        this.product = product;
-    }
+    @Column(name = "current_stock", nullable = false)
+    private BigDecimal currentStock;
 
+    @Column(name = "average_cost", nullable = false)
+    private BigDecimal averageCost;
+
+    @Column(name = "units_on_order", nullable = false)
+    private BigDecimal unitsOnOrder = BigDecimal.ZERO;
+
+    @Column(name = "units_allocated", nullable = false) // For units reserved for SOs
+    private BigDecimal unitsAllocated = BigDecimal.ZERO;
+
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }

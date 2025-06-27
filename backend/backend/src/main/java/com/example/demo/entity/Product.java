@@ -1,123 +1,109 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "products")
+@Getter
+@Setter
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productid;
-    private String productname;
+    @Column(name = "product_id")
+    private Long productId;
+
+    @Column(name = "product_code", nullable = false, unique = true, length = 50)
+    private String productCode;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-    private String quantityperunit;
-    private Double unitprice;
-    private Boolean isactive;
-    private LocalDateTime createat;
-    private LocalDateTime updateat;
 
-    public String getProductname() {
-        return productname;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private ProductCategory category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id", nullable = false)
+    private Unit unit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private Supplier preferredSupplier;
+
+    @Column(name = "is_purchasable", nullable = false)
+    private Boolean isPurchasable = true;
+
+    @Column(name = "is_salable", nullable = false)
+    private Boolean isSalable = true;
+
+    @Column(name = "base_price", nullable = false, precision = 18, scale = 2)
+    private BigDecimal basePrice;
+
+    @Column(name = "tax_type", nullable = false, length = 20)
+    private String taxType;
+
+    @Column(name = "cost_method", nullable = false, length = 50)
+    private String costMethod = "AVERAGE";
+
+
+    @Column(name = "safety_stock_quantity", nullable = false)
+    private Integer safetyStockQuantity = 0;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+
+    @Column(name = "created_by", nullable = false, updatable = false)
+    private Long createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    private User createdByUser;
+
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", insertable = false, updatable = false)
+    private User updatedByUser;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
-    public void setProductname(String productname) {
-        this.productname = productname;
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+
+        //TODO(joshkuei): 尚未加入所有欄位和完整的 @ManyToOne 關聯，先專注在核心功能上
     }
 
-    public Long getProductid() {
-        return productid;
-    }
-
-    public void setProductid(Long productid) {
-        this.productid = productid;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getQuantityperunit() {
-        return quantityperunit;
-    }
-
-    public void setQuantityperunit(String quantityperunit) {
-        this.quantityperunit = quantityperunit;
-    }
-
-    public Double getUnitprice() {
-        return unitprice;
-    }
-
-    public void setUnitprice(Double unitprice) {
-        this.unitprice = unitprice;
-    }
-
-    public Boolean getIsactive() {
-        return isactive;
-    }
-
-    public void setIsactive(Boolean isactive) {
-        this.isactive = isactive;
-    }
-
-    public LocalDateTime getCreateat() {
-        return createat;
-    }
-
-    public void setCreateat(LocalDateTime createat) {
-        this.createat = createat;
-    }
-
-    public LocalDateTime getUpdateat() {
-        return updateat;
-    }
-
-    public void setUpdateat(LocalDateTime updateat) {
-        this.updateat = updateat;
-    }
-
-    //--------------
-    @OneToMany(mappedBy = "product")
+    //TODO(joshkuei):  Add relationships
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductImg> productimgs = new ArrayList<>();
 
-    public List<ProductImg> getProductimgs() {
-        return productimgs;
-    }
-
-    public void setProductimgs(List<ProductImg> productimgs) {
-        this.productimgs = productimgs;
-    }
-
-    //-------------
-    @OneToMany(mappedBy = "product")
-    private List<Inventory> inventories = new ArrayList<>();
-
-    public List<Inventory> getInventories() {
-        return inventories;
-    }
-
-    public void setInventories(List<Inventory> inventories) {
-        this.inventories = inventories;
-    }
-
-    //---------
-    @OneToMany(mappedBy = "product")
-    private List<CartDetail> cartdetails = new ArrayList<>();
-
-    public List<CartDetail> getCartdetails() {
-        return cartdetails;
-    }
-
-    public void setCartdetails(List<CartDetail> cartdetails) {
-        this.cartdetails = cartdetails;
-    }
 
 }
+
+
