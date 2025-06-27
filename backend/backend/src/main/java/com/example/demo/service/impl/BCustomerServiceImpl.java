@@ -136,7 +136,7 @@ public class BCustomerServiceImpl implements BCustomerService {
     @Override
     @Transactional(readOnly = true)
     public Page<BCustomerDto> findCustomersByNameContaining(String name, Pageable pageable) {
-        return bCustomerRepository.findByCustomerNameContainingIgnoreCase(name, pageable)
+        return bCustomerRepository.findByNameContainingIgnoreCase(name, pageable)
                 .map(this::convertToDto);
     }
 

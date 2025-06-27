@@ -18,7 +18,7 @@ public interface BCustomerRepository extends JpaRepository<BCustomer, Long> {
      * @param pageable 分頁和排序資訊。
      * @return 符合條件的客戶分頁列表。
      */
-    Page<BCustomer> findByCustomerNameContainingIgnoreCase(String customerName, Pageable pageable);
+    Page<BCustomer> findByNameContainingIgnoreCase(String customerName, Pageable pageable);
 
     /**
      * 根據行業查詢客戶，參數變為 Enum 類型。

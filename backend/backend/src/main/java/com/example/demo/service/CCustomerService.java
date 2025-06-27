@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CCustomerService {
@@ -66,6 +67,7 @@ public class CCustomerService {
     }
 
     // 註冊 + 加密
+    @Transactional
     public CCustomer register(String account
             , String customerName
             , String password
@@ -82,6 +84,10 @@ public class CCustomerService {
 
         validatePasswordStrength(password);
 
+        // ✨ 新增 #1: 產生一個唯一的客戶編號
+        // 這裡使用 "C-" 前綴加上一個隨機的8位碼
+        String newCustomerCode = "C-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
                 .name(customerName) // ✨ 修改 #1: .customerName() -> .name()
@@ -89,6 +95,7 @@ public class CCustomerService {
                 .email(email)
                 .address(address)
                 .birthday(birthday)
+                .customerCode(newCustomerCode) // ✨ 新增 #2: 在建立物件時設定 customerCode
                 .isActive(true)
                 .isDeleted(false)
                 .build();
