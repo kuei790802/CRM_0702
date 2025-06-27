@@ -14,7 +14,21 @@ export default {
         },
       },
       cursor: {
-        icepop: "url('/cursors/cursor01.cur') 0 0, auto",
+        icepop: "url('/cursors/cursor04.png') 0 0, auto",
+      },
+      keyframes: {
+        scrollRight: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        scrollLeft: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(50%)' },
+        },
+      },
+      animation: {
+        'scroll-right': 'scrollRight 20s linear infinite',
+        'scroll-left': 'scrollLeft 20s linear infinite',
       },
     },
     container: {
