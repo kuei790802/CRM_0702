@@ -5,6 +5,7 @@ import com.example.demo.dto.request.CCustomerRegisterRequest;
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
+import com.example.demo.security.CheckCustomerActive;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
 import com.example.demo.service.CCustomerService;
@@ -76,5 +77,14 @@ public class CCustomerController {
         CCustomerProfileResponse updatedProfile = cCustomerService.updateProfile(account, updateRequest);
 
         return ResponseEntity.ok(updatedProfile);
+    }
+
+    @CheckJwt
+    @CheckCustomerActive
+    @DeleteMapping("/account")
+    public ResponseEntity<Void> deleteOwnAccount(HttpServletRequest request) {
+        String account = (String) request.getAttribute("account");
+        cCustomerService.deleteAccountPermanently(account);
+        return ResponseEntity.noContent().build();
     }
 }

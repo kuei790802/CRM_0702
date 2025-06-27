@@ -7,6 +7,8 @@ import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.dto.response.UserProfileResponse;
 import com.example.demo.entity.Authority;
 import com.example.demo.entity.User;
+import com.example.demo.enums.AuthorityCode;
+import com.example.demo.security.CheckAuthority;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.service.CCustomerService;
 import com.example.demo.service.UserService;
@@ -52,6 +54,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
+    // 查看自己資料
     @GetMapping("/profile")
     @CheckJwt
     public ResponseEntity<UserProfileResponse> getProfile(HttpServletRequest request) {
@@ -59,7 +62,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserProfileByAccount(account));
     }
 
-
+    // 更改自己資料
     @CheckJwt
     @PutMapping("/profile/update")
     public ResponseEntity<UserProfileResponse> updateProfile(
@@ -71,6 +74,45 @@ public class UserController {
         UserProfileResponse updatedProfile = userService.updateOwnProfile(account, updateRequest);
 
         return ResponseEntity.ok(updatedProfile);
+    }
+
+    //  系統管理員查閱單一使用者資料（by account）
+    @CheckJwt
+    @CheckAuthority(AuthorityCode.USER_READ)
+    @GetMapping("/{account}")
+    public ResponseEntity<UserProfileResponse> getUserByAccount(@PathVariable String account) {
+        UserProfileResponse profile = userService.getUserProfileByAccount(account);
+        return ResponseEntity.ok(profile);
+    }
+
+    //  系統管理員編輯使用者資料（含權限、激活時間、密碼）
+    @CheckJwt
+    @CheckAuthority(AuthorityCode.USER_UPDATE)
+    @PutMapping("/{account}")
+    public ResponseEntity<UserProfileResponse> updateUserByAdmin(
+            @PathVariable String account,
+            @RequestBody UpdateUserProfileRequest request
+    ) {
+        UserProfileResponse updated = userService.updateProfileByAdmin(account, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    // 系統管理員軟刪除使用者帳號（停權處理）
+    @CheckJwt
+    @CheckAuthority(AuthorityCode.USER_DELETE)
+    @DeleteMapping("/{account}")
+    public ResponseEntity<String> disableUser(@PathVariable String account) {
+        userService.disableUserAccountByAdmin(account);
+        return ResponseEntity.ok("使用者已停權");
+    }
+
+    // 系統管理員軟刪除客戶帳號（管理員操作）
+    @CheckJwt
+    @CheckAuthority(AuthorityCode.CUSTOMER_DELETE)
+    @DeleteMapping("/customer/{account}")
+    public ResponseEntity<String> disableCustomer(@PathVariable String account) {
+        userService.disableCustomerAccount(account);
+        return ResponseEntity.ok("顧客帳號已停權");
     }
 
 }

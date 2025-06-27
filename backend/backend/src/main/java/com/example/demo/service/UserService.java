@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.request.RegisterRequest;
 import com.example.demo.dto.request.UpdateUserProfileRequest;
 import com.example.demo.dto.response.UserProfileResponse;
 import com.example.demo.entity.Authority;
@@ -23,12 +24,14 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserRepo userRepo;
+    private final CCustomerRepo cCustomerRepo;
     private final AuthorityRepo authorityRepo;
     private final BCryptPasswordEncoder encoder;
 
     // 建構自注入userRepo、encoder
-    public UserService(UserRepo userRepo, AuthorityRepo authorityRepo) {
+    public UserService(UserRepo userRepo, CCustomerRepo cCustomerRepo, AuthorityRepo authorityRepo) {
         this.userRepo = userRepo;
+        this.cCustomerRepo = cCustomerRepo;
         this.authorityRepo = authorityRepo;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
     }
@@ -108,8 +111,6 @@ public class UserService {
                 .isDeleted(false)
                 .authorities(persistedAuthorities)
                 .build();
-        //你之前有建議我要下面這段，功能是什麼，還需要嗎?
-        newUser.setAuthorities(persistedAuthorities);
 
         return userRepo.save(newUser);
     }
@@ -199,11 +200,74 @@ public class UserService {
     // 不同權限進入不同模組，如何管理權限?
 
     // admin查閱所有user, findbyaccount, findbyauthorities?
-    // 更動權限、更動激活時間、使用者忘記密碼，可通知admin，強制重設為一次姓密碼
+    // 更動使用者權限、更動激活時間、使用者忘記密碼，可通知admin，強制重設為一次姓密碼
+    // todo
+    public UserProfileResponse updateProfileByAdmin(String account, UpdateUserProfileRequest request){
+        User user = userRepo.findByAccount(account)
+                .orElseThrow(() -> new UsernameNotFoundException("帳號不存在: " + account));
+
+        user.setUserName(request.getUserName());
+        user.setEmail(request.getEmail());
+        user.setAccessEndDate(request.getAccessEndDate());
+
+        List<Authority> persistedAuthorities = authorityRepo.findByCodeIn(request.getAuthorityCodes());
+        if (persistedAuthorities.size() != request.getAuthorityCodes().size()){
+            throw new IllegalArgumentException("部分權限代碼不存在，請確認輸入正確");
+        }
+        user.setAuthorities(persistedAuthorities);
+
+
+        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+            if (!encoder.matches(request.getOldPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("舊密碼驗證失敗");
+            }
+            validatePasswordStrength(request.getNewPassword());
+            user.setPassword(encoder.encode(request.getNewPassword()));
+        }
+
+        User saveduser = userRepo.save(user);
+
+        return new UserProfileResponse(
+                saveduser.getUserId(),
+                saveduser.getAccount(),
+                saveduser.getEmail(),
+                saveduser.getUserName(),
+                saveduser.isActive(),
+                saveduser.getRoleName(),
+                saveduser.getAuthorities().stream()
+                        .map(Authority::getCode)
+                        .collect(Collectors.toList()),
+                saveduser.getAccessStartDate(),
+                saveduser.getAccessEndDate(),
+                saveduser.getLastLogin()
+        );
+    }
+
+
+    // 系統管理者軟刪除後臺使用者帳號
+    public void disableUserAccountByAdmin(String account) {
+        User user = userRepo.findByAccount(account)
+                .orElseThrow(() -> new UsernameNotFoundException("帳號不存在"));
+        user.setActive(false);
+        user.setDeleted(true); // 可選
+        userRepo.save(user);
+    }
+
+
+    //
+
+    // 系統管理者軟刪除客戶帳戶
+    public void disableCustomerAccount(String account) {
+        CCustomer customer = cCustomerRepo.findByAccount(account)
+                .orElseThrow(() -> new UsernameNotFoundException("顧客帳號不存在"));
+        customer.setActive(false);
+        customer.setDeleted(true);
+        cCustomerRepo.save(customer);
+    }
 
     // admin, 小編(cms agent?)進行前台內容管理，刪除下嫁文章、跑馬燈、輪播圖、管理活動等
 
-    // admin, 小編(cms agent?)與ccustomer進行互動，回覆留言，更改訂單等等
+    // admin, 小編(cms agent?)與ccustomer進行互動，更改訂單
 
     // admin調閱log
 

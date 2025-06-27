@@ -175,6 +175,21 @@ public class CCustomerService {
                 .orElseThrow(() -> new UsernameNotFoundException("找不到顧客: " + account));
     }
 
+    // 帳號是否啟用中
+    public boolean isCustomerActive(String account) {
+        return cCustomerRepo.findByAccount(account)
+                .map(c -> c.isActive() && !c.isDeleted())
+                .orElse(false); // 找不到代表不合法，當作不允許操作
+    }
+
+    // 帳號刪除(真刪除)
+    public void deleteAccountPermanently(String account) {
+        CCustomer customer = cCustomerRepo.findByAccount(account)
+                .orElseThrow(() -> new UsernameNotFoundException("找不到帳號: " + account));
+
+        cCustomerRepo.delete(customer);
+    }
+
 
 
 
