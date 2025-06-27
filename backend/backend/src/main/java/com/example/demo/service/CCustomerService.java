@@ -76,7 +76,7 @@ public class CCustomerService {
 
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
-                .customerName(customerName)
+                .name(customerName)
                 .password(encoder.encode(password))
                 .email(email)
                 .address(address)
@@ -112,7 +112,7 @@ public class CCustomerService {
 
         return new CCustomerProfileResponse(
                 customer.getAccount(),
-                customer.getCustomerName(),
+                customer.getName(),
                 customer.getEmail(),
                 customer.getAddress(),
                 customer.getBirthday(),
@@ -131,7 +131,7 @@ public class CCustomerService {
 
         // 更新基本資料，並防止為空值
         if (request.getCustomerName() != null) {
-            customer.setCustomerName(request.getCustomerName());
+            customer.setName(request.getCustomerName());
         }
         if (request.getEmail() != null) {
             customer.setEmail(request.getEmail());
@@ -158,7 +158,7 @@ public class CCustomerService {
 
         return new CCustomerProfileResponse(
                 savedCustomer.getAccount(),
-                savedCustomer.getCustomerName(),
+                savedCustomer.getName(),
                 savedCustomer.getEmail(),
                 savedCustomer.getAddress(),
                 savedCustomer.getBirthday(),
@@ -194,8 +194,6 @@ public class CCustomerService {
 
 
 //    todo: 6/11繼續
-    // 刪除帳號
-
 
 
 

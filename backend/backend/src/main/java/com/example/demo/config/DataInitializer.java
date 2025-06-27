@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import com.github.javafaker.Faker;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
@@ -74,7 +73,7 @@ public class DataInitializer {
 
             System.out.println("偵測到為 dev 環境且無商品資料，開始產生50筆商品假資料...");
 
-            Faker faker = new Faker(Locale.TAIWAN);
+//            Faker faker = new Faker(Locale.TAIWAN);
             List<Product> productList = new ArrayList<>();
 
             for (int i = 0; i < 50; i++) {
@@ -87,7 +86,7 @@ public class DataInitializer {
                 String uniqueCode = "P" + String.format("%06d", i + 1);
                 product.setProductCode(uniqueCode);
                 product.setName(name + " " + uniqueCode);
-                product.setDescription(faker.lorem().paragraph(2));
+//                product.setDescription(faker.lorem().paragraph(2));
 
 
                 Unit randomUnit = savedUnits.get(ThreadLocalRandom.current().nextInt(savedUnits.size()));

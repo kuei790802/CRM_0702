@@ -1,7 +1,7 @@
 package com.example.demo.util;
 
 import com.example.demo.dto.request.TagRequest;
-import com.github.javafaker.Faker;
+//import com.github.javafaker.Faker;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 @Component
 public class TagFaker {
 
-    private final Faker faker = new Faker();
+//    private final Faker faker = new Faker();
     private final Random random = new Random();
 
     private static final String[] PREDEFINED_TAG_NAMES = {

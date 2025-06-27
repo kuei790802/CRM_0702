@@ -92,7 +92,7 @@ public class MessageReplyService {
         String senderName = null;
 
         if (reply.getSenderType() == SenderType.CUSTOMER && reply.getCCustomer() != null) {
-            senderName = reply.getCCustomer().getCustomerName();
+            senderName = reply.getCCustomer().getName();
         } else if (reply.getSenderType() == SenderType.STAFF && reply.getUser() != null) {
             senderName = reply.getUser().getUserName();
         }
