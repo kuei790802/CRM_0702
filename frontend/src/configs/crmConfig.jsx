@@ -36,6 +36,11 @@ const crmConfig = {
         name: '商機管理',
         icon: <BarChartOutlined />,
       },
+      {
+        path: '/crm/company',
+        name: '公司資料',
+        icon: <BarChartOutlined />,
+      },
     ],
   },
   location: {

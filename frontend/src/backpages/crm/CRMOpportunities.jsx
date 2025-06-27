@@ -37,7 +37,7 @@ const CRMOpportunities = () => {
   const columns = [
     {
       title: '商機名稱',
-      dataIndex: 'title',
+      dataIndex: 'opportunityName',
       copyable: true,
       ellipsis: true,
     },
