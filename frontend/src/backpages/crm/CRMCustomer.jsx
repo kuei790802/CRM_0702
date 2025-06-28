@@ -259,10 +259,10 @@ const CRMCustomer = () => {
             form={form}
             onFinish={async (values) => {
               try {
-                await axios.put(`/contacts/${editContact.contactId}`, {
+                await axios.put(`/contacts/${editContact.contactId}, {
                   ...editContact,
                   ...values,
-                });
+                }`);
                 message.success("更新成功");
                 setEditVisible(false);
                 fetchData(currentPage, searchFilters);
