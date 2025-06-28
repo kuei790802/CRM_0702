@@ -24,7 +24,8 @@ import java.util.Set;
 @SuperBuilder //TODO(joshkuei): Add for passing the test.
 @DiscriminatorValue("B2B")
 @ToString(exclude = {"contacts", "tags"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(callSuper = true,
+        onlyExplicitlyIncluded = true)
 public class BCustomer extends CustomerBase {
 
     // ✨ 修改 #5: 刪除所有與 CustomerBase 重複的欄位
@@ -57,10 +58,12 @@ public class BCustomer extends CustomerBase {
     private String customerEmail;
 
     // ----- 關聯欄位維持不變 -----
+    @Builder.Default
     @OneToMany(mappedBy = "bCustomer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Contact> contacts = new HashSet<>();
 
     // ----- 多對多關聯：一個客戶可以有多個標籤 -----
+    @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "b_customer_tags",

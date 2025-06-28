@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customer_base")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.JOINED) //TODO(josh): Changed from JOINED to TABLE_PER_CLASS
+
 @DiscriminatorColumn(name = "customer_type", discriminatorType = DiscriminatorType.STRING)
 @Getter
 @Setter
@@ -27,7 +28,7 @@ import java.time.LocalDateTime;
 public abstract class CustomerBase {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //TODO(josh): Changed from IDENTITY to AUTO
     @Column(name = "customer_id")
     private Long customerId;
 
@@ -46,8 +47,8 @@ public abstract class CustomerBase {
     private boolean isActive = true;
 
 
-    @Column(name = "is_deleted", nullable = false)
     @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @Column(name = "address", length = 500)

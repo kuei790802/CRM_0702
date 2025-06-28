@@ -61,7 +61,7 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到顧客，ID: " + customerId));
 
         Cart cart = cartRepository.findByCCustomer(customer)
-                .orElseThrow(() -> new ResourceNotFoundException("找不到顧客 " + customer.getName() + " 的購物車"));
+                .orElseThrow(() -> new ResourceNotFoundException("找不到顧客 " + customer.getCustomerName() + " 的購物車"));
 
         if (cart.getCartdetails() == null || cart.getCartdetails().isEmpty()) {
             throw new IllegalStateException("購物車是空的，無法建立訂單。");
@@ -212,7 +212,7 @@ public class OrderService {
         return new OrderDto(
                 order.getOrderid(),
                 order.getCCustomer().getCustomerId(),
-                order.getCCustomer().getName(),
+                order.getCCustomer().getCustomerName(),
                 order.getOrderdate(),
                 order.getOrderStatus(),
                 order.getTotalAmount(),
