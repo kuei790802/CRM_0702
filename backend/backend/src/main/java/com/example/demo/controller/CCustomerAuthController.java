@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.request.LoginRequest;
 import com.example.demo.dto.response.CCustomerLoginResponse;
 import com.example.demo.entity.CCustomer;
+import com.example.demo.entity.VIPLevel;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
 import com.example.demo.security.JwtUserPayload;
@@ -10,6 +11,9 @@ import com.example.demo.service.CCustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 ///login, /test, /get-token

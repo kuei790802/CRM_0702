@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,46 +27,36 @@ import java.util.Set;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BCustomer extends CustomerBase {
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @EqualsAndHashCode.Include
-//    private Long customerId;
+    // ✨ 修改 #5: 刪除所有與 CustomerBase 重複的欄位
+    // private Long customerId;
+    // private String customerName;
+    // private String customerAddress;
+    // private String customerTel;
+    // private String customerEmail;
+    // private LocalDateTime createdAt;
+    // private LocalDateTime updatedAt;
 
-//    @Column(nullable = false, length = 100)
-//    private String customerName;
-
+    // 以下是 BCustomer 特有的欄位，予以保留
     @Enumerated(EnumType.STRING)
     @Column(length = 100)
     private BCustomerIndustry industry;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private BCustomerType BCustomerType;
+    private BCustomerType bCustomerType; // 欄位名稱建議改為 bCustomerType
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private BCustomerLevel BCustomerLevel;
+    private BCustomerLevel bCustomerLevel; // 欄位名稱建議改為 bCustomerLevel
 
-    @Column(name = "TIN_number", length = 30)
+    // 假設 B2B 客戶有統一編號
+    @Column(name = "tin_number", length = 20)
     private String tinNumber;
 
-//    @Column(length = 255)
-//    private String customerAddress;
-//
-//    @Column(length = 30)
-//    private String customerTel;
-//
-//    @Column(length = 150)
-//    private String customerEmail;
+    @Column(length = 150)
+    private String customerEmail;
 
-//    @CreatedDate
-//    @Column(updatable = false)
-//    private LocalDateTime createdAt;
-//
-//    @LastModifiedDate
-//    private LocalDateTime updatedAt;
-
-    // ----- 一對多關聯：客戶擁有的聯絡人集合 -----
+    // ----- 關聯欄位維持不變 -----
     @OneToMany(mappedBy = "bCustomer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Contact> contacts = new HashSet<>();
 

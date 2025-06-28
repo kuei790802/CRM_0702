@@ -12,6 +12,7 @@ import com.example.demo.enums.BCustomerType;
 import com.example.demo.repository.BCustomerRepository;
 import com.example.demo.repository.TagRepository;
 import com.example.demo.service.BCustomerService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

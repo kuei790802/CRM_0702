@@ -178,7 +178,7 @@ public class ContactServiceImpl implements ContactService {
 
         if (contact.getBCustomer() != null) {
             dto.setCustomerId(contact.getBCustomer().getCustomerId());
-            dto.setCustomerName(contact.getBCustomer().getCustomerName());
+            dto.setCustomerName(contact.getBCustomer().getName());
         }
 
         return dto;
