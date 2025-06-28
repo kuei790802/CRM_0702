@@ -59,6 +59,9 @@ public abstract class CustomerBase {
     @Column(name = "customertel")
     private String tel;
 
+    @Column(name="spending")
+    private Long spending;
+
     @CreatedBy
     @Column(name = "created_by", nullable = false)
     private Long createdBy;

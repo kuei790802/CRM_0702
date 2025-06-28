@@ -68,13 +68,13 @@ public class InventoryController {
     }
 
     @PostMapping("/adjust")
-    @Operation(summary = "Adjust Inventory Manually", description = "Performs a manual inventory adjustment, e.g., for stock counts or write-offs.")
-    public ResponseEntity<Inventory> adjustInventory(
+    @Operation(summary = "手動調整庫存",
+            description = "執行庫存的手動調整，例如盤點或報損用途。")
+    public ResponseEntity<InventoryViewDTO> adjustInventory(
             @Valid @RequestBody InventoryAdjustmentDTO adjustmentDTO) {
         // TODO(joshkuei): The user ID for the adjustment should ideally come from the security context,
-        // not from the request body, to ensure the action is performed by the authenticated user.
         Long operatorId = adjustmentDTO.getUserId() != null ? adjustmentDTO.getUserId() : 1L;
-        Inventory updatedInventory = inventoryService.adjustInventory(
+        Inventory updatedInventoryEntity = inventoryService.adjustInventory(
                 adjustmentDTO.getProductId(),
                 adjustmentDTO.getWarehouseId(),
                 adjustmentDTO.getQuantity(),
@@ -85,14 +85,24 @@ public class InventoryController {
                 adjustmentDTO.getDocumentItemId(),
                 operatorId
         );
-        return ResponseEntity.ok(updatedInventory);
+        InventoryViewDTO responseDTO = InventoryViewDTO.fromEntity(updatedInventoryEntity);
+
+        return ResponseEntity.ok(responseDTO);
     }
 
     @PostMapping("/adjustments")
-    public ResponseEntity<InventoryAdjustment> createInventoryAdjustment(@Valid @RequestBody InventoryAdjustmentCreateDTO dto) {
+    @Operation(summary = "建立庫存調整單",
+            description = "建立一張包含多筆調整明細的正式庫存調整單")
+    public ResponseEntity<InventoryAdjustmentResponseDTO> createInventoryAdjustment(@Valid @RequestBody InventoryAdjustmentCreateDTO dto) {
         Long currentUserId = 1L; // TODO(joshkuei): MUST From Security Context
-        InventoryAdjustment adjustment = inventoryService.createInventoryAdjustment(dto, currentUserId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(adjustment);
+//        InventoryAdjustment adjustment = inventoryService.createInventoryAdjustment(dto, currentUserId);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(adjustment);
+        // The service still returns the entity
+        InventoryAdjustment adjustmentEntity = inventoryService.createInventoryAdjustment(dto, currentUserId);
+        // Map the entity to our new DTO before returning
+        InventoryAdjustmentResponseDTO responseDTO = InventoryAdjustmentResponseDTO.fromEntity(adjustmentEntity);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
 
@@ -101,7 +111,7 @@ public class InventoryController {
     @ApiResponse(responseCode = "201", description = "Sales order shipped successfully and shipment created")
     @ApiResponse(responseCode = "404", description = "Sales order or warehouse not found")
     @ApiResponse(responseCode = "409", description = "Order cannot be shipped (e.g., wrong status, insufficient stock)")
-    public ResponseEntity<SalesShipment> shipSalesOrder(
+    public ResponseEntity<SalesShipmentDTO> shipSalesOrder(
             @Parameter(description = "ID of the sales order to ship") @PathVariable Long orderId,
             @Valid @RequestBody ShipmentRequestDTO requestDTO
             // @Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails // Example

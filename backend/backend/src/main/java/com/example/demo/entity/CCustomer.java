@@ -28,7 +28,7 @@ public class CCustomer extends CustomerBase {
     private LocalDateTime lastLogin;
     private LocalDateTime accessStartTime;
     private LocalDateTime accessEndTime;
-    private Long spending;
+
 
 //    private LocalDateTime createdAt;
 //    private LocalDateTime updatedAt;

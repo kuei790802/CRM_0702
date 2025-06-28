@@ -8,6 +8,7 @@ import com.example.demo.dto.erp.SalesOrderUpdateDTO;
 import com.example.demo.entity.SalesOrder;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.service.erp.SalesOrderService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,16 +28,19 @@ public class SalesOrderController {
 
     private final SalesOrderService salesOrderService;
 
+    @Operation(summary = "建立銷售訂單", description = "建立銷售訂單包含多筆銷售明細")
     @PostMapping
     public ResponseEntity<SalesOrderViewDTO> createSalesOrder(
                                                                @Valid @RequestBody SalesOrderCreateDTO createDTO){
         Long currentUserId=1L;
         SalesOrder createdOrderEntity = salesOrderService.createSalesOrder(createDTO, currentUserId);
 
-        SalesOrderViewDTO viewDTO = salesOrderService.getSalesOrderById(createdOrderEntity.getSalesOrderId());
+        SalesOrderViewDTO viewDTO = SalesOrderViewDTO.fromEntity(createdOrderEntity);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(viewDTO);
     }
 
+    @Operation(summary = "更新銷售訂單", description = "更新銷售訂單包含多筆銷售明細")
     @PutMapping("/{id}")
     public ResponseEntity<SalesOrderViewDTO> updateSalesOrder(
             @PathVariable Long id,
@@ -46,6 +50,8 @@ public class SalesOrderController {
         return ResponseEntity.ok(updatedOrder);
     }
 
+
+    @Operation(summary = "查詢銷售訂單", description = "查詢銷售訂單包含多筆銷售明細")
     @GetMapping
     public ResponseEntity<Page<SalesOrderSummaryDTO>> searchSalesOrders(
             @RequestParam(required = false) Long customerId,
@@ -62,6 +68,7 @@ public class SalesOrderController {
 
     }
 
+    @Operation(summary = "查詢銷售訂單明細", description = "查詢銷售訂單明細")
     @GetMapping("/{id}")
     public ResponseEntity<SalesOrderViewDTO> getSalesOrderById(@PathVariable Long id) {
         SalesOrderViewDTO orderDetails = salesOrderService.getSalesOrderById(id);

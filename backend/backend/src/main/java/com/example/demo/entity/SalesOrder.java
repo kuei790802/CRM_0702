@@ -30,8 +30,6 @@ public class SalesOrder {
     @JoinColumn(name = "customer_id")
     private CustomerBase customer;
 
-
-
     @Column(name = "contact_person_id")
     private Long contactPersonId;
 
