@@ -1,0 +1,75 @@
+import React, { useEffect, useState } from 'react';
+import axios from "../../api/axiosBackend";
+import {
+  PieChart, Pie, Cell, Tooltip as RechartsTooltip,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+const CRMDashboard = () => {
+  const [dashboardData, setDashboardData] = useState(null);
+
+  useEffect(() => {
+    axios.get('/dashboard')
+      .then(res => setDashboardData(res.data))
+      .catch(err => console.error('Dashboard API Error:', err));
+  }, []);
+
+  if (!dashboardData) return <div className="text-center p-4">載入中...</div>;
+
+  const { kpis, stageDistribution, monthlyTrend } = dashboardData;
+
+  return (
+    <div className="p-6 space-y-8">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {kpis.map((item, idx) => (
+          <div key={idx} className="bg-white shadow-md rounded-xl p-4">
+            <p className="text-sm text-gray-500">{item.title}</p>
+            <p className="text-2xl font-semibold">{item.value}{item.unit}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Stage Distribution - Pie Chart */}
+      <div className="bg-white shadow-md rounded-xl p-4">
+        <h2 className="text-lg font-semibold mb-4">{stageDistribution.title}</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={stageDistribution.data}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              label
+            >
+              {stageDistribution.data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <RechartsTooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Monthly Trend - Line Chart */}
+      <div className="bg-white shadow-md rounded-xl p-4">
+        <h2 className="text-lg font-semibold mb-4">{monthlyTrend.title}</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={monthlyTrend.data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+export default CRMDashboard;
