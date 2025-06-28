@@ -3,25 +3,34 @@ package com.example.demo.service;
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
+import com.example.demo.entity.CustomerBase;
+import com.example.demo.entity.Order;
+import com.example.demo.enums.OrderStatus;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.CCustomerRepo;
+import com.example.demo.repository.OrderRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class CCustomerService {
     private final CCustomerRepo cCustomerRepo;
     private final BCryptPasswordEncoder encoder;
+    private final OrderRepository orderRepository;
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo) {
+    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository) {
         this.cCustomerRepo = cCustomerRepo;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
+        this.orderRepository = orderRepository;
     }
 
     // 檢視帳號是否已存在
@@ -178,7 +187,7 @@ public class CCustomerService {
     // 帳號是否啟用中
     public boolean isCustomerActive(String account) {
         return cCustomerRepo.findByAccount(account)
-                .map(c -> c.isActive() && !c.isDeleted())
+                .map(CustomerBase::isAvailable)
                 .orElse(false); // 找不到代表不合法，當作不允許操作
     }
 
@@ -190,6 +199,31 @@ public class CCustomerService {
         cCustomerRepo.delete(customer);
     }
 
+    // ✨✨✨ 新增這個完整的方法 ✨✨✨
+    /**
+     * 更新客戶的總消費金額。
+     * 此方法會查找客戶所有狀態為 COMPLETE 的訂單，並加總其金額。
+     * @param customerId 要更新的客戶ID
+     */
+    @Transactional
+    public void updateCustomerSpending(Long customerId) {
+        // 1. 先找到對應的客戶實體，若不存在則立即失敗 (採用我的版本優點)
+        CCustomer customer = cCustomerRepo.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("更新消費金額時找不到客戶 ID: " + customerId));
+
+        // 2. 根據 customerId 查找其所有歷史訂單
+        List<Order> orders = orderRepository.findByCCustomer_CustomerIdOrderByOrderdateDesc(customerId);
+
+        // 3. 過濾出狀態為 COMPLETE 的訂單，並安全地加總其 totalAmount (採用您的版本優點)
+        double totalSpending = orders.stream()
+                .filter(order -> order.getOrderStatus() == OrderStatus.COMPLETE)
+                .mapToDouble(order -> order.getTotalAmount() != null ? order.getTotalAmount() : 0.0) // 處理 null
+                .sum();
+
+        // 4. 更新客戶的 spending 欄位並儲存
+        customer.setSpending((long) totalSpending); // 將 double 轉為 Long
+        cCustomerRepo.save(customer);
+    }
 
 
 

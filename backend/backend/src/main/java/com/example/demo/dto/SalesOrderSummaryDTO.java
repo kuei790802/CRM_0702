@@ -32,7 +32,7 @@ public class SalesOrderSummaryDTO {
 
         if(salesOrder.getCustomer() != null){
             dto.setCustomerId(salesOrder.getCustomer().getCustomerId());
-            dto.setCustomerName(salesOrder.getCustomer().getName());
+            dto.setCustomerName(salesOrder.getCustomer().getCustomerName());
         }
         return dto;
     }

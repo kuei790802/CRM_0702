@@ -261,7 +261,7 @@ public class UserService {
         CCustomer customer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(() -> new UsernameNotFoundException("顧客帳號不存在"));
         customer.setActive(false);
-        customer.setDeleted(true);
+        customer.setIsDeleted(true);
         cCustomerRepo.save(customer);
     }
 

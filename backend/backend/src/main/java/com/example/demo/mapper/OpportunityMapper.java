@@ -32,7 +32,7 @@ public class OpportunityMapper {
                 .stage(request.getStage())
                 .status(request.getStatus())
 
-                .bCustomer(BCustomer.builder().customerId(request.getCustomerId()).build())
+                .bCustomer(BCustomer.builder().customerId(request.getCustomerId()).build()) //TODO(josh): Chanege customerId() to
                 .contact(request.getContactId() != null ? Contact.builder().contactId(request.getContactId()).build() : null)
                 .totalRatingSum(0L) // 初始化總評分
                 .numberOfRatings(0) // 初始化評分次數

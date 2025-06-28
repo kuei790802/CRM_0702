@@ -196,9 +196,9 @@ public class BCustomerServiceImpl implements BCustomerService {
         dto.setIndustry(BCustomer.getIndustry());
         dto.setBCustomerType(BCustomer.getBCustomerType());
         dto.setBCustomerLevel(BCustomer.getBCustomerLevel());
-        dto.setCustomerAddress(BCustomer.getCustomerAddress());
-        dto.setCustomerTel(BCustomer.getCustomerTel());
-        dto.setCustomerEmail(BCustomer.getCustomerEmail());
+        dto.setCustomerAddress(BCustomer.getAddress()); //TODO(josh): Change getCustomerAddress() to getAddress()
+        dto.setCustomerTel(BCustomer.getTel()); //ToDO(josh): Change getCustmoerTel() to getTel()
+        dto.setCustomerEmail(BCustomer.getEmail()); //TODO(josh): Change getCustomerEmail() to getEmail()
         dto.setCreatedAt(BCustomer.getCreatedAt());
         dto.setUpdatedAt(BCustomer.getUpdatedAt());
 
@@ -222,9 +222,9 @@ public class BCustomerServiceImpl implements BCustomerService {
         BCustomer.setIndustry(request.getIndustry());
         BCustomer.setBCustomerType(request.getBCustomerType());
         BCustomer.setBCustomerLevel(request.getBCustomerLevel());
-        BCustomer.setCustomerAddress(request.getCustomerAddress());
-        BCustomer.setCustomerTel(request.getCustomerTel());
-        BCustomer.setCustomerEmail(request.getCustomerEmail());
+        BCustomer.setAddress(request.getCustomerAddress()); //TODO(josh): Change getCustomerAddress() to getAddress()
+        BCustomer.setTel(request.getCustomerTel()); //ToDO(josh): Change getCustmoerTel() to getTel()
+        BCustomer.setEmail(request.getCustomerEmail()); //TODO(josh): Change getCustomerEmail() to getEmail()
 
         if (request.getTagIds() != null) {
             HashSet<Tag> tags = new HashSet<>();
