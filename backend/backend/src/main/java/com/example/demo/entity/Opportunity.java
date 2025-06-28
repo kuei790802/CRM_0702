@@ -70,15 +70,18 @@ public class Opportunity {
 
     // 評分總和
     // 初始值為 0
+    @Builder.Default
     @Column(name = "total_rating_sum", nullable = false)
     private Long totalRatingSum = 0L;
 
     // 評分
     // 初始值為 0
+    @Builder.Default
     @Column(name = "number_of_ratings", nullable = false)
     private Integer numberOfRatings = 0;
 
     // ----- 多對多關聯：一個商機可以有多個標籤 ----
+    @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "opportunity_tags",

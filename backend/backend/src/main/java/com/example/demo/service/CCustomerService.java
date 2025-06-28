@@ -4,13 +4,14 @@ import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
 import com.example.demo.entity.Order;
-import com.example.demo.enums.CustomerType;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.CCustomerRepo;
+import com.example.demo.repository.OrderRepository;
+import jakarta.persistence.EntityNotFoundException;
 import com.example.demo.repository.OrderRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -22,19 +23,18 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@RequiredArgsConstructor //TODO(joshkuei): Added for simplifying code.
 @Service
 public class CCustomerService {
     private final CCustomerRepo cCustomerRepo;
     private final BCryptPasswordEncoder encoder;
     private final OrderRepository orderRepository;
 
-    // 建構自注入customerRepo、encoder
-//    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository) {
-//        this.cCustomerRepo = cCustomerRepo;
-//        this.orderRepository = orderRepository;
-//        this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
-//    }
+    // 建構子注入customerRepo、encoder
+    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository) {
+        this.cCustomerRepo = cCustomerRepo;
+        this.orderRepository = orderRepository;
+        this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
+    }
 
     // 檢視帳號是否已存在
     public Boolean checkAccountExist(String account){
@@ -70,12 +70,13 @@ public class CCustomerService {
     }
 
     // 註冊 + 加密
+    @Transactional
     public CCustomer register(String account
-                            , String customerName
-                            , String password
-                            , String email
-                            , String address
-                            , LocalDate birthday){
+            , String customerName
+            , String password
+            , String email
+            , String address
+            , LocalDate birthday){
         if(checkAccountExist(account)){
             throw new AccountAlreadyExistsException(account);
         }
@@ -86,33 +87,26 @@ public class CCustomerService {
 
         validatePasswordStrength(password);
 
-        // TODO: Implemented for createdBy and updatedBy.
-        Long currentAuditorId = 0L; //TODO(joshkuei): Using placeholder 0L for now. Must use getCurrentAuditor() later.
+        // ✨ 新增 #1: 產生一個唯一的客戶編號
+        // 這裡使用 "C-" 前綴加上一個隨機的8位碼
+        String newCustomerCode = "C-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
-                .customerCode("CUST-" + account + "-" + UUID.randomUUID().toString().substring(0, 4)) //TODO(joshkuei): Added customerCode for customerBase.
-                .customerType(CustomerType.B2C) //TODO(joshkuei): Added customerCode for customerBase.
                 .customerName(customerName)
                 .password(encoder.encode(password))
                 .email(email)
                 .address(address)
                 .birthday(birthday)
+                .customerCode(newCustomerCode) // ✨ 新增 #2: 在建立物件時設定 customerCode
                 .isActive(true)
                 .isDeleted(false)
-                .createdBy(currentAuditorId) //TODO(joshkuei): Added customerCode for customerBase.
-                .updatedBy(currentAuditorId) //TODO(joshkuei): Added customerCode for customerBase.
                 .build();
-
-
 
         return cCustomerRepo.save(newCCustomer);
     }
 
-    private Long getCurrentAuditorId() {
-        // TODO(joshkuei): Implement proper auditing-get from security context
-    return null;
-    }
+
 
     // 登入驗證 (JWT + OUATH2)+ 拋給別人我已經登入的資訊供後續開發
     public CCustomer login(String account, String password){
@@ -228,11 +222,21 @@ public class CCustomerService {
 //    todo: 6/11繼續
     // 刪除帳號
 
+
+
+
+
+
     // 留言給課服: 前台用戶對商品、客服、社區的留言與回覆，留言CRUD，留言屬性包含userId, productId等，防止惡意留言
 
     // (購物邏輯是別人負責的，所以這部分可以晚點做嗎?)拉回別人開發的購物下單資訊 -> 我要做的事更新累積消費金額、VIP等級升降，如下
     // VIP互動: 針對VIP用戶提供額外功能（專屬優惠、積分），VIP等級判斷、積分管理、VIP專屬訊息提醒
 
     // 開api給系統管理者: 註冊時紀錄註冊時間、修改實紀錄修改時間、下單時紀錄下單時間
+
+
+
+
+
 
 }

@@ -18,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@Builder
 public class CCustomer extends CustomerBase {
 
     @Column(nullable = false, unique = true)
@@ -60,7 +61,7 @@ public class CCustomer extends CustomerBase {
     private Cart cart;
 
     @OneToMany(mappedBy = "CCustomer")
-//    @Builder.Default
+    @Builder.Default
     private List<CCustomerAddress> CCustomerAddress = new ArrayList<>();
 
     @ManyToOne
@@ -74,7 +75,7 @@ public class CCustomer extends CustomerBase {
             inverseJoinColumns = @JoinColumn(name = "coupon_id")
     )
 
-//    @Builder.Default
+    @Builder.Default
     private List<Coupon> coupons = new ArrayList<>();
 
 

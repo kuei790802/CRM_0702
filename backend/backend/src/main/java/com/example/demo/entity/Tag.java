@@ -31,10 +31,12 @@ public class Tag {
     private String color;
 
     // ----- 多對多關聯：標籤可以關聯多個客戶 -----
+    @Builder.Default
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     private Set<BCustomer> bCustomers = new HashSet<>();
 
     // ----- 多對多關聯：標籤可以關聯多個商機 -----
+    @Builder.Default
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     private Set<Opportunity> opportunities = new HashSet<>();
 

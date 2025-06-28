@@ -9,11 +9,13 @@ import com.example.demo.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/api/payments")
@@ -46,22 +48,27 @@ public class PaymentController {
      * @return 導向到 ecpay-checkout 模板
      */
     @GetMapping("/order/{orderId}")
-    public String payByOrder(@PathVariable Long orderId, Model model) {
-        // 1. 根據 ID 找到真實訂單
-        Order order = orderRepository.findById(orderId)
+    @Transactional // 確保能正確 Lazy-load 訂單明細
+    public String getOrderPaymentPage(@PathVariable("orderId") Integer orderId, Model model) {
+        // 1. 查找訂單
+        Order order = orderRepository.findById((long)orderId)
                 .orElseThrow(() -> new EntityNotFoundException("找不到訂單 ID: " + orderId));
 
-        // 2. 檢查訂單狀態是否為 PENDING_PAYMENT
+        // 2. 檢查訂單狀態 (這部分的邏輯我們暫不處理，但保留原樣)
         if (order.getOrderStatus() != OrderStatus.PENDING_PAYMENT) {
-            // 或者可以導向到一個錯誤頁面，提示訂單狀態不符
             throw new IllegalStateException("此訂單狀態不是待付款，無法進行支付");
         }
 
-        // 3. 使用真實訂單的資訊來建立 AIO 物件
+        // 3. 【核心修改】從訂單明細動態組合商品名稱字串
+        String itemName = order.getOrderDetails().stream()
+                .map(detail -> detail.getProduct().getName() + " x " + detail.getQuantity())
+                .collect(Collectors.joining("#"));
+
+        // 4. 使用組合好的商品名稱字串來建立 AIO 物件
         AioCheckoutDto dto = ecpayService.createAioOrder(
-                order.getTotalAmount().intValue(), // 使用真實總金額
-                "訂單 " + order.getMerchantTradeNo() + " 商品一批", // 使用真實訂單資訊
-                order.getMerchantTradeNo() // 使用真實訂單號
+                order.getTotalAmount().intValue(),
+                itemName, // 使用上面組合好的真實商品名稱
+                order.getMerchantTradeNo()
         );
 
         model.addAttribute("ecpayUrl", ecpayProperties.getAio().getUrl());
