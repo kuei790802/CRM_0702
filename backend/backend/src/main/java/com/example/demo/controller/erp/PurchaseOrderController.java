@@ -1,6 +1,6 @@
 package com.example.demo.controller.erp;
 
-import com.example.demo.dto.PurchaseOrderSummaryDTO;
+import com.example.demo.dto.erp.PurchaseOrderSummaryDTO;
 import com.example.demo.dto.erp.PurchaseOrderUpdateDTO;
 import com.example.demo.dto.erp.PurchaseOrderViewDTO;
 import com.example.demo.enums.PurchaseOrderStatus;
@@ -21,8 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
@@ -35,7 +33,7 @@ public class PurchaseOrderController {
     @PostMapping
     public ResponseEntity<PurchaseOrderViewDTO> createPurchaseOrder(
             @Valid @RequestBody PurchaseOrderCreateDTO poCreateDTO){
-        Long currentUserId = 1L; // Placeholder for actual user ID
+        Long currentUserId = 1L;// TODO(joshkuei): Replace with actual authenticated user
         PurchaseOrder createdOrder = poService.createPurchaseOrder(poCreateDTO, currentUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(poService.getPurchaseOrderViewById(createdOrder.getPurchaseOrderId()));
     }
@@ -50,16 +48,14 @@ public class PurchaseOrderController {
     public ResponseEntity<PurchaseOrderViewDTO> updatePurchaseOrder(
             @PathVariable Long id,
             @Valid @RequestBody PurchaseOrderUpdateDTO poUpdateDTO) {
-        Long currentUserId = 1L; // Placeholder for actual user ID
+        Long currentUserId = 1L;
         PurchaseOrderViewDTO updatedOrder = poService.updatePurchaseOrder(id, poUpdateDTO, currentUserId);
         return ResponseEntity.ok(updatedOrder);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<PurchaseOrderViewDTO> deletePurchaseOrder(@PathVariable Long id) {
-        Long currentUserId = 1L; // Placeholder for actual user ID
-        // Consider if response should be different, e.g., ResponseEntity.noContent()
-        // Returning the (now cancelled) order DTO for confirmation
+        Long currentUserId = 1L;
         PurchaseOrderViewDTO deletedOrder = poService.deletePurchaseOrder(id, currentUserId);
         return ResponseEntity.ok(deletedOrder);
     }

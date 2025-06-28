@@ -66,7 +66,7 @@ class SalesOrderServiceTest {
         mockProduct = new Product();
         mockProduct.setProductId(101L);
         mockProduct.setIsActive(true);
-        mockProduct.setSalable(true);
+        mockProduct.setIsSalable(true);
 
         SalesOrderDetailCreateDTO detailDTO = new SalesOrderDetailCreateDTO();
         detailDTO.setProductId(101L);
@@ -94,7 +94,7 @@ class SalesOrderServiceTest {
         Product mockProduct = new Product();
         mockProduct.setProductId(101L);
         mockProduct.setIsActive(true);
-        mockProduct.setSalable(true);
+        mockProduct.setIsSalable(true);
         when(productRepository.findById(101L)).thenReturn(Optional.of(mockProduct));
 
 
@@ -111,7 +111,7 @@ class SalesOrderServiceTest {
         assertNotNull(result);
         assertEquals(99L, result.getSalesOrderId());
         assertEquals(SalesOrderStatus.CONFIRMED, result.getOrderStatus());
-        assertEquals(PaymentStatus.NONPAYMENT, result.getPaymentStatus());
+        assertEquals(PaymentStatus.UNPAID, result.getPaymentStatus());
         assertEquals(1, result.getDetails().size());
         assertEquals(0, new BigDecimal("1000").compareTo(result.getTotalAmount()));
     }
@@ -155,7 +155,7 @@ class SalesOrderServiceTest {
         inactiveProduct.setProductId(101L);
         inactiveProduct.setName("測試產品");
         inactiveProduct.setIsActive(false);
-        inactiveProduct.setSalable(true);
+        inactiveProduct.setIsSalable(true);
 
         when(customerBaseRepository.findById(1L)).thenReturn(Optional.of(activeCustomer));
         when(productRepository.findById(101L)).thenReturn(Optional.of(inactiveProduct));

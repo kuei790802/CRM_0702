@@ -1,10 +1,7 @@
 package com.example.demo.controller.erp;
 
 
-import com.example.demo.dto.erp.InventoryAdjustmentCreateDTO;
-import com.example.demo.dto.erp.InventoryAdjustmentDTO;
-import com.example.demo.dto.erp.InventoryViewDTO;
-import com.example.demo.dto.erp.ShipmentRequestDTO;
+import com.example.demo.dto.erp.*;
 import com.example.demo.entity.Inventory;
 import com.example.demo.entity.InventoryAdjustment;
 import com.example.demo.entity.SalesShipment;
@@ -114,8 +111,9 @@ public class InventoryController {
         // Long currentUserId = userDetails.getId();
         Long currentUserId = 1L;
 
-        SalesShipment shipment = inventoryService.shipSalesOrder(orderId, requestDTO.getWarehouseId(), currentUserId);
+        SalesShipment shipmentEntity = inventoryService.shipSalesOrder(orderId, requestDTO.getWarehouseId(), currentUserId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(shipment);
+        SalesShipmentDTO shipmentDTO = SalesShipmentDTO.fromEntity(shipmentEntity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(shipmentDTO); //TODO(josh): Debug
     }
 }

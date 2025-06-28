@@ -1,6 +1,5 @@
 package com.example.demo.dto.erp;
 
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +12,8 @@ import java.util.List;
 @Getter
 @Setter
 public class SalesOrderUpdateDTO {
+
+
 
     @NotNull(message = "訂單日期不可為空")
     private LocalDate orderDate;
@@ -27,6 +28,8 @@ public class SalesOrderUpdateDTO {
     private String paymentMethod;
 
     private String remarks;
+
+
 
     @NotEmpty(message = "訂單明細不可為空")
     @Valid

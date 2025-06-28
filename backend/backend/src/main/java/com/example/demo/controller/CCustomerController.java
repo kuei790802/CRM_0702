@@ -8,6 +8,7 @@ import com.example.demo.entity.CCustomer;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
 import com.example.demo.service.CCustomerService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ public class CCustomerController {
         this.cCustomerService = cCustomerService;
     }
 
+    @Operation(summary = "檢查電子郵件是否存在")
     @GetMapping("/emailcheck")
     public ResponseEntity<Map<String, Object>> emailcheck(@RequestParam String email) {
         boolean exists = cCustomerService.checkEmailExist(email);
@@ -36,6 +38,7 @@ public class CCustomerController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "註冊新客戶")
     @PostMapping("/register")
     public ResponseEntity<CCustomer> register(@RequestBody CCustomerRegisterRequest req){
         CCustomer cCustomer =  cCustomerService.register(
@@ -57,6 +60,7 @@ public class CCustomerController {
 //    }
 
 
+    @Operation(summary = "獲取當前客戶資料 (需要 JWT)")
     @CheckJwt
     @GetMapping("/profile")
     public ResponseEntity<CCustomerProfileResponse> getProfile(HttpServletRequest request) {
@@ -65,6 +69,7 @@ public class CCustomerController {
         return ResponseEntity.ok(cCustomerService.getProfile(account));
     }
 
+    @Operation(summary = "更新當前客戶資料 (需要 JWT)")
     @CheckJwt
     @PutMapping("/profile/update")
     public ResponseEntity<CCustomerProfileResponse> updateProfile(

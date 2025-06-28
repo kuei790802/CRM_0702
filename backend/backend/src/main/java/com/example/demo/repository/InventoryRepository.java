@@ -27,11 +27,11 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     @Modifying
     @Query("UPDATE Inventory i " +
             "SET i.currentStock = i.currentStock - :quantity, " +
-            "    i.unitsAllocated = i.unitsAllocated - :quantity " + // Also deduct from allocated
+            "    i.unitsAllocated = i.unitsAllocated - :quantity " +
             "WHERE i.product.productId = :productId " +
             "  AND i.warehouse.warehouseId = :warehouseId " +
             "  AND i.currentStock >= :quantity " +
-            "  AND i.unitsAllocated >= :quantity") // Add check for allocated units
+            "  AND i.unitsAllocated >= :quantity")
     int deductStockAndAllocation(
             @Param("productId") Long productId,
             @Param("warehouseId") Long warehouseId,

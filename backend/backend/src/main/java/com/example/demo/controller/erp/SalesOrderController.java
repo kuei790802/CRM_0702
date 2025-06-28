@@ -4,6 +4,7 @@ package com.example.demo.controller.erp;
 import com.example.demo.dto.erp.SalesOrderCreateDTO;
 import com.example.demo.dto.erp.SalesOrderSummaryDTO;
 import com.example.demo.dto.erp.SalesOrderViewDTO;
+import com.example.demo.dto.erp.SalesOrderUpdateDTO;
 import com.example.demo.entity.SalesOrder;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.service.erp.SalesOrderService;
@@ -27,12 +28,22 @@ public class SalesOrderController {
     private final SalesOrderService salesOrderService;
 
     @PostMapping
-    public ResponseEntity<SalesOrder> createSalesOrder(
-            @Valid @RequestBody SalesOrderCreateDTO createDTO){
+    public ResponseEntity<SalesOrderViewDTO> createSalesOrder(
+                                                               @Valid @RequestBody SalesOrderCreateDTO createDTO){
         Long currentUserId=1L;
-        SalesOrder createdOrder=salesOrderService
-                .createSalesOrder(createDTO, currentUserId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+        SalesOrder createdOrderEntity = salesOrderService.createSalesOrder(createDTO, currentUserId);
+
+        SalesOrderViewDTO viewDTO = salesOrderService.getSalesOrderById(createdOrderEntity.getSalesOrderId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(viewDTO);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SalesOrderViewDTO> updateSalesOrder(
+            @PathVariable Long id,
+            @Valid @RequestBody SalesOrderUpdateDTO updateDTO) {
+        Long currentUserId = 1L;
+        SalesOrderViewDTO updatedOrder = salesOrderService.updateSalesOrder(id, updateDTO, currentUserId);
+        return ResponseEntity.ok(updatedOrder);
     }
 
     @GetMapping
@@ -58,7 +69,7 @@ public class SalesOrderController {
     }
 
 
-    @DeleteMapping("/{id}/")
+    @DeleteMapping("/{id}")
     public ResponseEntity<SalesOrderViewDTO> deleteSalesOrder(@PathVariable Long id) {
         Long currentUserId = 1L;
         SalesOrderViewDTO deletedOrder = salesOrderService.deleteSalesOrder(id, currentUserId);

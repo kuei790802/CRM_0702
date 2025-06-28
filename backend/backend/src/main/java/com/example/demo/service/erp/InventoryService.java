@@ -139,9 +139,9 @@ public class InventoryService {
         } else {
             inventory.setAverageCost(BigDecimal.ZERO);
         }
-
-        inventory.setUpdatedAt(LocalDateTime.now());
-        inventory.setUpdatedBy(receivingUserId);
+//TODO(josh): Move to AuditingEntityListener
+//        inventory.setUpdatedAt(LocalDateTime.now());
+//        inventory.setUpdatedBy(receivingUserId);
         inventoryRepository.save(inventory);
 
         createInventoryMovement(
@@ -189,14 +189,14 @@ public class InventoryService {
     }
 
 
-    // New method as per plan
+
     @Transactional
     public void reserveStock(Long productId, Long warehouseId, BigDecimal quantityToReserve,
                              String documentType, Long documentId, Long documentDetailId, Long userId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("找不到商品ID: " + productId+"的商品"));
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for ID: " + warehouseId));
+                .orElseThrow(() -> new ResourceNotFoundException("找不到倉庫ID為: " + warehouseId+"的倉庫"));
         User user = userRepository.getReferenceById(userId);
 
         Inventory inventory = getOrCreateInventory(product, warehouse, userId);
@@ -212,14 +212,51 @@ public class InventoryService {
         }
 
         inventory.setUnitsAllocated(currentAllocated.add(quantityToReserve));
-        inventory.setUpdatedAt(LocalDateTime.now());
-        inventory.setUpdatedBy(userId);
+//        inventory.setUpdatedAt(LocalDateTime.now()); //TODO(josh): move to AuditingEntityListener
+//        inventory.setUpdatedBy(userId);
         inventoryRepository.save(inventory);
 
         createInventoryMovement(
                 product, warehouse, MovementType.STOCK_RESERVE.name(), quantityToReserve,
                 inventory.getAverageCost(), // Use current average cost for informational value of reservation
                 inventory.getCurrentStock(), // Current physical stock doesn't change on reservation
+                documentType, documentId, documentDetailId, user
+        );
+    }
+
+    @Transactional
+    public void releaseStock(Long productId, Long warehouseId, BigDecimal quantityToRelease,
+                             String documentType, Long documentId, Long documentDetailId, Long userId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + productId));
+        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for ID: " + warehouseId));
+        User user = userRepository.getReferenceById(userId);
+
+        Inventory inventory = getOrCreateInventory(product, warehouse, userId);
+
+        BigDecimal currentAllocated = inventory.getUnitsAllocated();
+
+        if (currentAllocated.compareTo(quantityToRelease) < 0) {
+            // This indicates an inconsistency: trying to release more than allocated.
+            // Log a warning or throw a more specific exception if this should never happen.
+            // For now, just release up to what's allocated to prevent negative allocation.
+            // quantityToRelease = currentAllocated; // Option to cap release
+            throw new DataConflictException("嘗試釋放的預留庫存量 (" + quantityToRelease + ") 大於實際預留量 (" + currentAllocated + ")。產品 '" + product.getName() + "' 在倉庫 '" + warehouse.getName() + "'。");
+        }
+
+        inventory.setUnitsAllocated(currentAllocated.subtract(quantityToRelease));
+        // Auditing fields - recommend moving to AuditingEntityListener
+        // These should be set by AuditingEntityListener if configured
+        // inventory.setUpdatedAt(LocalDateTime.now());
+        // inventory.setUpdatedBy(userId);
+        inventoryRepository.save(inventory);
+
+        // Create a movement record for releasing stock
+        createInventoryMovement(
+                product, warehouse, MovementType.STOCK_RELEASE.name(), quantityToRelease.negate(), // Negative quantity for release
+                inventory.getAverageCost(), // Use current average cost
+                inventory.getCurrentStock(), // Physical stock doesn't change
                 documentType, documentId, documentDetailId, user
         );
     }
@@ -247,7 +284,7 @@ public class InventoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + warehouseId + " 的倉庫"));
         User user = userRepository.getReferenceById(userId);
 
-        Inventory inventory = getOrCreateInventory(product, warehouse, userId); // Use helper
+        Inventory inventory = getOrCreateInventory(product, warehouse, userId); //TODO(josh): Use helper
 
         BigDecimal oldStock = inventory.getCurrentStock();
         BigDecimal newStock = oldStock.add(quantityChange);
@@ -257,7 +294,7 @@ public class InventoryService {
                     + "' 的目前庫存為 " + oldStock + ", 調整量 " + quantityChange);
         }
 
-        // Recalculate average cost for incoming positive adjustments with cost
+        //TODO(josh): Recalculate average cost for incoming positive adjustments with cost
         if (movementType == MovementType.ADJUSTMENT_IN && quantityChange.compareTo(BigDecimal.ZERO) > 0 && unitCost != null) {
             BigDecimal oldTotalValue = oldStock.multiply(inventory.getAverageCost());
             BigDecimal incomingValue = quantityChange.multiply(unitCost);
@@ -281,8 +318,8 @@ public class InventoryService {
         // A negative ADJUSTMENT_OUT might need to affect unitsAllocated if it's for stock found damaged that was reserved.
         // These would require more parameters or more specific service methods.
 
-        inventory.setUpdatedAt(LocalDateTime.now());
-        inventory.setUpdatedBy(userId);
+//        inventory.setUpdatedAt(LocalDateTime.now());
+//        inventory.setUpdatedBy(userId);
 
         Inventory updatedInventory = inventoryRepository.save(inventory);
 
@@ -342,11 +379,12 @@ public class InventoryService {
         adjustment.setStatus("EXECUTED"); // Or "PENDING" then "EXECUTED" if there's an approval step
         adjustment.setWarehouse(warehouse);
 
-        LocalDateTime now = LocalDateTime.now();
-        adjustment.setCreatedBy(operatorId);
-        adjustment.setUpdatedBy(operatorId);
-        adjustment.setCreatedAt(now);
-        adjustment.setUpdatedAt(now);
+        //TODO(josh): Move to AuditingEntityListener
+//        LocalDateTime now = LocalDateTime.now();
+//        adjustment.setCreatedBy(operatorId);
+//        adjustment.setUpdatedBy(operatorId);
+//        adjustment.setCreatedAt(now);
+//        adjustment.setUpdatedAt(now);
 
 
         for (InventoryAdjustmentDetailCreateDTO detailDTO : dto.getDetails()) {
@@ -368,8 +406,8 @@ public class InventoryService {
                 throw new DataConflictException("庫存調整後數量不可為負。產品 '" + product.getName() + "' 目前庫存 " + oldStock + ", 調整量 " + adjustedQuantity);
             }
             inventory.setCurrentStock(newStock);
-            inventory.setUpdatedBy(operatorId);
-            inventory.setUpdatedAt(now);
+//            inventory.setUpdatedBy(operatorId);
+//            inventory.setUpdatedAt(now);  //TODO(josh): Move to AuditingEntityListener
             inventoryRepository.save(inventory);
 
 
@@ -377,10 +415,10 @@ public class InventoryService {
             detail.setProduct(product);
             detail.setAdjustedQuantity(detailDTO.getAdjustedQuantity());
             detail.setRemarks(detailDTO.getRemarks());
-            detail.setCreatedBy(operatorId);
-            detail.setUpdatedBy(operatorId);
-            detail.setCreatedAt(now);
-            detail.setUpdatedAt(now);
+//            detail.setCreatedBy(operatorId);
+//            detail.setUpdatedBy(operatorId);//TODO(josh): Move to AuditingEntityListener
+//            detail.setCreatedAt(now);
+//            detail.setUpdatedAt(now);
             adjustment.addDetail(detail);
         }
 
@@ -422,6 +460,11 @@ public class InventoryService {
 
         SalesOrder order = salesOrderRepository.findById(salesOrderId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + salesOrderId + " 的銷售訂單"));
+
+        // Validate that the order's warehouse matches the shipment warehouse
+        if (!order.getWarehouse().getWarehouseId().equals(warehouseId)) {
+            throw new DataConflictException("銷售訂單 (ID: " + salesOrderId + ") 預計從倉庫 ID " + order.getWarehouse().getWarehouseId() + " 出貨，但請求的出貨倉庫為 ID " + warehouseId + "。請確認倉庫一致性。");
+        }
 
         if (order.getOrderStatus() != SalesOrderStatus.CONFIRMED) {
             throw new DataConflictException("此銷售訂單狀態為 " + order.getOrderStatus() + "，不可執行出貨。");
@@ -575,8 +618,8 @@ public class InventoryService {
         }
 
         inventory.setCurrentStock(newStock);
-        inventory.setUpdatedAt(LocalDateTime.now());
-        inventory.setUpdatedBy(userId);
+//        inventory.setUpdatedAt(LocalDateTime.now()); //TODO(josh): move to AuditingEntityListener
+//        inventory.setUpdatedBy(userId);
         Inventory savedInventory = inventoryRepository.save(inventory);
 
         createInventoryMovement(

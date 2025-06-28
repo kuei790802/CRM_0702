@@ -24,11 +24,11 @@ public class PurchaseOrderViewDTO {
     private BigDecimal totalNetAmount;
     private BigDecimal totalTaxAmount;
     private BigDecimal totalAmount;
-    // private BigDecimal totalCostAmount; // Consider if this should be exposed
+    // private BigDecimal totalCostAmount;
 
     private Long supplierId;
     private String supplierName;
-    // Add other supplier details if needed, e.g., contact, address
+
 
     private List<PurchaseOrderDetailViewDTO> details;
 
@@ -36,9 +36,8 @@ public class PurchaseOrderViewDTO {
     private Long updatedBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String createdByName; // Assuming name of creator is needed
-    private String updatedByName; // Assuming name of updater is needed
-
+    private String createdByName;
+    private String updatedByName;
 
     public static PurchaseOrderViewDTO fromEntity(PurchaseOrder order) {
         PurchaseOrderViewDTO dto = new PurchaseOrderViewDTO();

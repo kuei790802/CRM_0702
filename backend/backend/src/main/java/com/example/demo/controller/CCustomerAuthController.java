@@ -7,6 +7,7 @@ import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
 import com.example.demo.security.JwtUserPayload;
 import com.example.demo.service.CCustomerService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ public class CCustomerAuthController {
         this.cCustomerService = cCustomerService;
     }
 
+    @Operation(summary = "客戶登入並獲取 JWT Token")
     @PostMapping("/login")
     public ResponseEntity<CCustomerLoginResponse> login(@RequestBody LoginRequest req){
         CCustomer cCustomer = cCustomerService.login(
@@ -43,6 +45,7 @@ public class CCustomerAuthController {
         return ResponseEntity.ok(res);
     }
 
+    @Operation(summary = "測試 JWT 驗證")
     @GetMapping("/test")
     @CheckJwt
     public String testEndpoint() {
