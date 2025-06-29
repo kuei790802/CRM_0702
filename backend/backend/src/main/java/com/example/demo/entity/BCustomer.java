@@ -54,8 +54,8 @@ public class BCustomer extends CustomerBase {
     @Column(name = "tin_number", length = 20)
     private String tinNumber;
 
-    @Column(length = 150)
-    private String customerEmail;
+//    @Column(length = 150)
+//    private String customerEmail;
 
     // ----- 關聯欄位維持不變 -----
     @Builder.Default
