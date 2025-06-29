@@ -15,11 +15,13 @@ const usersConfig = {
         path: '/users/management',
         name: '使用者管理',
         icon: <UserOutlined />,
-      },
-      {
-        path: '/users/roles',
-        name: '角色權限',
-        icon: <UserOutlined />,
+        routes: [
+          {
+            path: '/users/management/authority',
+            name: '權限管理',
+            hideInMenu: true,
+          },
+        ],    
       },
       {
         path: '/users/logs',
@@ -27,9 +29,6 @@ const usersConfig = {
         icon: <UserOutlined />,
       },
     ],
-  },
-  location: {
-    pathname: '/users/management',
   },
 };
 export default usersConfig;
