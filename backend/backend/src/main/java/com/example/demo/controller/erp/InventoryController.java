@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/inventory")
 @RequiredArgsConstructor
-@Tag(name="Inventory Management", description = "APIs for managing product inventory, including receiving, shipping and adjustments.")
+@Tag(name="庫存管理API(Inventory Management)",
+        description = "包含採購商品收取、銷貨單出貨、庫存調整 ")
 public class InventoryController {
 
     private final InventoryService inventoryService;
@@ -30,11 +31,11 @@ public class InventoryController {
 
 
     @PostMapping("/purchase-orders/{orderId}/receive")
-    @Operation(summary = "Receive a purchase order", description = "Updates inventory based on a received purchase order.")
-    @ApiResponse(responseCode = "200", description = "Purchase order received SUCCESSFULLY.")
-    @ApiResponse(responseCode = "404", description = "Purchase order NOT FOUND.")
+    @Operation(summary = "收取商品", description = "使用採購單收取採購的商品，並更新庫存")
+    @ApiResponse(responseCode = "200", description = "採購商品收取成功！")
+    @ApiResponse(responseCode = "404", description = "找不到採購單")
     public ResponseEntity<Void> receivePurchaseOrder(
-            @Parameter(description = "ID of the purchase order to receive") @PathVariable Long orderId
+            @Parameter(description = "欲收取的採購單") @PathVariable Long orderId
             // @Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails // Example for real auth
     ) {
 // TODO(joshkuei): Replace hardcoded user ID with the authenticated user from the security context.
@@ -57,6 +58,9 @@ public class InventoryController {
 //    }
 
     @GetMapping
+    @Operation(summary = "查詢庫存", description = "以商品ID、倉庫ID，以及分頁查詢庫存")
+    @ApiResponse(responseCode = "200", description = "查詢庫存成功！")
+    @ApiResponse(responseCode = "404", description = "找不到")
     public ResponseEntity<Page<InventoryViewDTO>> searchInventories(
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) Long warehouseId,
@@ -107,12 +111,12 @@ public class InventoryController {
 
 
     @PostMapping("/sales-orders/{orderId}/ship")
-    @Operation(summary = "Ship a Sales Order", description = "Creates a shipment and deducts stock for a confirmed sales order.")
-    @ApiResponse(responseCode = "201", description = "Sales order shipped successfully and shipment created")
-    @ApiResponse(responseCode = "404", description = "Sales order or warehouse not found")
-    @ApiResponse(responseCode = "409", description = "Order cannot be shipped (e.g., wrong status, insufficient stock)")
+    @Operation(summary = "銷貨單出貨", description = "針對已確認的銷售訂單建立出貨記錄，並自動扣除相應庫存數量")
+    @ApiResponse(responseCode = "201", description = "銷貨單出貨成功，已建立出貨單")
+    @ApiResponse(responseCode = "404", description = "找不到銷貨單或倉庫")
+    @ApiResponse(responseCode = "409", description = "無法出貨（例如：訂單狀態錯誤或庫存不足)")
     public ResponseEntity<SalesShipmentDTO> shipSalesOrder(
-            @Parameter(description = "ID of the sales order to ship") @PathVariable Long orderId,
+            @Parameter(description = "欲出貨的銷貨單ID") @PathVariable Long orderId,
             @Valid @RequestBody ShipmentRequestDTO requestDTO
             // @Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails // Example
     ) {

@@ -9,6 +9,7 @@ import com.example.demo.entity.SalesOrder;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.service.erp.SalesOrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,8 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/sales-orders")
 @RequiredArgsConstructor
+@Tag(name="銷貨單管理API(Sales Order Management)",
+        description = "包含銷貨單建立、多種查詢、更新、刪除")
 public class SalesOrderController {
 
     private final SalesOrderService salesOrderService;
@@ -40,7 +43,7 @@ public class SalesOrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(viewDTO);
     }
 
-    @Operation(summary = "更新銷售訂單", description = "更新銷售訂單包含多筆銷售明細")
+    @Operation(summary = "更新單筆銷貨單", description = "根據銷貨單ID，更新銷貨訂包含多筆銷售明細")
     @PutMapping("/{id}")
     public ResponseEntity<SalesOrderViewDTO> updateSalesOrder(
             @PathVariable Long id,
@@ -51,7 +54,7 @@ public class SalesOrderController {
     }
 
 
-    @Operation(summary = "查詢銷售訂單", description = "查詢銷售訂單包含多筆銷售明細")
+    @Operation(summary = "查詢銷貨單", description = "根據條件，查詢銷貨單包含多筆銷售明細")
     @GetMapping
     public ResponseEntity<Page<SalesOrderSummaryDTO>> searchSalesOrders(
             @RequestParam(required = false) Long customerId,
@@ -68,14 +71,14 @@ public class SalesOrderController {
 
     }
 
-    @Operation(summary = "查詢銷售訂單明細", description = "查詢銷售訂單明細")
+    @Operation(summary = "查詢單筆銷售訂明細", description = "根據銷貨單ID，查詢單筆銷售訂單明細")
     @GetMapping("/{id}")
     public ResponseEntity<SalesOrderViewDTO> getSalesOrderById(@PathVariable Long id) {
         SalesOrderViewDTO orderDetails = salesOrderService.getSalesOrderById(id);
         return ResponseEntity.ok(orderDetails);
     }
 
-
+    @Operation(summary = "刪除銷貨單")
     @DeleteMapping("/{id}")
     public ResponseEntity<SalesOrderViewDTO> deleteSalesOrder(@PathVariable Long id) {
         Long currentUserId = 1L;
