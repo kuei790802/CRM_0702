@@ -16,6 +16,7 @@ import com.example.demo.entity.Inventory;
 import com.example.demo.entity.InventoryAdjustment;
 import com.example.demo.entity.InventoryAdjustmentDetail;
 import com.example.demo.entity.InventoryMovement;
+import com.example.demo.enums.PaymentStatus;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.repository.*;
@@ -461,6 +462,10 @@ public class InventoryService {
         SalesOrder order = salesOrderRepository.findById(salesOrderId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + salesOrderId + " 的銷售訂單"));
 
+        if (order.getOrderStatus() != SalesOrderStatus.CONFIRMED) {
+            throw new DataConflictException("訂單狀態不為「已確認」，無法出貨。");
+        }
+
         // Validate that the order's warehouse matches the shipment warehouse
         if (!order.getWarehouse().getWarehouseId().equals(warehouseId)) {
             throw new DataConflictException("銷售訂單 (ID: " + salesOrderId + ") 預計從倉庫 ID " + order.getWarehouse().getWarehouseId() + " 出貨，但請求的出貨倉庫為 ID " + warehouseId + "。請確認倉庫一致性。");
@@ -559,6 +564,7 @@ public class InventoryService {
 
 
         order.setOrderStatus(SalesOrderStatus.SHIPPED);
+        order.setPaymentStatus(PaymentStatus.PAID);
         salesOrderRepository.save(order);
 
 

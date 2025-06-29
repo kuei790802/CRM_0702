@@ -50,6 +50,7 @@ public class SalesOrderFaker {
 
         Long randomCustomerId = allCustomerIds.get(random.nextInt(allCustomerIds.size()));
         dto.setCustomerId(randomCustomerId);
+        dto.setWarehouseId(1L);
 
         // Determine if customer is B2B or B2C to fetch appropriate address and name
         // This is a simplified approach. A more robust solution might involve a CustomerService

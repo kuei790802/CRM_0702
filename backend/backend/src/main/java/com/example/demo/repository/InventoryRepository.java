@@ -46,6 +46,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     @Query("SELECT COUNT(i) FROM Inventory i WHERE i.currentStock < i.product.safetyStockQuantity")
     Long countLowStockInventories();
 
+    @Query("SELECT SUM(i.currentStock * i.averageCost) FROM Inventory i")
+    BigDecimal findCurrentTotalInventoryValue();
+
     //TODO(joshkuei): Rename to make property path valid: Inventory -> product -> productId
     Optional<Inventory> findTopByProduct_ProductId(Long productId);
 }

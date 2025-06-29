@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Setter
 public class KpiData {
     private BigDecimal monthlySalesTotal;
-    private Long pendingSalesOrders;
-    private Long pendingShipments;
+    private Long unpaidSalesOrders;
+//    private Long pendingShipments;
     private Long productsBelowSafetyStock;
 }

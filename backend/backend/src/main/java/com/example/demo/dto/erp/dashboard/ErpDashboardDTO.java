@@ -10,7 +10,9 @@ import java.util.List;
 @Setter
 public class ErpDashboardDTO {
     private KpiData kpis;
-    private ChartData salesTrend;
+//    private ChartData salesTrend;
     private List<ProductRankDTO> topSellingProducts;
+    private ComparisonChartData salesComparison;
+    private ComparisonChartData inventoryValueComparison;
     private List<LowStockProductDTO> lowStockProducts;
 }
