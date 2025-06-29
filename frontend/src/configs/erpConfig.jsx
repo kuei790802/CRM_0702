@@ -48,16 +48,7 @@ const erpConfig = {
             path: '/erp/sales/customers',
             name: '客戶管理',
           },
-          {
-            path: '/erp/sales/returns',
-            name: '退貨管理',
-          },
         ],
-      },
-      {
-        path: '/erp/finance',
-        name: '財務管理',
-        icon: <UserOutlined />,
       },
     ],
   },
