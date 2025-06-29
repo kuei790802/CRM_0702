@@ -471,9 +471,9 @@ public class InventoryService {
             throw new DataConflictException("銷售訂單 (ID: " + salesOrderId + ") 預計從倉庫 ID " + order.getWarehouse().getWarehouseId() + " 出貨，但請求的出貨倉庫為 ID " + warehouseId + "。請確認倉庫一致性。");
         }
 
-        if (order.getOrderStatus() != SalesOrderStatus.CONFIRMED) {
-            throw new DataConflictException("此銷售訂單狀態為 " + order.getOrderStatus() + "，不可執行出貨。");
-        }
+//        if (order.getOrderStatus() != SalesOrderStatus.CONFIRMED) {
+//            throw new DataConflictException("此銷售訂單狀態為 " + order.getOrderStatus() + "，不可執行出貨。");
+//        }
 
         User operator = userRepository.findById(operatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + operatorId + " 的操作員"));
