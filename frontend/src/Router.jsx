@@ -38,13 +38,12 @@ import ERPStockLevels from "./backpages/erp/ERPStockLevels.jsx";
 import ERPPurchaseOrders from "./backpages/erp/ERPPurchaseOrders.jsx";
 import ERPCustomers from "./backpages/erp/ERPCustomers.jsx";
 import ERPDashboard from "./backpages/erp/ERPDashboard.jsx";
-import ERPReturns from "./backpages/erp/ERPReturns.jsx";
-import Finance from "./backpages/erp/Finance.jsx";
-import Inventory from "./backpages/erp/Inventory.jsx";
-import Sales from "./backpages/erp/Sales.jsx";
+import ERPOrderForm from "./backpages/erp/ERPOrderForm.jsx";
+import ERPNewOrderForm from "./backpages/erp/ERPNewOrderForm.jsx";
 // 使用者角色和權限
 import UsersManage from "./backpages/users/usersManage.jsx";
 import UsersLogs from "./backpages/users/usersLogs.jsx";
+import UsersAuthority from "./backpages/users/usersAuthority.jsx";
 
 const user = useBackUserStore.getState().backUser;
 const role = user?.role || "editor";
@@ -118,6 +117,7 @@ const router = createBrowserRouter([
         path: "customer/:id",
         element: <CRMCustomerForm />,
       },
+      
     ],
   },
   {
@@ -150,20 +150,12 @@ const router = createBrowserRouter([
         element: <ERPCustomers />,
       },
       {
-        path: "sales/returns",
-        element: <ERPReturns />,
+        path: "sales/orders/:id",
+        element: <ERPOrderForm />,
       },
       {
-        path: "finance",
-        element: <Finance />,
-      },
-      {
-        path: "inventory",
-        element: <Inventory />,
-      },
-      {
-        path: "sales",
-        element: <Sales />,
+        path: "sales/orders/new",
+        element: <ERPNewOrderForm />,
       },
     ],
   },
@@ -183,6 +175,10 @@ const router = createBrowserRouter([
         {
           path: "logs",
           element: <UsersLogs />,
+        },
+        {
+          path: "authority",
+          element: <UsersAuthority />,
         },
       ],
   },

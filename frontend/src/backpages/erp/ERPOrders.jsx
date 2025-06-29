@@ -68,8 +68,14 @@ const ERPOrders = () => {
       dataIndex: "orderStatus",
       valueType: "select",
       valueEnum: {
-        CONFIRMED: { text: "已確認", status: "Success" },
-        CANCELED: { text: "已取消", status: "Error" },
+        PENDING_PAYMENT: { text: "待付款", status: "Default" },
+        PENDING_SHIPMENT: { text: "待出貨", status: "Processing" },
+        SHIPPED: { text: "已出貨", status: "Success" },
+        PENDING_PICKUP: { text: "已到門市", status: "Warning" },
+        COMPLETE: { text: "已完成", status: "Success" },
+        CANCELLED: { text: "已取消", status: "Error" },
+        RETURN_REQUESTED: { text: "申請退貨", status: "Warning" },
+        RETURNED: { text: "已退貨", status: "Default" },
       },
       search: {
         transform: (value) => ({ orderStatus: value }),
@@ -92,7 +98,12 @@ const ERPOrders = () => {
       valueType: "option",
       key: "option",
       render: (_, record) => [
-        <a key="edit" onClick={() => navigate(`/erp/order/${record.salesOrderId}`)}>編輯</a>,
+        <a
+          key="edit"
+          onClick={() => navigate(`/erp/sales/orders/${record.salesOrderId}`)}
+        >
+          編輯
+        </a>,
         <TableDropdown
           key="dropdown"
           menus={[
@@ -131,7 +142,7 @@ const ERPOrders = () => {
             key="new"
             icon={<PlusOutlined />}
             type="primary"
-            onClick={() => navigate("/erp/order/new")}
+            onClick={() => navigate("/erp/sales/orders/new")}
           >
             新增訂單
           </Button>,
