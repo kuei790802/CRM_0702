@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,12 +14,13 @@ import java.util.List;
 @Entity
 @Table(name = "customer")
 @DiscriminatorValue("B2C")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@Builder
+//@Builder
 public class CCustomer extends CustomerBase {
 
     @Column(nullable = false, unique = true)
@@ -31,6 +33,9 @@ public class CCustomer extends CustomerBase {
     private LocalDateTime accessEndTime;
 
 
+//    @Builder.Default
+//    @Column(name = "is_deleted", nullable = false)
+//    private Boolean isDeleted = false;
 //    private LocalDateTime createdAt;
 //    private LocalDateTime updatedAt;
 
