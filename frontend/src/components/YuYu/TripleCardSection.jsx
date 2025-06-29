@@ -27,7 +27,7 @@ const cardData = [
 
 const TripleCardSection = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 px-6 sm:px-10 lg:px-16 py-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6 sm:px-10 lg:px-28 py-6">
       {cardData.map((card, index) => (
         <Link
           to={card.link}

@@ -11,7 +11,7 @@ function Section() {
     <div
       ref={ref}
       className={`
-      flex flex-col md:flex-row items-center py-12 px-4 md:px-16 bg-white
+      flex flex-col md:flex-row items-center py-12 px-4 md:px-28 bg-white
       transition-all duration-[1000ms] ease-in-out
       ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-16"}
      `}
@@ -40,12 +40,12 @@ function Section() {
       </div>
 
       {/* 右側圖片區塊 */}
-      <div className="md:w-1/2 text-center">
-        <div className="inline-block max-w-full max-h-[400px]">
+      <div className="md:w-1/2 flex justify-end">
+        <div className="md:w-1/2 flex justify-end md:pr-0 pr-4">
           <img
             src={pic1}
             alt="Section Image"
-            className="h-auto w-auto max-h-[400px] rounded-lg shadow-lg transition-transform duration-300 transform hover:scale-105"
+            className="max-h-[400px] rounded-lg shadow-lg transition-transform duration-300 hover:scale-105"
             loading="lazy"
           />
         </div>
