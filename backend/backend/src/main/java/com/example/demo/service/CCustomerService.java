@@ -2,9 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
-import com.example.demo.entity.CCustomer;
-import com.example.demo.entity.CustomerBase;
-import com.example.demo.entity.Order;
+import com.example.demo.entity.*;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
@@ -12,23 +10,35 @@ import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.CCustomerRepo;
 import com.example.demo.repository.OrderRepository;
+import com.example.demo.repository.PasswordResetTokenRepo;
+import com.example.demo.repository.VIPLevelRepo;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CCustomerService {
     private final CCustomerRepo cCustomerRepo;
     private final BCryptPasswordEncoder encoder;
     private final OrderRepository orderRepository;
+    private final VIPLevelRepo vipLevelRepo;
+    private final VIPLevelService vipLevelService;
+    private final PasswordResetTokenRepo tokenRepo;
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository) {
+    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository, VIPLevelRepo vipLevelRepo, VIPLevelService vipLevelService, PasswordResetTokenRepo tokenRepo) {
         this.cCustomerRepo = cCustomerRepo;
+        this.vipLevelRepo = vipLevelRepo;
+        this.vipLevelService = vipLevelService;
+        this.tokenRepo = tokenRepo;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
         this.orderRepository = orderRepository;
     }
@@ -132,8 +142,58 @@ public class CCustomerService {
     }
 
 
-    // 更改基本資料: 讓用戶更新個人資訊（含忘記密碼、密碼更改）資料驗證、密碼加密更新、資料一致性
+    // todo: 0630，忘記密碼要接到gmail認證信，通過了才可以進行更改密碼?
+    // 忘記密碼，密碼驗證
+    // 忘記密碼 - 產生重設 token 並寄信（這裡先回傳 token，未整合 Gmail）
+    public String generateResetToken(String email) {
+        CCustomer customer = cCustomerRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("查無Email: " + email));
 
+        // 清除舊的 token（可選）
+        List<PasswordResetToken> oldTokens = tokenRepo.findByEmailAndUsedFalse(email);
+        oldTokens.forEach(t -> t.setUsed(true));
+        tokenRepo.saveAll(oldTokens);
+
+        // 產生新 token 並儲存
+        String token = UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setEmail(email);
+        resetToken.setToken(token);
+        resetToken.setCreatedAt(LocalDateTime.now());
+        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(30)); // 30 分鐘有效
+        resetToken.setUsed(false);
+
+        tokenRepo.save(resetToken);
+
+        // 實際應該寄 email，此處先回傳 token
+        return token;
+    }
+
+    // 使用 token 重設密碼
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = tokenRepo.findByTokenAndUsedFalse(token)
+                .orElseThrow(() -> new IllegalArgumentException("無效或過期的 token"));
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token 已過期");
+        }
+
+        CCustomer customer = cCustomerRepo.findByEmail(resetToken.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("找不到對應顧客"));
+
+        validatePasswordStrength(newPassword);
+        customer.setPassword(encoder.encode(newPassword));
+
+        cCustomerRepo.save(customer);
+        // 標記 token 為已使用
+        resetToken.setUsed(true);
+        tokenRepo.save(resetToken);
+    }
+
+
+    // 更改基本資料: 讓用戶更新個人資訊（含忘記密碼、密碼更改）資料驗證、密碼加密更新、資料一致性
     public CCustomerProfileResponse updateProfile(String account, UpdateCCustomerProfileRequest request) {
         CCustomer customer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(() -> new RuntimeException("帳號不存在"));
@@ -223,28 +283,56 @@ public class CCustomerService {
         // 4. 更新客戶的 spending 欄位並儲存
         customer.setSpending((long) totalSpending); // 將 double 轉為 Long
         cCustomerRepo.save(customer);
+
+        // 5. 更新viplevel
+        evaluateAndUpdateVipLevel(customerId);
     }
 
 
+    // 總消費10000vip免運費, 50000vvip終身9折(可結合其他優惠使用)，一段時間沒消費降級(90days)
+    @Transactional
+    public void evaluateAndUpdateVipLevel(Long customerId) {
+        CCustomer customer = cCustomerRepo.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("找不到客戶 ID: " + customerId));
 
-//    todo: 6/11繼續
-    // 刪除帳號
+        Long spending = customer.getSpending();
+        List<VIPLevel> levels = vipLevelRepo.findAllByOrderByUpgradeThresholdAsc();
 
+        // 找到最適等級（spending >= 升級門檻）
+        VIPLevel matchedLevel = null;
+        for (VIPLevel level : levels) {
+            if (spending >= level.getUpgradeThreshold()) {
+                matchedLevel = level;
+            }
+        }
+        // 額外檢查是否該降級（以 90 天沒消費為例）
+        Optional<Order> lastOrderOpt = orderRepository.findByCCustomer_CustomerIdOrderByOrderdateDesc(customerId)
+                .stream()
+                .filter(o -> o.getOrderStatus() == OrderStatus.COMPLETE)
+                .findFirst();
 
+        if (lastOrderOpt.isPresent()) {
+            LocalDate lastOrderDate = lastOrderOpt.get().getOrderdate();
+            long daysSinceLastOrder = ChronoUnit.DAYS.between(lastOrderDate, LocalDate.now());
 
+            // 超過90天未消費，且花費不到當前等級的降級門檻
+            if (daysSinceLastOrder > 90) {
+                VIPLevel currentLevel = customer.getVipLevel();
+                if (currentLevel != null && spending < currentLevel.getDowngradeThreshold()) {
+                    Optional<VIPLevel> downgradeLevel = vipLevelService.downgradeOneLevel(currentLevel);
+                    downgradeLevel.ifPresent(customer::setVipLevel);
+                    cCustomerRepo.save(customer);
+                    return;
+                }
+            }
+        }
 
+        // 正常升級流程（如果比當前高）
+        if (matchedLevel != null && !matchedLevel.equals(customer.getVipLevel())) {
+            customer.setVipLevel(matchedLevel);
+            cCustomerRepo.save(customer);
+        }
+    }
 
-
-    // 留言給課服: 前台用戶對商品、客服、社區的留言與回覆，留言CRUD，留言屬性包含userId, productId等，防止惡意留言
-
-    // (購物邏輯是別人負責的，所以這部分可以晚點做嗎?)拉回別人開發的購物下單資訊 -> 我要做的事更新累積消費金額、VIP等級升降，如下
-    // VIP互動: 針對VIP用戶提供額外功能（專屬優惠、積分），VIP等級判斷、積分管理、VIP專屬訊息提醒
-
-    // 開api給系統管理者: 註冊時紀錄註冊時間、修改實紀錄修改時間、下單時紀錄下單時間
-
-
-
-
-
-
+    // log, 開api給系統管理者: 註冊時紀錄註冊時間、修改實紀錄修改時間、下單時紀錄下單時間
 }

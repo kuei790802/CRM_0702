@@ -87,4 +87,20 @@ public class CCustomerController {
         cCustomerService.deleteAccountPermanently(account);
         return ResponseEntity.noContent().build();
     }
+
+    // 忘記密碼：寄送重設密碼連結（這裡模擬直接取得 token）
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        String token = cCustomerService.generateResetToken(email);
+        return ResponseEntity.ok("請使用此連結重設密碼: /customer/reset-password?token=" + token);
+    }
+
+    // 使用 token 重設密碼
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword) {
+        cCustomerService.resetPassword(token, newPassword);
+        return ResponseEntity.ok("密碼已成功重設！");
+    }
 }
