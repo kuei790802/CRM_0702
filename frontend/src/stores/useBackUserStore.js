@@ -16,7 +16,7 @@ const useBackUserStore = create((set) => {
 
     loginBackUser: async (credentials) => {
       try {
-        const res = await axiosInstance.post('/backauth/login', credentials);
+        const res = await axiosInstance.post('/user/auth/login', credentials);
         const { token, user } = res.data;
 
         localStorage.setItem('back_token', token);

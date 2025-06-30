@@ -31,51 +31,61 @@ export const productHandlers = [
           category: "輕包裝豆乳雪糕",
           products: [
             {
+              id: 1,
               imageSrc: Img1,
               title: "良野頂級熟韻(巧克力)豆乳雪糕",
               price: "NT$840",
             },
             {
+              id: 2,
               imageSrc: Img2,
               title: "良野特級日式(抹茶)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 3,
               imageSrc: Img3,
               title: "良野莓好生活(草莓)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 4,
               imageSrc: Img4,
               title: "良野濃醇(花生)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 5,
               imageSrc: Img5,
               title: "良野超越經典(香草)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 6,
               imageSrc: Img6,
               title: "良野大花之吻(玫瑰)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 7,
               imageSrc: Img7,
               title: "良野法式(焦糖佐脆餅)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 8,
               imageSrc: Img8,
               title: "良野濃(黑芝麻)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 9,
               imageSrc: Img9,
               title: "良野藍色狂想曲(藍莓)豆乳雪糕",
               price: "NT$640",
             },
             {
+              id: 10,
               imageSrc: Img10,
               title: "良野轉轉(OREO)豆乳雪糕",
               price: "NT$640",
@@ -86,51 +96,61 @@ export const productHandlers = [
           category: "經典杯裝口味",
           products: [
             {
+              id: 11,
               imageSrc: product063001,
               title: "超越經典香草豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 12,
               imageSrc: product063002,
               title: "藍色狂想曲(藍莓)豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 13,
               imageSrc: product063003,
               title: "莓好生活豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 14,
               imageSrc: product063004,
               title: "濃醇花生豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 15,
               imageSrc: product063005,
               title: "百香果雪酪冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 16,
               imageSrc: product063006,
               title: "大花之吻(玫瑰)豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 17,
               imageSrc: product063007,
               title: "法式焦糖佐脆餅豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 18,
               imageSrc: product063008,
               title: "特級日式抹茶豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 19,
               imageSrc: product063009,
               title: "頂級熟韻可可豆乳冰淇淋",
               price: "NT$1,200",
             },
             {
+              id: 20,
               imageSrc: product063010,
               title: "轉轉OERO豆乳冰淇淋",
               price: "NT$1,200",
