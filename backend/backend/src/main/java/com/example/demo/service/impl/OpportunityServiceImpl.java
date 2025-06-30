@@ -90,33 +90,36 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Override
     @Transactional
     public OpportunityDto create(OpportunityRequest request) {
-        BCustomer bCustomer = bCustomerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getCustomerId() + " 的客戶"));
-
-        Contact contact = null;
-        if (request.getContactId() != null) {
-            contact = contactRepository.findById(request.getContactId())
-                    .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getContactId() + " 的聯絡人"));
-        }
-
+        // 1. *** 使用 Mapper 將 request DTO 轉換為 entity ***
         Opportunity opportunity = opportunityMapper.toEntity(request);
 
-        opportunity.setBCustomer(bCustomer);
-        opportunity.setContact(contact);
-        opportunity.setCreatedAt(LocalDateTime.now());
-        opportunity.setUpdatedAt(LocalDateTime.now());
-        opportunity.setNumberOfRatings(0);
-        opportunity.setTotalRatingSum(0L);
+        // 2. 處理關聯：從資料庫中查找並設定實際的受控(managed)實體
+        BCustomer customer = bCustomerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new EntityNotFoundException("找不到客戶 ID: " + request.getCustomerId()));
+        opportunity.setBCustomer(customer);
 
-        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
-            if (tags.size() != request.getTagIds().size()) {
-                throw new EntityNotFoundException("一個或多個標籤ID不存在。");
-            }
-            opportunity.setTags(new HashSet<>(tags));
+        if (request.getContactId() != null) {
+            Contact contact = contactRepository.findById(request.getContactId())
+                    .orElseThrow(() -> new EntityNotFoundException("找不到聯絡人 ID: " + request.getContactId()));
+            opportunity.setContact(contact);
         }
 
+        // 3. 處理建立時間
+        LocalDateTime creationTime;
+        if (request.getCreateDate() != null) {
+            creationTime = request.getCreateDate();
+        } else {
+            creationTime = LocalDateTime.now();
+        }
+
+        opportunity.setCreatedAt(creationTime);
+        opportunity.setUpdatedAt(creationTime);
+
+
+        // 4. 儲存到資料庫
         Opportunity savedOpportunity = opportunityRepository.save(opportunity);
+
+        // 5. *** 使用 Mapper 將儲存後的 entity 轉為 response DTO 回傳 ***
         return opportunityMapper.toResponse(savedOpportunity, null);
     }
 
@@ -347,4 +350,5 @@ public class OpportunityServiceImpl implements OpportunityService {
         return opportunityRepository.findByStage(stage, pageable)
                 .map(opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
+
 }

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -116,4 +117,12 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long>,
      * @return 符合條件的商機數量。
      */
     long countByStatus(OpportunityStatus status);
+
+    /**
+     * 根據指定的商機狀態，計算符合條件的商機預期價值總和 (expectedValue)。
+     * @param status 要計算的商機狀態 (例如 OpportunityStatus.WON)。
+     * @return 符合條件的商機金額總和。如果沒有符合條件的商機，則返回 null。
+     */
+    @Query("SELECT SUM(o.expectedValue) FROM Opportunity o WHERE o.status = :status")
+    BigDecimal sumExpectedValueByStatus(@Param("status") OpportunityStatus status);
 }

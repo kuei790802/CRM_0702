@@ -61,7 +61,7 @@ public class Opportunity {
     @JoinColumn(name = "contact_id")
     private Contact contact;
 
-    @CreatedDate
+//    @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
