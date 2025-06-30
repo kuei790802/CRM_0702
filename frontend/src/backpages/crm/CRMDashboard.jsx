@@ -14,6 +14,9 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  FunnelChart,
+  Funnel,
+  LabelList,
 } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
@@ -111,8 +114,8 @@ const CRMDashboard = () => {
               <RechartsTooltip />
               <Legend
                 layout="horizontal"
-                align="left" 
-                verticalAlign="bottom" 
+                align="left"
+                verticalAlign="bottom"
                 iconType="circle"
                 formatter={(value) => (
                   <span className="text-sm text-gray-600">{value}</span>
@@ -124,11 +127,30 @@ const CRMDashboard = () => {
 
         {/* 堆疊漏斗圖區塊 */}
         <div className="bg-white shadow-md rounded-xl p-4">
-          <FunnelStackedBarChart
-            rawData={stageDistribution.data}
-            title="商機階段漏斗分析"
-            height={250} // 若你在 FunnelStackedBarChart 裡支援傳入 height
-          />
+          <h2 className="text-lg font-semibold mb-4">商機階段漏斗分析</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <FunnelChart>
+              <RechartsTooltip />
+              <Funnel
+                dataKey="value"
+                data={stageDistribution.data}
+                isAnimationActive
+              >
+                {stageDistribution.data.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+                <LabelList
+                  position="right"
+                  fill="#000"
+                  stroke="none"
+                  dataKey="name"
+                />
+              </Funnel>
+            </FunnelChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
