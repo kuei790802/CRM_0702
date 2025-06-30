@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name="儀表板API(Dashboard)",
         description = "五種數據呈現，包含關鍵指標、TOP5熱銷產品、年度同比銷售數據、存貨總額同比數據、低水位商品清單")
-public class DashboardController {
+public class ERPDashboardController {
 
     private final DashboardService dashboardService;
 

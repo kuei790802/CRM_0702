@@ -3,6 +3,7 @@ package com.example.demo.config.util;
 
 import com.example.demo.dto.erp.SalesOrderCreateDTO;
 import com.example.demo.dto.erp.SalesOrderDetailCreateDTO;
+import com.example.demo.dto.response.BCustomerDto;
 import com.example.demo.entity.BCustomer;
 import com.example.demo.entity.CCustomer;
 import com.example.demo.entity.Product;
@@ -10,6 +11,7 @@ import com.example.demo.repository.CCustomerRepo;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.service.BCustomerService;
 import com.github.javafaker.Faker;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
 
 @Component
 public class SalesOrderFaker {
@@ -35,6 +38,10 @@ public class SalesOrderFaker {
 //    private BCustomerRepository bCustomerRepository;
     @Autowired
     private BCustomerService bCustomerService;
+
+
+    private BCustomerDto bCustomerDto;
+
 
 
     public SalesOrderFaker() {
@@ -68,18 +75,11 @@ public class SalesOrderFaker {
             // dto.setCustomerType("B2C"); // Not a field in SalesOrderCreateDTO
         } else {
             // Try fetching as BCustomer if not found as CCustomer
-            BCustomer bCustomer = bCustomerService.getBCustomerEntityById(randomCustomerId);
-            if (bCustomer != null) {
-                // customerName = bCustomer.getCustomerName();
-                customerAddress = bCustomer.getAddress();
-                // customerEmail = bCustomer.getEmail();
-                // dto.setCustomerType("B2B"); // Not a field in SalesOrderCreateDTO
-            } else {
-                // Fallback if customer cannot be fetched - use a generic address
+            try {
+                BCustomerDto bCustomerDto = bCustomerService.findById(randomCustomerId);
+                customerAddress = bCustomerDto.getCustomerAddress();
+            }catch (EntityNotFoundException e){
                 customerAddress = faker.address().fullAddress();
-                // customerName = faker.name().fullName();
-                // customerEmail = faker.internet().emailAddress();
-                // dto.setCustomerType("UNKNOWN"); // Not a field in SalesOrderCreateDTO
             }
         }
 

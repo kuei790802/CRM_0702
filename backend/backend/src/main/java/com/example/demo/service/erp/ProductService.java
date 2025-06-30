@@ -76,15 +76,11 @@ public class ProductService {
         return productPage.map(ProductResponseDTO::fromEntity);
     }
 
-    /**
-     * ✨✨✨【新增的方法】✨✨✨
-     * 獲取所有產品的簡易列表（只包含 ID 和名稱）。
-     * @return 產品簡易列表
-     */
+
     public List<ProductSimpleDTO> getAllProductsSimple() {
-        // 查詢所有產品實體
+
         List<Product> products = productRepository.findAll();
-        // 將實體列表轉換為 DTO 列表
+
         return products.stream()
                 .map(ProductSimpleDTO::fromEntity)
                 .collect(Collectors.toList());

@@ -238,10 +238,10 @@ public class BCustomerServiceImpl implements BCustomerService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public BCustomer getBCustomerEntityById(Long id) {
-        return BCustomerRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + id));
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public BCustomer getBCustomerEntityById(Long id) {
+//        return BCustomerRepository.findById(id)
+//                .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + id));
+//    }
 }
