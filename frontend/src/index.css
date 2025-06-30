@@ -29,5 +29,12 @@ html, body, input, textarea, button, select, a, div, span, p {
   animation: scroll-left 50s linear infinite;
 }
 
+.text-outline-black {
+  text-shadow:
+     -0.5px -0.5px 0 rgba(0, 0, 0, 0.8),
+     0.5px -0.5px 0 rgba(0, 0, 0, 0.8),
+    -0.5px  0.5px 0 rgba(0, 0, 0, 0.8),
+     0.5px  0.5px 0 rgba(0, 0, 0, 0.8);
+}
 
 
