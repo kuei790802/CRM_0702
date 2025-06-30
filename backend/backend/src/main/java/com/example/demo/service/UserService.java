@@ -130,7 +130,6 @@ public class UserService {
         return loginUser;
     }
 
-    // user拿到admin給的一次密碼後，自己更改密碼+加密
 
     // user檢視自己資料
     public UserProfileResponse getUserProfileByAccount(String account) {
@@ -189,19 +188,33 @@ public class UserService {
         );
     }
 
-    //ID找帳號
+    // todo: 6/30，我的前端畫面想要admin能以列表方式查閱所有user，並能在該介面進行基礎資料修正，或是點擊進入查閱詳細資訊，進行詳細資料、權限修改
+    // 需要開那些api?我現有的getUserIdByAccount(String account)應該只是像是搜尋列單筆查資料，也不能針對結果進行修改吧?還是可以?
+    // admin查閱所有user, findbyaccount, findbyauthorities?
+
+    //ID找帳號，admin可以用這個方式進行資料更改嗎?
     public Long getUserIdByAccount(String account) {
         return userRepo.findByAccount(account)
                 .map(User::getUserId)
                 .orElseThrow(() -> new UsernameNotFoundException("找不到使用者: " + account));
     }
 
+    //rolename找帳號?
 
-    // 不同權限進入不同模組，如何管理權限?
+    //authoritycode找帳號?
 
-    // admin查閱所有user, findbyaccount, findbyauthorities?
-    // 更動使用者權限、更動激活時間、使用者忘記密碼，可通知admin，強制重設為一次姓密碼
-    // todo
+    //激活時間區間找帳號?
+
+    //停權找帳號?
+
+    //激活中找帳號?...請補充我還能幹嘛
+
+
+
+    // todo: 6/30，請教學如果系統使用者忘記密碼，userflow通常長怎樣?這裡需要加什麼功能才會更完整?
+    // 忘記密碼記性驗證gmail api?user拿到一次密碼後，自己更改密碼+加密?
+
+    // 更動單一使用者權限、更動激活時間、使用者忘記密碼，可通知admin，強制重設為一次姓密碼
     public UserProfileResponse updateProfileByAdmin(String account, UpdateUserProfileRequest request){
         User user = userRepo.findByAccount(account)
                 .orElseThrow(() -> new UsernameNotFoundException("帳號不存在: " + account));
@@ -266,8 +279,6 @@ public class UserService {
     }
 
     // admin, 小編(cms agent?)進行前台內容管理，刪除下嫁文章、跑馬燈、輪播圖、管理活動等
-
-    // admin, 小編(cms agent?)與ccustomer進行互動，更改訂單
 
     // admin調閱log
 

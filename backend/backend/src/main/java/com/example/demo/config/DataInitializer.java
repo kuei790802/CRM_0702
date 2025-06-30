@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.example.demo.entity.*;
+import com.example.demo.enums.AuthorityCode;
+import com.example.demo.enums.VIPLevelEnum;
 import com.example.demo.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,12 @@ public class DataInitializer {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthorityRepo authorityRepo;
+
+    @Autowired
+    private VIPLevelRepo vipLevelRepo;
+
 
     private static final Long SYSTEM_USER_ID = 1L;
 
@@ -48,9 +57,13 @@ public class DataInitializer {
     private static final String[] ICE_CREAM_NAMES = {"香草", "巧克力","藍莓","花生","咖啡", "香蕉","薄荷巧克力","OREO","草莓", "抹茶", "蘭姆葡萄", "海鹽焦糖", "芒果優格", "豆乳芝麻", "燕麥奶"};
     private static final String[] ICE_CREAM_SUFFIXES = {"冰淇淋", "雪酪", "聖代", "冰棒", "雪糕"};
 
+
     @Bean
     @Profile("dev")
     public CommandLineRunner initDatabase() {
+        initAuthoritiesAndAdmin();
+        createVipLevelsIfNotExist();
+
         return args -> {
             log.info("DataInitializer started. Current profile check...");
             log.info("Product count: {}", productRepository.count());
@@ -120,6 +133,7 @@ public class DataInitializer {
         };
     }
 
+    // 預先建立資料庫方法
     private void createSystemUserIfNotExists() {
         if (userRepository.findById(SYSTEM_USER_ID).isEmpty()) {
             log.info("Creating system user with ID: {}", SYSTEM_USER_ID);
@@ -142,7 +156,6 @@ public class DataInitializer {
             log.info("System user already exists");
         }
     }
-
     private List<Unit> createAndSaveUnits() {
         if (unitRepository.count() > 0) {
             return unitRepository.findAll();
@@ -159,8 +172,6 @@ public class DataInitializer {
         });
         return unitRepository.saveAll(units);
     }
-
-
     private List<ProductCategory> createAndSaveCategories() {
         if (categoryRepository.count() > 0) {
             return categoryRepository.findAll();
@@ -177,4 +188,39 @@ public class DataInitializer {
         });
         return categoryRepository.saveAll(categories);
     }
+    private void initAuthoritiesAndAdmin(){
+        // 1. 建立所有 Enum 權限
+        for (AuthorityCode code : AuthorityCode.values()) {
+            if (!authorityRepo.existsByCode(code.getCode())) {
+                authorityRepo.save(code.toAuthorityEntity());
+            }
+        }
+
+        // 2. 建立 admin 使用者
+        if (userRepository.findByAccount("admin").isEmpty()) {
+            List<Authority> allAuthorities = authorityRepo.findAll();
+            User admin = User.builder()
+                    .account("admin")
+                    .userName("超級管理員")
+                    .password(passwordEncoder.encode("Admin123!@#"))
+                    .email("admin@system.com")
+                    .roleName("ADMIN")
+                    .authorities(allAuthorities)
+                    .isActive(true)
+                    .isDeleted(false)
+                    .accessStartDate(LocalDate.now())
+                    .accessEndDate(LocalDate.now().plusYears(10))
+                    .build();
+            userRepository.save(admin);
+        }
+    }
+    private void createVipLevelsIfNotExist() {
+        for (VIPLevelEnum levelEnum : VIPLevelEnum.values()) {
+            if (!vipLevelRepo.existsById(levelEnum.name())) {
+                vipLevelRepo.save(levelEnum.toEntity());
+            }
+        }
+    }
+
 }
+
