@@ -1,6 +1,9 @@
 package com.example.demo.controller.erp;
 
 import com.example.demo.dto.erp.ProductResponseDTO;
+import com.example.demo.dto.erp.ProductSimpleDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -24,12 +27,16 @@ import com.example.demo.service.erp.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
+@Tag(name = "產品管理API(Product Management)", description = "包含產品建立、多種查詢、簡易產品清單、更新、刪除")
 public class ProductController {
     private final ProductService productService;
 
+    @Operation(summary = "新增產品", description = "新增單筆產品或多筆產品")
     @PostMapping
     public ResponseEntity<ProductResponseDTO> createProduct(
             @Valid @RequestBody ProductCreateDTO productDTO) {
@@ -40,6 +47,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
+    @Operation(summary = "查詢產品", description = "根據條件，查詢產品列表")
     @GetMapping
     public ResponseEntity<Page<ProductResponseDTO>> searchProducts(
             @RequestParam(required = false) Long categoryId,
@@ -55,13 +63,21 @@ public class ProductController {
         return ResponseEntity.ok(productPage);
     }
 
+    @Operation(summary = "查詢單筆產品", description = "根據產品ID，查詢單筆產品")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id){
         ProductResponseDTO product = productService.getProductById(id);
         return ResponseEntity.ok(product);
     }
 
+    @Operation(summary = "獲取所有產品的簡易列表", description = "只返回所有產品的ID和名稱，用於下拉選單等場景")
+    @GetMapping("/simple-list")
+    public ResponseEntity<List<ProductSimpleDTO>> getAllProductsSimple() {
+        List<ProductSimpleDTO> products = productService.getAllProductsSimple();
+        return ResponseEntity.ok(products);
+    }
 
+    @Operation(summary = "更新產品", description = "根據產品ID，更新產品")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id, 
@@ -74,6 +90,7 @@ public class ProductController {
         return ResponseEntity.ok(updatedProduct);
     }
 
+    @Operation(summary = "刪除產品", description = "根據產品ID，刪除產品")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         Long currentUserId = 1L;
@@ -84,6 +101,8 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @Operation(summary = "復原產品", description = "根據產品ID，復原產品")
     @PostMapping("/{id}/restore")
     public ResponseEntity<ProductResponseDTO> restoreProduct(@PathVariable Long id) {
         Long currentUserId = 1L;

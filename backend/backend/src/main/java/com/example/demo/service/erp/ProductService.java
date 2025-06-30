@@ -1,6 +1,7 @@
 package com.example.demo.service.erp;
 
 import com.example.demo.dto.erp.ProductResponseDTO;
+import com.example.demo.dto.erp.ProductSimpleDTO;
 import com.example.demo.entity.ProductCategory;
 import com.example.demo.entity.Unit;
 import com.example.demo.exception.DataConflictException;
@@ -21,6 +22,8 @@ import com.example.demo.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +75,31 @@ public class ProductService {
         Page<Product> productPage = productRepository.findAll(spec, pageable);
         return productPage.map(ProductResponseDTO::fromEntity);
     }
+
+    /**
+     * ✨✨✨【新增的方法】✨✨✨
+     * 獲取所有產品的簡易列表（只包含 ID 和名稱）。
+     * @return 產品簡易列表
+     */
+    public List<ProductSimpleDTO> getAllProductsSimple() {
+        // 查詢所有產品實體
+        List<Product> products = productRepository.findAll();
+        // 將實體列表轉換為 DTO 列表
+        return products.stream()
+                .map(ProductSimpleDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+//    public Product findByProductIdAndProductName(Long productId, String productName){
+//
+//        Product product = productRepository.findById(productId);
+//
+//        if(product == null){
+//            throw new ResourceNotFoundException("找不到商品ID為"+productId+"的商品");
+//        }
+//        if(!product.getName().equals(productName)){
+//
+//        }
+//    }
 
     public ProductResponseDTO getProductById(Long productId){
         Product product = productRepository.findById(productId)
