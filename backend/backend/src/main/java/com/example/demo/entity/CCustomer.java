@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Set; // 改用 Set
 
 @Entity
 @Table(name = "customer")
@@ -68,15 +68,11 @@ public class CCustomer extends CustomerBase {
     @JoinColumn(name = "vip_level")
     private VIPLevel vipLevel;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "customer_coupon",
-            joinColumns = @JoinColumn(name = "customer_id"),
-            inverseJoinColumns = @JoinColumn(name = "coupon_id")
-    )
+    // 【重要】移除舊的多對多關聯
+    // @ManyToMany(...)
+    // private List<Coupon> coupons;
 
-    @Builder.Default
-    private List<Coupon> coupons = new ArrayList<>();
-
-
+    // 【重要】新增與 CustomerCoupon 的一對多關聯
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<CustomerCoupon> customerCoupons;
 }
