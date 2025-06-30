@@ -45,6 +45,9 @@ public class OpportunityDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+
+    private List<OpportunityTagDto> tags;
+
     private List<Long> tagIds;
 
     // 用於顯示平均評分的字段

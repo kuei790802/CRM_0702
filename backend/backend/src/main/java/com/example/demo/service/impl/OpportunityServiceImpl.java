@@ -7,7 +7,7 @@ import com.example.demo.dto.response.SalesFunnelDto;
 import com.example.demo.entity.BCustomer;
 import com.example.demo.entity.Contact;
 import com.example.demo.entity.Opportunity;
-import com.example.demo.entity.Tag;
+import com.example.demo.entity.OpportunityTag;
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.mapper.OpportunityMapper;
@@ -39,18 +39,18 @@ public class OpportunityServiceImpl implements OpportunityService {
     private final BCustomerRepository bCustomerRepository;
     private final ContactRepository contactRepository;
     private final OpportunityMapper opportunityMapper;
-    private final TagRepository tagRepository;
+    private final OpportunityTagRepository opportunityTagRepository;
 
     public OpportunityServiceImpl(OpportunityRepository opportunityRepository,
                                   BCustomerRepository bCustomerRepository,
                                   ContactRepository contactRepository,
                                   OpportunityMapper opportunityMapper,
-                                  TagRepository tagRepository) {
+                                  OpportunityTagRepository opportunityTagRepository) {
         this.opportunityRepository = opportunityRepository;
         this.bCustomerRepository = bCustomerRepository;
         this.contactRepository = contactRepository;
         this.opportunityMapper = opportunityMapper;
-        this.tagRepository = tagRepository;
+        this.opportunityTagRepository = opportunityTagRepository;
     }
 
     /**
@@ -90,10 +90,8 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Override
     @Transactional
     public OpportunityDto create(OpportunityRequest request) {
-        // 1. *** 使用 Mapper 將 request DTO 轉換為 entity ***
         Opportunity opportunity = opportunityMapper.toEntity(request);
 
-        // 2. 處理關聯：從資料庫中查找並設定實際的受控(managed)實體
         BCustomer customer = bCustomerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("找不到客戶 ID: " + request.getCustomerId()));
         opportunity.setBCustomer(customer);
@@ -103,8 +101,14 @@ public class OpportunityServiceImpl implements OpportunityService {
                     .orElseThrow(() -> new EntityNotFoundException("找不到聯絡人 ID: " + request.getContactId()));
             opportunity.setContact(contact);
         }
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            List<OpportunityTag> tags = opportunityTagRepository.findAllById(request.getTagIds());
+            if (tags.size() != request.getTagIds().size()) {
+                throw new EntityNotFoundException("一個或多個用於創建的商機標籤ID不存在。");
+            }
+            opportunity.setTags(new HashSet<>(tags));
+        }
 
-        // 3. 處理建立時間
         LocalDateTime creationTime;
         if (request.getCreateDate() != null) {
             creationTime = request.getCreateDate();
@@ -115,11 +119,8 @@ public class OpportunityServiceImpl implements OpportunityService {
         opportunity.setCreatedAt(creationTime);
         opportunity.setUpdatedAt(creationTime);
 
-
-        // 4. 儲存到資料庫
         Opportunity savedOpportunity = opportunityRepository.save(opportunity);
 
-        // 5. *** 使用 Mapper 將儲存後的 entity 轉為 response DTO 回傳 ***
         return opportunityMapper.toResponse(savedOpportunity, null);
     }
 
@@ -157,9 +158,9 @@ public class OpportunityServiceImpl implements OpportunityService {
         }
 
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
+            List<OpportunityTag> tags = opportunityTagRepository.findAllById(request.getTagIds());
             if (tags.size() != request.getTagIds().size()) {
-                throw new EntityNotFoundException("一個或多個用於更新的標籤ID不存在。");
+                throw new EntityNotFoundException("一個或多個用於更新的商機標籤ID不存在。");
             }
             existingOpportunity.setTags(new HashSet<>(tags));
         } else {

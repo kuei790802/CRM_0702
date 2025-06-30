@@ -66,8 +66,8 @@ const CRMDashboard = () => {
   // 加入 2 張假 KPI 資料
   const extendedKpis = [
     ...kpis,
-    { title: "成交率", value: 25, unit: "%" },
-    { title: "平均成交天數", value: 14, unit: "天" },
+//     { title: "成交率", value: 25, unit: "%" },
+//     { title: "平均成交天數", value: 14, unit: "天" },
   ];
 
   return (
@@ -151,6 +151,11 @@ const CRMDashboard = () => {
               </Funnel>
             </FunnelChart>
           </ResponsiveContainer>
+          <FunnelStackedBarChart
+            rawData={stageDistribution.data}
+            title="商機漏斗分析"
+            height={250} // 若你在 FunnelStackedBarChart 裡支援傳入 height
+          />
         </div>
       </div>
 

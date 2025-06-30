@@ -5,7 +5,6 @@ import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -85,18 +84,18 @@ public class Opportunity {
     // ----- 多對多關聯：一個商機可以有多個標籤 ----
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "opportunity_tags",
+            name = "opportunity_tags_link",
             joinColumns = @JoinColumn(name = "opportunity_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
+            inverseJoinColumns = @JoinColumn(name = "opportunity_tag_id")
     )
-    private Set<Tag> tags = new HashSet<>();
+    private Set<OpportunityTag> tags = new HashSet<>();
 
-    public void addTag(Tag tag) {
+    public void addTag(OpportunityTag tag) {
         this.tags.add(tag);
         tag.getOpportunities().add(this);
     }
 
-    public void removeTag(Tag tag) {
+    public void removeTag(OpportunityTag tag) {
         this.tags.remove(tag);
         tag.getOpportunities().remove(this);
     }
