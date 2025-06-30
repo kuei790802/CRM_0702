@@ -2,23 +2,34 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.RegisterRequest;
 import com.example.demo.dto.request.UpdateUserProfileRequest;
+import com.example.demo.dto.request.UserQueryRequest;
 import com.example.demo.dto.response.UserProfileResponse;
 import com.example.demo.entity.Authority;
 import com.example.demo.entity.CCustomer;
+import com.example.demo.entity.PasswordResetToken;
 import com.example.demo.entity.User;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.AuthorityRepo;
 import com.example.demo.repository.CCustomerRepo;
+import com.example.demo.repository.PasswordResetTokenRepo;
 import com.example.demo.repository.UserRepo;
+import com.example.demo.specification.UserSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,12 +38,14 @@ public class UserService {
     private final CCustomerRepo cCustomerRepo;
     private final AuthorityRepo authorityRepo;
     private final BCryptPasswordEncoder encoder;
+    private final PasswordResetTokenRepo tokenRepo;
 
     // 建構自注入userRepo、encoder
-    public UserService(UserRepo userRepo, CCustomerRepo cCustomerRepo, AuthorityRepo authorityRepo) {
+    public UserService(UserRepo userRepo, CCustomerRepo cCustomerRepo, AuthorityRepo authorityRepo, PasswordResetTokenRepo tokenRepo) {
         this.userRepo = userRepo;
         this.cCustomerRepo = cCustomerRepo;
         this.authorityRepo = authorityRepo;
+        this.tokenRepo = tokenRepo;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
     }
 
@@ -199,6 +212,26 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("找不到使用者: " + account));
     }
 
+
+    public Page<UserProfileResponse> queryUsers(UserQueryRequest req) {
+        Specification<User> spec = UserSpecification.build(req);
+        Pageable pageable = PageRequest.of(req.getPage(), req.getSize(), Sort.by("userId").descending());
+
+        return userRepo.findAll(spec, pageable)
+                .map(user -> new UserProfileResponse(
+                        user.getUserId(),
+                        user.getAccount(),
+                        user.getEmail(),
+                        user.getUserName(),
+                        user.isActive(),
+                        user.getRoleName(),
+                        user.getAuthorities().stream().map(Authority::getCode).collect(Collectors.toList()),
+                        user.getAccessStartDate(),
+                        user.getAccessEndDate(),
+                        user.getLastLogin()
+                ));
+    }
+
     //rolename找帳號?
 
     //authoritycode找帳號?
@@ -213,6 +246,54 @@ public class UserService {
 
     // todo: 6/30，請教學如果系統使用者忘記密碼，userflow通常長怎樣?這裡需要加什麼功能才會更完整?
     // 忘記密碼記性驗證gmail api?user拿到一次密碼後，自己更改密碼+加密?
+    // 寄送一次性 token（不含 email 發送）
+    public String generateResetToken(String email) {
+        // 檢查 email 是否存在
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("查無此信箱"));
+
+        // 清除舊的 token（可選）
+        List<PasswordResetToken> oldTokens = tokenRepo.findByEmailAndUsedFalse(email);
+        oldTokens.forEach(t -> t.setUsed(true));
+        tokenRepo.saveAll(oldTokens);
+
+        // 產生新 token 並儲存
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setEmail(email);
+        resetToken.setToken(token);
+        resetToken.setCreatedAt(LocalDateTime.now());
+        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(30)); // 30 分鐘有效
+        resetToken.setUsed(false);
+
+        tokenRepo.save(resetToken);
+
+        return token; // 目前回傳給前端，未來可整合 email 寄送
+    }
+
+
+    // 重設密碼（驗證 token、重設）
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = tokenRepo.findByTokenAndUsedFalse(token)
+                .orElseThrow(() -> new IllegalArgumentException("無效或過期的 token"));
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token 已過期");
+        }
+
+        User user = userRepo.findByEmail(resetToken.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("找不到帳號"));
+
+        validatePasswordStrength(newPassword);
+        user.setPassword(encoder.encode(newPassword));
+        userRepo.save(user);
+
+        // 標記 token 為已使用
+        resetToken.setUsed(true);
+        tokenRepo.save(resetToken);
+    }
+
 
     // 更動單一使用者權限、更動激活時間、使用者忘記密碼，可通知admin，強制重設為一次姓密碼
     public UserProfileResponse updateProfileByAdmin(String account, UpdateUserProfileRequest request){

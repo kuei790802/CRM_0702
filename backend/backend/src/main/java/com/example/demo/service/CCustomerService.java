@@ -2,10 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
-import com.example.demo.entity.CCustomer;
-import com.example.demo.entity.CustomerBase;
-import com.example.demo.entity.Order;
-import com.example.demo.entity.VIPLevel;
+import com.example.demo.entity.*;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
@@ -13,6 +10,7 @@ import com.example.demo.exception.ForgetAccountOrPasswordException;
 import com.example.demo.exception.UsernameNotFoundException;
 import com.example.demo.repository.CCustomerRepo;
 import com.example.demo.repository.OrderRepository;
+import com.example.demo.repository.PasswordResetTokenRepo;
 import com.example.demo.repository.VIPLevelRepo;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,9 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CCustomerService {
@@ -31,12 +31,14 @@ public class CCustomerService {
     private final OrderRepository orderRepository;
     private final VIPLevelRepo vipLevelRepo;
     private final VIPLevelService vipLevelService;
+    private final PasswordResetTokenRepo tokenRepo;
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository, VIPLevelRepo vipLevelRepo, VIPLevelService vipLevelService) {
+    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository, VIPLevelRepo vipLevelRepo, VIPLevelService vipLevelService, PasswordResetTokenRepo tokenRepo) {
         this.cCustomerRepo = cCustomerRepo;
         this.vipLevelRepo = vipLevelRepo;
         this.vipLevelService = vipLevelService;
+        this.tokenRepo = tokenRepo;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
         this.orderRepository = orderRepository;
     }
@@ -142,9 +144,56 @@ public class CCustomerService {
 
     // todo: 0630，忘記密碼要接到gmail認證信，通過了才可以進行更改密碼?
     // 忘記密碼，密碼驗證
+    // 忘記密碼 - 產生重設 token 並寄信（這裡先回傳 token，未整合 Gmail）
+    public String generateResetToken(String email) {
+        CCustomer customer = cCustomerRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("查無Email: " + email));
+
+        // 清除舊的 token（可選）
+        List<PasswordResetToken> oldTokens = tokenRepo.findByEmailAndUsedFalse(email);
+        oldTokens.forEach(t -> t.setUsed(true));
+        tokenRepo.saveAll(oldTokens);
+
+        // 產生新 token 並儲存
+        String token = UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setEmail(email);
+        resetToken.setToken(token);
+        resetToken.setCreatedAt(LocalDateTime.now());
+        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(30)); // 30 分鐘有效
+        resetToken.setUsed(false);
+
+        tokenRepo.save(resetToken);
+
+        // 實際應該寄 email，此處先回傳 token
+        return token;
+    }
+
+    // 使用 token 重設密碼
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = tokenRepo.findByTokenAndUsedFalse(token)
+                .orElseThrow(() -> new IllegalArgumentException("無效或過期的 token"));
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token 已過期");
+        }
+
+        CCustomer customer = cCustomerRepo.findByEmail(resetToken.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("找不到對應顧客"));
+
+        validatePasswordStrength(newPassword);
+        customer.setPassword(encoder.encode(newPassword));
+
+        cCustomerRepo.save(customer);
+        // 標記 token 為已使用
+        resetToken.setUsed(true);
+        tokenRepo.save(resetToken);
+    }
+
 
     // 更改基本資料: 讓用戶更新個人資訊（含忘記密碼、密碼更改）資料驗證、密碼加密更新、資料一致性
-
     public CCustomerProfileResponse updateProfile(String account, UpdateCCustomerProfileRequest request) {
         CCustomer customer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(() -> new RuntimeException("帳號不存在"));
@@ -240,8 +289,7 @@ public class CCustomerService {
     }
 
 
-    // todo:0630
-    // 總消費10000vip免運費, 50000vvip終身9折(可結合其他優惠使用)，一段時間沒消費降級
+    // 總消費10000vip免運費, 50000vvip終身9折(可結合其他優惠使用)，一段時間沒消費降級(90days)
     @Transactional
     public void evaluateAndUpdateVipLevel(Long customerId) {
         CCustomer customer = cCustomerRepo.findById(customerId)
