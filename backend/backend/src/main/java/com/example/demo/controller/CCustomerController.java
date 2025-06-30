@@ -5,6 +5,7 @@ import com.example.demo.dto.request.CCustomerRegisterRequest;
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.entity.CCustomer;
+import com.example.demo.security.CheckCustomerActive;
 import com.example.demo.security.CheckJwt;
 import com.example.demo.security.JwtTool;
 import com.example.demo.service.CCustomerService;
@@ -81,5 +82,30 @@ public class CCustomerController {
         CCustomerProfileResponse updatedProfile = cCustomerService.updateProfile(account, updateRequest);
 
         return ResponseEntity.ok(updatedProfile);
+    }
+
+    @CheckJwt
+    @CheckCustomerActive
+    @DeleteMapping("/account")
+    public ResponseEntity<Void> deleteOwnAccount(HttpServletRequest request) {
+        String account = (String) request.getAttribute("account");
+        cCustomerService.deleteAccountPermanently(account);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 忘記密碼：寄送重設密碼連結（這裡模擬直接取得 token）
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        String token = cCustomerService.generateResetToken(email);
+        return ResponseEntity.ok("請使用此連結重設密碼: /customer/reset-password?token=" + token);
+    }
+
+    // 使用 token 重設密碼
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword) {
+        cCustomerService.resetPassword(token, newPassword);
+        return ResponseEntity.ok("密碼已成功重設！");
     }
 }

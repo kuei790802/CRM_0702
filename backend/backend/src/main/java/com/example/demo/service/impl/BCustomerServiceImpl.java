@@ -12,7 +12,6 @@ import com.example.demo.enums.BCustomerType;
 import com.example.demo.repository.BCustomerRepository;
 import com.example.demo.repository.TagRepository;
 import com.example.demo.service.BCustomerService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -197,9 +196,9 @@ public class BCustomerServiceImpl implements BCustomerService {
         dto.setIndustry(BCustomer.getIndustry());
         dto.setBCustomerType(BCustomer.getBCustomerType());
         dto.setBCustomerLevel(BCustomer.getBCustomerLevel());
-        dto.setCustomerAddress(BCustomer.getAddress());//TODO(joshkuie): Align to CustomerBase.
-        dto.setCustomerTel(BCustomer.getTel());//TODO(joshkuie): Align to CustomerBase.
-        dto.setCustomerEmail(BCustomer.getEmail());//TODO(joshkuie): Align to CustomerBase.
+        dto.setCustomerAddress(BCustomer.getAddress()); //TODO(josh): Change getCustomerAddress() to getAddress()
+        dto.setCustomerTel(BCustomer.getTel()); //ToDO(josh): Change getCustmoerTel() to getTel()
+        dto.setCustomerEmail(BCustomer.getEmail()); //TODO(josh): Change getCustomerEmail() to getEmail()
         dto.setCreatedAt(BCustomer.getCreatedAt());
         dto.setUpdatedAt(BCustomer.getUpdatedAt());
 
@@ -223,9 +222,9 @@ public class BCustomerServiceImpl implements BCustomerService {
         BCustomer.setIndustry(request.getIndustry());
         BCustomer.setBCustomerType(request.getBCustomerType());
         BCustomer.setBCustomerLevel(request.getBCustomerLevel());
-        BCustomer.setAddress(request.getCustomerAddress()); //TODO(joshkuie): Align to CustomerBase.
-        BCustomer.setTel(request.getCustomerTel()); //TODO(joshkuie): Align to CustomerBase.
-        BCustomer.setEmail(request.getCustomerEmail());//TODO(joshkuie): Align to CustomerBase.
+        BCustomer.setAddress(request.getCustomerAddress()); //TODO(josh): Change getCustomerAddress() to getAddress()
+        BCustomer.setTel(request.getCustomerTel()); //ToDO(josh): Change getCustmoerTel() to getTel()
+        BCustomer.setEmail(request.getCustomerEmail()); //TODO(josh): Change getCustomerEmail() to getEmail()
 
         if (request.getTagIds() != null) {
             HashSet<Tag> tags = new HashSet<>();
@@ -237,11 +236,4 @@ public class BCustomerServiceImpl implements BCustomerService {
             BCustomer.setTags(tags);
         }
     }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public BCustomer getBCustomerEntityById(Long id) {
-//        return BCustomerRepository.findById(id)
-//                .orElseThrow(() -> new EntityNotFoundException("找不到客戶，ID: " + id));
-//    }
 }

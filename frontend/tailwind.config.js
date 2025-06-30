@@ -8,16 +8,33 @@ export default {
     extend: {
       colors: {
         logo: {
-          lightBlue: '#9DCCF3', // 淺藍色
-          blue: '#6DA1CD',      // 較深藍色
-          tan: '#DDB675',       // 淡棕黃色
+          lightBlue: '#9DCCF3',
+          blue: '#6DA1CD',
+          tan: '#DDB675',
         },
+      },
+      cursor: {
+        icepop: "url('/cursors/cursor04.png') 0 0, auto",
+      },
+      keyframes: {
+        scrollRight: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        scrollLeft: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(50%)' },
+        },
+      },
+      animation: {
+        'scroll-right': 'scrollRight 20s linear infinite',
+        'scroll-left': 'scrollLeft 20s linear infinite',
       },
     },
     container: {
       center: true,
       padding: {
-        DEFAULT: '1rem', // base padding
+        DEFAULT: '1rem',
         sm: '1.5rem',
         lg: '2rem',
         xl: '2.5rem',
@@ -33,4 +50,4 @@ export default {
     },
   },
   plugins: [],
-}
+};

@@ -19,7 +19,7 @@ export const handlers = [
   ...newsHandlers,
   ...contactHandler,
   ...productHandlers,
-  // ...loginHandlers,
+  ...loginHandlers,
   ...crmCustomerHandlers,
   ...crmOpportunitiesHandlers,
   ...crmcalendarEventsHandler,
