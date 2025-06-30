@@ -56,8 +56,6 @@ public class ContactController {
     @Operation(summary = "建立一個新聯絡人")
     @PostMapping
     public ResponseEntity<ContactDto> createContact(@Valid @RequestBody ContactRequest request) {
-        // @Valid 觸發 DTO 中的 JSR-303/JSR-380 驗證（例如 @NotBlank, @NotNull）
-        // @RequestBody 將請求體中的 JSON 轉換為 ContactRequest 物件
         ContactDto createdContact = contactService.create(request);
         return new ResponseEntity<>(createdContact, HttpStatus.CREATED); // 返回 201 Created 狀態碼
     }

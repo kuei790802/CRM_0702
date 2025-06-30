@@ -31,6 +31,7 @@ import CRMOpportunities from "./backpages/crm/CRMOpportunities.jsx";
 import CRMOpportunityForm from "./backpages/crm/CRMOpportunityForm.jsx";
 import CRMCustomerForm from "./backpages/crm/CRMCustomerForm.jsx";
 import CRMCalendar from "./backpages/crm/CRMCalendar.jsx";
+import CRMCompany from "./backpages/crm/CRMCompany.jsx";
 //ERP相關頁面
 import ERPOrders from "./backpages/erp/ERPOrders.jsx";
 import ERPProducts from "./backpages/erp/ERPProducts.jsx";
@@ -117,7 +118,10 @@ const router = createBrowserRouter([
         path: "customer/:id",
         element: <CRMCustomerForm />,
       },
-      
+      {
+        path: "company",
+        element: <CRMCompany />,
+      },
     ],
   },
   {

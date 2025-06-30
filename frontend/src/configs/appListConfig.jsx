@@ -14,7 +14,7 @@ const appListConfig = [
     title: "使用者權限",
     desc: "管理使用者權限",
     url: "/users/management",
-    roles: ['admin'], // 
+    roles: ['admin'], //
   },
   {
     key: 'erp',

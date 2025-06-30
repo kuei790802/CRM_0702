@@ -1,168 +1,187 @@
-import { useState } from 'react';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import axios from '../api/axiosFrontend';
+import { useState } from "react";
+import { LuEye, LuEyeClosed } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
+import axios from "../api/axiosFrontend";
 
 const SignFlow = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    account: '',
-    email: '',
-    address: '',
-    agreePromo: false,
-    username: '',
-    password: '',
-    birthYear: '',
-    birthMonth: '',
-    birthDay: '',
+    email: "",
+    address: "",
+    username: "",
+    password: "",
+    birthYear: "",
+    birthMonth: "",
+    birthDay: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPassword = (password) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{12,}$/.test(password);
 
-  const isBirthComplete =
-    form.birthYear && form.birthMonth && form.birthDay;
+  const isBirthComplete = form.birthYear && form.birthMonth && form.birthDay;
 
   const isFormValid =
-    form.account &&
     form.email &&
-    form.username &&
     form.password &&
+    form.username &&
+    isValidEmail(form.email) &&
+    isValidPassword(form.password) &&
     isBirthComplete;
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    // 個別欄位即時驗證
+    if (name === "email") {
+      if (!value) setEmailError("⚠️ 請輸入你的電子郵件");
+      else if (!isValidEmail(value)) setEmailError("⚠️ 電子郵件格式不正確");
+      else setEmailError("");
+    }
+
+    if (name === "password") {
+      if (!value) setPasswordError("⚠️ 請輸入你的密碼");
+      else if (!isValidPassword(value))
+        setPasswordError(
+          "⚠️ 密碼需至少12字，含大小寫、數字與特殊符號"
+        );
+      else setPasswordError("");
+    }
+
+    if (name === "username") {
+      if (!value) setUsernameError("⚠️ 請輸入你的用戶名");
+      else setUsernameError("");
+    }
+  };
+
   const handleSubmit = async () => {
-    setHasSubmitted(true);
     if (!isFormValid) return;
 
     const birthDate = `${form.birthYear}-${String(form.birthMonth).padStart(
       2,
-      '0'
-    )}-${String(form.birthDay).padStart(2, '0')}`;
+      "0"
+    )}-${String(form.birthDay).padStart(2, "0")}`;
 
     const payload = {
-      account: form.account,
-      password: form.password,
       email: form.email,
+      account: form.email,
       customerName: form.username,
+      password: form.password,
       address: form.address,
       birthday: birthDate,
     };
 
     try {
-      const response = await axios.post('/customer/register', payload);
-      console.log('註冊成功:', response.data);
-      navigate('/SignSuccess');
+      const response = await axios.post("/customer/register", payload);
+      console.log("註冊成功:", response.data);
+      navigate("/SignSuccess");
     } catch (error) {
-      console.error('註冊失敗:', error.response?.data || error.message);
-      alert('註冊失敗，請確認輸入資料是否正確');
+      console.error("註冊失敗:", error.response?.data || error.message);
+      alert("註冊失敗，請確認輸入資料是否正確");
     }
   };
-
-  const inputStyle = (field) =>
-    `w-full py-3 px-4 rounded-md border transition focus:outline-none focus:ring-2 focus:ring-orange-400 ${
-      hasSubmitted && !form[field]
-        ? 'border-red-500 bg-red-50'
-        : 'border-gray-300'
-    }`;
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-3xl font-bold mb-2">立即註冊會員</h2>
       <p className="text-sm text-gray-600 mb-4">請填寫以下資訊以建立帳號</p>
 
-      {/* 帳號 */}
+      {/* 電子郵件 */}
       <div className="mb-4">
-        <input
-          type="text"
-          name="account"
-          placeholder="帳號"
-          value={form.account}
-          onChange={handleChange}
-          className={inputStyle('account')}
-        />
-        {hasSubmitted && !form.account && (
-          <p className="text-red-500 text-sm mt-1 ml-1">⚠️ 請輸入你的帳號</p>
-        )}
-      </div>
-
-      {/* Email */}
-      <div className="mb-4">
+        <label htmlFor="email" className="block mb-1 text-sm text-gray-700">
+          電子郵件
+        </label>
         <input
           type="email"
           name="email"
-          placeholder="電子郵件"
+          id="email"
           value={form.email}
           onChange={handleChange}
-          className={inputStyle('email')}
+          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            emailError ? "border-red-500 bg-red-50" : "border-gray-300"
+          }`}
         />
-        {hasSubmitted && !form.email && (
-          <p className="text-red-500 text-sm mt-1 ml-1">⚠️ 請輸入你的電子郵件</p>
-        )}
-      </div>
-
-      {/* 地址 */}
-      <div className="mb-4">
-        <input
-          type="text"
-          name="address"
-          placeholder="地址（選填）"
-          value={form.address}
-          onChange={handleChange}
-          className="w-full py-3 px-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
-        />
-      </div>
-
-      {/* 用戶名 */}
-      <div className="mb-4">
-        <input
-          type="text"
-          name="username"
-          placeholder="用戶名"
-          value={form.username}
-          onChange={handleChange}
-          className={inputStyle('username')}
-        />
-        {hasSubmitted && !form.username && (
-          <p className="text-red-500 text-sm mt-1 ml-1">⚠️ 請輸入你的用戶名</p>
+        {emailError && (
+          <p className="text-red-500 text-sm mt-1 ml-1">{emailError}</p>
         )}
       </div>
 
       {/* 密碼 */}
-      <div className="relative mb-4">
+      <div className="mb-4 relative">
+        <label htmlFor="password" className="block mb-1 text-sm text-gray-700">
+          密碼
+        </label>
         <input
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? "text" : "password"}
           name="password"
-          placeholder="密碼"
+          id="password"
           value={form.password}
           onChange={handleChange}
-          className={`${inputStyle('password')} pr-10`}
+          className={`w-full px-4 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            passwordError ? "border-red-500 bg-red-50" : "border-gray-300"
+          }`}
         />
         <button
           type="button"
           onClick={togglePasswordVisibility}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+          className="absolute right-3 top-[38px] text-gray-500"
         >
-          {showPassword ? <FaEyeSlash /> : <FaEye />}
+          {showPassword ? <LuEye /> : <LuEyeClosed />}
         </button>
-        {hasSubmitted && !form.password && (
-          <p className="text-red-500 text-sm mt-1 ml-1">⚠️ 請輸入你的密碼</p>
+        {passwordError && (
+          <p className="text-red-500 text-sm mt-1 ml-1">{passwordError}</p>
         )}
+      </div>
+
+      {/* 用戶名 */}
+      <div className="mb-4">
+        <label htmlFor="username" className="block mb-1 text-sm text-gray-700">
+          用戶名
+        </label>
+        <input
+          type="text"
+          name="username"
+          id="username"
+          value={form.username}
+          onChange={handleChange}
+          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            usernameError ? "border-red-500 bg-red-50" : "border-gray-300"
+          }`}
+        />
+        {usernameError && (
+          <p className="text-red-500 text-sm mt-1 ml-1">{usernameError}</p>
+        )}
+      </div>
+
+      {/* 地址（選填） */}
+      <div className="mb-4">
+        <label htmlFor="address" className="block mb-1 text-sm text-gray-700">
+          地址（選填）
+        </label>
+        <input
+          type="text"
+          name="address"
+          id="address"
+          value={form.address}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
       </div>
 
       {/* 出生日 */}
       <div className="mb-4">
-        <label className="block text-gray-700 font-medium mb-2">出生日期</label>
+        <label className="block text-gray-700 font-medium mb-2">
+          出生日期
+        </label>
         <div className="flex justify-between gap-2">
           <select
             name="birthYear"
@@ -204,19 +223,21 @@ const SignFlow = () => {
             ))}
           </select>
         </div>
-        {hasSubmitted && !isBirthComplete && (
-          <p className="text-red-500 text-sm mt-1 ml-1">⚠️ 請選擇完整出生日期</p>
+        {!isBirthComplete && (
+          <p className="text-red-500 text-sm mt-1 ml-1">
+            ⚠️ 請選擇完整出生日期
+          </p>
         )}
       </div>
 
-      {/* 提交按鈕 */}
+      {/* 送出按鈕 */}
       <button
         onClick={handleSubmit}
         disabled={!isFormValid}
         className={`w-full font-bold py-3 rounded-md transition ${
           isFormValid
-            ? 'bg-orange-500 text-white hover:bg-orange-600'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            ? "bg-orange-500 text-white hover:bg-orange-600"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
         }`}
       >
         立即加入

@@ -81,13 +81,4 @@ public interface BCustomerService {
      * @return 符合條件的客戶 DTO 分頁列表。
      */
     Page<BCustomerDto> findCustomersByCustomerLevel(BCustomerLevel BCustomerLevel, Pageable pageable);
-
-
-    /**
-     * 根據客戶的唯一 ID 尋找客戶實體。
-     * @param id 要尋找的客戶 ID。
-     * @return 客戶實體。
-     * @throws EntityNotFoundException 如果找不到對應 ID 的客戶。
-     */
-    com.example.demo.entity.BCustomer getBCustomerEntityById(Long id); // Added this line
 }

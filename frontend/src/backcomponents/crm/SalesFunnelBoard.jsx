@@ -18,12 +18,12 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { FaStar, FaRegStar, FaClock, FaEdit } from "react-icons/fa";
 
-const visibleStages = ["new", "evaluated", "proposal", "closed"];
+const visibleStages = ["INITIAL_CONTACT", "NEEDS_ANALYSIS", "PROPOSAL", "NEGOTIATION"];
 const columnTitles = {
-  new: "新潛在客戶",
-  evaluated: "已評估",
-  proposal: "提案",
-  closed: "成交",
+  INITIAL_CONTACT: "初步接洽",
+  NEEDS_ANALYSIS: "需求分析",
+  PROPOSAL: "提案",
+  NEGOTIATION: "談判",
 };
 
 export default function SalesFunnelBoard({ columns, setColumns }) {

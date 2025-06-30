@@ -50,4 +50,6 @@ public class OpportunityDto {
     // 用於顯示平均評分的字段
     private Double averageRating;
 
+    private int priority;
+
 }

@@ -142,7 +142,6 @@ const ERPOrders = () => {
             key="new"
             icon={<PlusOutlined />}
             type="primary"
-            onClick={() => navigate("/erp/sales/orders/new")}
           >
             新增訂單
           </Button>,

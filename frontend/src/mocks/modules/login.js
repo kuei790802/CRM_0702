@@ -4,7 +4,7 @@ export const loginHandlers = [
   rest.post('/api/customer/auth/login', async (req, res, ctx) => {
     const { email, password } = await req.json();
 
-    if (email === 'test@example.com' && password === '123456') {
+    if (email === 'kevin_lin88' && password === 'MyStr0ngP@sswd#1') {
       return res(
         ctx.status(200),
         ctx.json({

@@ -1,44 +1,56 @@
-import React, { useState } from "react";
-import { Button, Modal } from "antd";
+import React, { useState, useEffect } from "react";
+import { Button, Modal, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import axios from "../../api/axiosBackend";
 import CRMOpportunityForm from "./CRMOpportunityForm";
 import SalesFunnelBoard from "../../backcomponents/crm/SalesFunnelBoard.jsx";
 
-const initialData = {
-  new: [
-    { id: "c1", title: "開發新客戶 A", rating: 2, type: "info" },
-    { id: "c2", title: "LINE 詢價潛在客戶", rating: 1, type: "warning" },
-  ],
-  evaluated: [
-    { id: "c3", title: "B 公司需求評估", rating: 3, type: "success" },
-  ],
-  proposal: [
-    { id: "c4", title: "C 公司報價審核中", rating: 2, type: "warning" },
-  ],
-  closed: [
-    { id: "c5", title: "D 客戶成交完成", rating: 3, type: "success" },
-  ],
-  won: [],
-  lost: [],
-  prospecting: [],
-  negotiating: [],
-};
-
 export default function SalesFunnel() {
-  const [columns, setColumns] = useState(initialData);
+  const [columns, setColumns] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchFunnelData = async () => {
+      try {
+        const res = await axios.get("/opportunities/funnel");
+
+        const funnelData = {};
+        res.data.forEach((stageItem) => {
+          const key = stageItem.stageDisplayName;
+          funnelData[key] = stageItem.opportunities.map((op) => ({
+            id: `c${op.opportunityId}`,
+            title: op.opportunityName,
+            rating: Math.round(op.averageRating ?? 0),
+            type: "info",
+            ...op,
+          }));
+        });
+
+        setColumns(funnelData);
+      } catch (error) {
+        console.error("載入商機漏斗失敗：", error);
+        message.error("無法載入商機資料");
+      }
+    };
+
+    fetchFunnelData();
+  }, []);
 
   const handleCreate = (formValues) => {
     const id = `c${Date.now()}`;
+    const stageKey = formValues.stage ?? "INITIAL_CONTACT";
+
     const newOpportunity = {
       id,
+      title: formValues.opportunityName,
+      rating: Math.round(formValues.averageRating ?? 1),
+      type: "info",
       ...formValues,
     };
 
-    const stage = formValues.stage || "new";
     setColumns((prev) => ({
       ...prev,
-      [stage]: [...(prev[stage] || []), newOpportunity],
+      [stageKey]: [...(prev[stageKey] || []), newOpportunity],
     }));
 
     setModalOpen(false);
