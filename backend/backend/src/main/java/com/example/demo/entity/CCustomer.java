@@ -18,7 +18,6 @@ import java.util.Set; // 改用 Set
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@Builder
 public class CCustomer extends CustomerBase {
 
     @Column(nullable = false, unique = true)

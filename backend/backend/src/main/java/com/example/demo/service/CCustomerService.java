@@ -37,10 +37,8 @@ public class CCustomerService {
     // 註冊禮優惠券的代碼
     private static final String NEW_MEMBER_COUPON_CODE = "NEW_MEMBER_90";
 
-    // 建構子注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository) {
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo, CouponTemplateService couponTemplateService, CustomerCouponService customerCouponService) {
+    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository, CouponTemplateService couponTemplateService, CustomerCouponService customerCouponService) {
         this.cCustomerRepo = cCustomerRepo;
         this.orderRepository = orderRepository;
         this.couponTemplateService = couponTemplateService;
