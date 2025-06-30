@@ -100,7 +100,7 @@ const CRMDashboard = () => {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={110} // 👈 圖放大
+                outerRadius={110}
                 labelLine={false}
                 label={renderCustomizedLabel}
               >
@@ -151,11 +151,6 @@ const CRMDashboard = () => {
               </Funnel>
             </FunnelChart>
           </ResponsiveContainer>
-          <FunnelStackedBarChart
-            rawData={stageDistribution.data}
-            title="商機漏斗分析"
-            height={250} // 若你在 FunnelStackedBarChart 裡支援傳入 height
-          />
         </div>
       </div>
 

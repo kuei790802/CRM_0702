@@ -26,7 +26,7 @@ const columnTitles = {
   NEGOTIATION: "談判",
 };
 
-export default function SalesFunnelBoard({ columns, setColumns }) {
+export default function SalesFunnelBoard({ columns, setColumns, onCardDoubleClick }) {
   const [overColumnId, setOverColumnId] = useState(null);
   const [activeCard, setActiveCard] = useState(null);
   const [activeId, setActiveId] = useState(null);
@@ -148,6 +148,7 @@ export default function SalesFunnelBoard({ columns, setColumns }) {
               items={items}
               isOver={overColumnId === columnId}
               activeId={activeId}
+              onCardDoubleClick={onCardDoubleClick}
             />
           ))}
       </div>
@@ -166,7 +167,7 @@ export default function SalesFunnelBoard({ columns, setColumns }) {
   );
 }
 
-function Column({ id, title, items, isOver, activeId }) {
+function Column({ id, title, items, isOver, activeId ,onCardDoubleClick}) {
   const { setNodeRef } = useDroppable({ id });
   return (
     <div
@@ -187,6 +188,7 @@ function Column({ id, title, items, isOver, activeId }) {
               title={item.title}
               rating={item.rating || 0}
               type={item.type || "default"}
+              onCardDoubleClick={() => onCardDoubleClick?.(item)}
             />
           ))}
         </div>
@@ -202,6 +204,7 @@ function SortableCard({
   type = "default",
   isOverlay = false,
   isPreview = false,
+  onCardDoubleClick,
 }) {
   const [currentRating, setCurrentRating] = useState(rating);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -251,10 +254,11 @@ function SortableCard({
       {...attributes}
       {...listeners}
       style={style}
+      onDoubleClick={onCardDoubleClick}
       className={`bg-white w-full px-3 py-4 border-2 ${borderColor} hover:shadow-md rounded-2xl relative cursor-pointer group`}
     >
       {/* 卡片右上角的 FaEdit 和顏色選單 */}
-      <div className="absolute top-2 right-2">
+      <div className="absolute bottom-2 right-2">
         <FaEdit
           className="text-gray-500 hover:text-black transition duration-200 cursor-pointer"
           onClick={() => setShowColorPicker((prev) => !prev)}
@@ -274,6 +278,7 @@ function SortableCard({
                       warning: "bg-yellow-400",
                       error: "bg-red-400",
                       info: "bg-blue-400",
+                      default: "bg-gray-400",
                     }[typeOption]
                   }`}
                 ></span>
