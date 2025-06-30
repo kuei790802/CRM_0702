@@ -47,7 +47,7 @@ import UsersLogs from "./backpages/users/usersLogs.jsx";
 import UsersAuthority from "./backpages/users/usersAuthority.jsx";
 
 const user = useBackUserStore.getState().backUser;
-const role = user?.role || "editor";
+const role = user?.role || "admin";
 const getFilteredAppList = (role) =>
   appListConfig.filter((item) => item.roles.includes(role));
 const filteredAppList = getFilteredAppList(role);
