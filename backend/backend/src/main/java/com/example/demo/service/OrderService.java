@@ -23,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.demo.enums.PaymentMethod.CASH_ON_DELIVERY;
@@ -328,4 +325,83 @@ public class OrderService {
             System.out.println("訂單 " + merchantTradeNo + " 交易失敗，RtnCode: " + rtnCode);
         }
     }
+
+
+    // ▼▼▼▼▼ 請將以下三個方法完整複製到您的 OrderService class 中 ▼▼▼▼▼
+
+    /**
+     * 【全新增加】處理從綠界物流選擇頁面回來後的回調 (Server-to-Server)
+     * 這個方法會在 LogisticsController 被呼叫。
+     * @param replyData 綠界回傳的 Map 資料
+     */
+    @Transactional
+    public void processLogisticsSelection(Map<String, String> replyData) {
+        String merchantTradeNo = replyData.get("MerchantTradeNo");
+        if (merchantTradeNo == null || merchantTradeNo.isEmpty()) {
+            throw new IllegalArgumentException("從綠界回傳的資料中缺少 MerchantTradeNo");
+        }
+
+        Order order = orderRepository.findByMerchantTradeNo(merchantTradeNo)
+                .orElseThrow(() -> new EntityNotFoundException("找不到對應的訂單編號: " + merchantTradeNo));
+
+        // 呼叫 EcpayService 的方法，去跟綠界建立一筆真正的物流訂單
+        String ecpayResponse = ecpayService.createLogisticsOrder(order, replyData);
+        System.out.println("建立綠界物流訂單API的回應: " + ecpayResponse);
+
+        // 解析綠界的回應，並儲存物流單號
+        // 範例: 1|OK...
+        // 範例: 1|OK\nMerchantID=2000132&...&AllPayLogisticsID=123456&...
+        String[] responseParts = ecpayResponse.split("\\R", 2);
+        if (responseParts.length > 0 && responseParts[0].startsWith("1|")) {
+            // 成功
+            System.out.println("物流訂單建立成功。");
+            // 如果您需要在 Order Entity 中儲存物流單號，可以在這裡處理
+            // Map<String, String> responseMap = parseEcpayResponse(responseParts[1]);
+            // String logisticsId = responseMap.get("AllPayLogisticsID");
+            // order.setLogisticsId(logisticsId);
+            // order.setLogisticsType(replyData.get("LogisticsType"));
+            // order.setOrderStatus(OrderStatus.PENDING_SHIPMENT); // 更新訂單狀態為待出貨
+            // orderRepository.save(order);
+        } else {
+            // 失敗
+            System.err.println("建立綠界物流訂單失敗，綠界回應: " + ecpayResponse);
+            throw new RuntimeException("建立綠界物流訂單失敗。");
+        }
+    }
+
+    /**
+     * 【全新增加】處理綠界發送的物流狀態更新回調
+     * 當貨物狀態改變時 (如: 已寄出、已到店、已取貨)，綠界會呼叫這個。
+     * @param callbackData
+     */
+    @Transactional
+    public void processLogisticsStatusCallback(Map<String, String> callbackData) {
+        System.out.println("收到物流狀態更新: " + callbackData);
+        String merchantTradeNo = callbackData.get("MerchantTradeNo");
+        Order order = orderRepository.findByMerchantTradeNo(merchantTradeNo)
+                .orElseThrow(() -> new EntityNotFoundException("找不到對應的訂單編號: " + merchantTradeNo));
+
+        // String status = callbackData.get("RtnCode"); // 物流狀態碼
+        // 您可以在這裡根據不同的狀態碼更新您的訂單物流狀態
+        // order.setLogisticsStatus(status);
+        // orderRepository.save(order);
+    }
+
+    /**
+     * 【全新增加】輔助方法，用於解析綠界回傳的 Key-Value 字串
+     */
+    private Map<String, String> parseEcpayResponse(String responseBody) {
+        Map<String, String> map = new TreeMap<>();
+        if (responseBody == null || responseBody.isEmpty()) return map;
+        String[] pairs = responseBody.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            if (idx > 0) {
+                map.put(pair.substring(0, idx), pair.substring(idx + 1));
+            }
+        }
+        return map;
+    }
+
+    // ▲▲▲▲▲ 以上是您需要加入的三個方法 ▲▲▲▲▲
 }
