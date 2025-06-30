@@ -54,7 +54,7 @@ const TripleCardSection = () => {
             />
             <div className="absolute top-[70%] left-0 right-0 bottom-0 bg-logo-lightBlue bg-opacity-70 group-hover:bg-opacity-30 transition duration-300" />
             <div className="absolute bottom-6 left-6 right-6 text-white z-10">
-              <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wide text-outline-black">
+              <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wide">
                 {card.title}
               </h3>
               <p className="mt-1 text-sm md:text-base max-w-[100%] text-white font-bold text-shadow">

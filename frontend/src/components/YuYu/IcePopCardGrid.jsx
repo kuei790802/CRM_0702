@@ -24,7 +24,7 @@ export default function IcePopCardGrid() {
   return (
     <div className="max-w-6xl mx-auto py-6 pb-16" ref={ref}>
       <h2 className="text-center text-2xl md:text-3xl font-bold tracking-wider mb-10 text-gray-800">
-        熱門經典杯子口味
+        熱門經典杯裝系列
       </h2>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-6 place-items-center">

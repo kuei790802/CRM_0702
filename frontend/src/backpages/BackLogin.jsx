@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useBackUserStore from "../stores/useBackUserStore";
 import backgroundImage from "../assets/signbackground.jpg";
@@ -6,6 +6,10 @@ import backgroundImage from "../assets/signbackground.jpg";
 function BackLogin() {
   const navigate = useNavigate();
   const { loginBackUser } = useBackUserStore();
+
+  useEffect(() => {
+    document.body.classList.remove("cursor-frontend");
+  }, []);
 
   const [account, setAccount] = useState("admin");
   const [password, setPassword] = useState("admin123");
