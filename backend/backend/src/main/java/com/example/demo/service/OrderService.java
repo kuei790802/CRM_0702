@@ -54,6 +54,10 @@ public class OrderService {
      */
     @Transactional
     public OrderDto createOrderFromCart(Long customerId, CreateOrderRequestDto requestDto) {
+        System.out.println("====== 開始建立訂單流程 ======");
+        System.out.println("顧客 ID: " + customerId);
+        System.out.println("收到的請求 DTO: " + requestDto);
+
         CCustomer customer = cCustomerRepo.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到顧客，ID: " + customerId));
 
@@ -64,47 +68,76 @@ public class OrderService {
             throw new IllegalStateException("購物車是空的，無法建立訂單。");
         }
 
-        // --- ✨ 1. 將原始總金額的計算提前 ---
         BigDecimal originalTotal = cart.getCartdetails().stream()
                 .map(cd -> cd.getProduct().getBasePrice()
-                        .multiply(BigDecimal.valueOf(cd.getQuantity())))
+                        .multiply(new BigDecimal(cd.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        System.out.println("計算出的訂單原始總金額: " + originalTotal);
 
-
-        // --- ✨ 2. 初始化優惠券相關變數 ---
         BigDecimal finalTotal = originalTotal;
         CustomerCoupon appliedCoupon = null;
 
-        // --- ✨ 3. 如果請求中有 customerCouponId，則進行優惠券處理 ---
+        // --- 關鍵的優惠券處理區塊 ---
+        System.out.println("準備檢查是否使用優惠券...");
         if (requestDto.getCustomerCouponId() != null) {
+            System.out.println("請求中包含 Coupon ID: " + requestDto.getCustomerCouponId() + "，進入折扣處理程序。");
+
             Long couponId = requestDto.getCustomerCouponId();
             appliedCoupon = customerCouponRepository.findById(couponId)
                     .orElseThrow(() -> new ResourceNotFoundException("找不到優惠券 ID: " + couponId));
+            System.out.println("成功從資料庫找到優惠券!");
 
-            // 驗證優惠券所有權
+            // 驗證 1: 優惠券所有權
+            System.out.println("驗證所有權 -> 優惠券持有者 ID: " + appliedCoupon.getCustomer().getCustomerId() + " | 目前顧客 ID: " + customerId);
             if (!appliedCoupon.getCustomer().getCustomerId().equals(customerId)) {
+                System.out.println("!!! 驗證失敗: 優惠券不屬於此使用者。");
                 throw new IllegalStateException("該優惠券不屬於這位使用者。");
             }
 
-            // 驗證優惠券狀態
+            // 驗證 2: 優惠券狀態
+            System.out.println("驗證狀態 -> 優惠券狀態為: " + appliedCoupon.getStatus());
             if (appliedCoupon.getStatus() != CustomerCouponStatus.UNUSED) {
+                System.out.println("!!! 驗證失敗: 優惠券已被使用或失效。");
                 throw new IllegalStateException("該優惠券已被使用或已失效。");
             }
 
             CouponTemplate template = appliedCoupon.getCouponTemplate();
+            System.out.println("取得優惠券模板: " + template.getName());
 
-            // 驗證訂單金額是否滿足低消
+            // 驗證 3: 訂單金額是否滿足低消
+            System.out.println("驗證低消 -> 訂單金額: " + originalTotal + " | 優惠券低消: " + template.getMinPurchaseAmount());
             if (originalTotal.compareTo(template.getMinPurchaseAmount()) < 0) {
+                System.out.println("!!! 驗證失敗: 未達低消門檻。");
                 throw new IllegalStateException("訂單金額 " + originalTotal + " 未達優惠券低消 $" + template.getMinPurchaseAmount());
             }
 
-            // 計算折扣後金額
+            System.out.println("所有驗證通過，準備計算折扣後金額...");
             finalTotal = calculateDiscountedPrice(originalTotal, template);
+            System.out.println("計算完成，折扣後金額為: " + finalTotal);
+
+        } else {
+            System.out.println("請求中未包含 Coupon ID，跳過折扣處理。");
         }
 
-        CCustomerAddress address = cCustomerAddressRepository.findById((long)requestDto.getAddressId())
-                .filter(addr -> addr.getCCustomer().getCustomerId().equals(customerId))
-                .orElseThrow(() -> new EntityNotFoundException("無效的地址 ID: " + requestDto.getAddressId()));
+        // ✨ --- 新的地址處理邏輯 --- ✨
+// 1. 從 DTO 取得使用者輸入的地址字串
+        String addressString = requestDto.getAddress();
+        if (addressString == null || addressString.trim().isEmpty()) {
+            throw new IllegalArgumentException("收貨地址不可為空。");
+        }
+
+// 2. 建立一個新的 CCustomerAddress 物件
+        CCustomerAddress newAddress = new CCustomerAddress();
+        newAddress.setCCustomer(customer); // 將這個新地址與當前顧客關聯
+        newAddress.setAddress(addressString);
+        newAddress.setIsdefault(false); // 新建立的地址預設為非預設地址
+        newAddress.setCreateat(LocalDateTime.now());
+        newAddress.setUpdateat(LocalDateTime.now());
+
+// 3. 將這個新地址儲存到資料庫
+        CCustomerAddress savedAddress = cCustomerAddressRepository.save(newAddress);
+
+// --- ✨ 新邏輯結束，舊邏輯已被取代 --- ✨
 
         User systemUser = userRepository.findById(SYSTEM_USER_ID)
                 .orElseThrow(() -> new IllegalStateException("資料庫中找不到 ID 為 " + SYSTEM_USER_ID + " 的系統使用者帳號，請先建立"));
@@ -114,8 +147,9 @@ public class OrderService {
 
         Order newOrder = new Order();
         newOrder.setPlatform(defaultPlatform);
-        newOrder.setCCustomer(customer); // 維持您正確的寫法
-        newOrder.setCCustomerAddress(address);
+        newOrder.setCCustomer(customer);
+// ✨ 將訂單的地址設定為剛剛儲存的新地址 ✨
+        newOrder.setCCustomerAddress(savedAddress);
         newOrder.setOrderdate(LocalDate.now());
 
         PaymentMethod paymentMethod = PaymentMethod.valueOf(requestDto.getPaymentMethod());
@@ -159,6 +193,7 @@ public class OrderService {
 
         // ✨ 5. 設定訂單的總金額為折扣後的 finalTotal
         newOrder.setTotalAmount(finalTotal.doubleValue());
+        System.out.println("最終寫入訂單的金額為: " + newOrder.getTotalAmount());
 
         // ✨ 6. 先儲存 Order，取得 orderId
         Order savedOrder = orderRepository.save(newOrder);
@@ -169,6 +204,7 @@ public class OrderService {
             appliedCoupon.setStatus(CustomerCouponStatus.USED);
             appliedCoupon.setOrder(savedOrder); // 將儲存後的訂單關聯回優惠券
             customerCouponRepository.save(appliedCoupon); // 儲存優惠券的變更
+            System.out.println("優惠券 " + appliedCoupon.getId() + " 狀態已更新為 USED 並與訂單 " + savedOrder.getOrderid() + " 關聯。");
         }
 
         // 預留庫存
@@ -186,6 +222,7 @@ public class OrderService {
 
         // 清空購物車
         cartRepository.delete(cart);
+        System.out.println("====== 訂單建立流程結束 ======");
 
         return mapToOrderDto(savedOrder);
     }

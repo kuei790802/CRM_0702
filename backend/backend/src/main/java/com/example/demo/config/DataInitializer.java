@@ -58,11 +58,13 @@ public class DataInitializer {
     private static final String[] ICE_CREAM_NAMES = {"香草", "巧克力","藍莓","花生","咖啡", "香蕉","薄荷巧克力","OREO","草莓", "抹茶", "蘭姆葡萄", "海鹽焦糖", "芒果優格", "豆乳芝麻", "燕麥奶"};
     private static final String[] ICE_CREAM_SUFFIXES = {"冰淇淋", "雪酪", "聖代", "冰棒", "雪糕"};
 
+
     @PostConstruct
     public void initCriticalData() {
         initAuthoritiesAndAdmin();
         createVipLevelsIfNotExist();
     }
+
 
     @Bean
     @Profile("dev")
@@ -160,7 +162,6 @@ public class DataInitializer {
             log.info("System user already exists");
         }
     }
-
     private List<Unit> createAndSaveUnits() {
         if (unitRepository.count() > 0) {
             return unitRepository.findAll();
@@ -177,8 +178,6 @@ public class DataInitializer {
         });
         return unitRepository.saveAll(units);
     }
-
-
     private List<ProductCategory> createAndSaveCategories() {
         if (categoryRepository.count() > 0) {
             return categoryRepository.findAll();
@@ -230,3 +229,4 @@ public class DataInitializer {
     }
 
 }
+
