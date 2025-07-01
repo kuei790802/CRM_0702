@@ -3,9 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
 import com.example.demo.dto.response.CustomerCouponDto;
-import com.example.demo.entity.CCustomer;
-import com.example.demo.entity.CouponTemplate;
-import com.example.demo.entity.Order;
+import com.example.demo.entity.*;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
@@ -20,7 +18,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.UUID;
+
 
 @Service
 public class CCustomerService {
@@ -45,7 +44,13 @@ public class CCustomerService {
     private static final String NEW_MEMBER_COUPON_CODE = "NEW_MEMBER_90";
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository, CouponTemplateService couponTemplateService, CustomerCouponService customerCouponService) {
+    public CCustomerService(CCustomerRepo cCustomerRepo,
+                            OrderRepository orderRepository,
+                            VIPLevelRepo vipLevelRepo,
+                            VIPLevelService vipLevelService,
+                            PasswordResetTokenRepo tokenRepo,
+                            CouponTemplateService couponTemplateService,
+                            CustomerCouponService customerCouponService) {
         this.cCustomerRepo = cCustomerRepo;
         this.vipLevelRepo = vipLevelRepo;
         this.vipLevelService = vipLevelService;
@@ -54,7 +59,7 @@ public class CCustomerService {
         this.couponTemplateService = couponTemplateService;
         this.customerCouponService = customerCouponService;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
-        this.orderRepository = orderRepository;
+
     }
 
     // 檢視帳號是否已存在
@@ -194,7 +199,7 @@ public class CCustomerService {
                 customer.getEmail(),
                 customer.getAddress(),
                 customer.getBirthday(),
-                customer.getCoupons(),
+                couponDtos,
                 customer.getSpending(),
                 customer.getVipLevel()
         );
@@ -306,7 +311,7 @@ public class CCustomerService {
                 savedCustomer.getEmail(),
                 savedCustomer.getAddress(),
                 savedCustomer.getBirthday(),
-                savedCustomer.getCoupons(),
+                couponDtos,
                 savedCustomer.getSpending(),
                 savedCustomer.getVipLevel()
         );

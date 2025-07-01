@@ -4,6 +4,7 @@ import com.example.demo.dto.erp.*;
 import com.example.demo.entity.*;
 import com.example.demo.enums.PaymentStatus;
 import com.example.demo.enums.SalesOrderStatus;
+import com.example.demo.event.SalesOrderShippedEvent;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.CustomerBaseRepository;
@@ -12,11 +13,13 @@ import com.example.demo.repository.SalesOrderRepository;
 import com.example.demo.repository.WarehouseRepository;
 import com.example.demo.specification.SalesOrderSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -287,5 +290,22 @@ public class SalesOrderService {
             );
         }
         return SalesOrderViewDTO.fromEntity(updatedOrder);
+    }
+
+    @TransactionalEventListener
+    @Transactional // 讓這個監聽方法本身也成為一個獨立的交易
+    public void handleOrderShippedEvent(SalesOrderShippedEvent event) {
+        System.out.println("收到訂單已出貨事件，訂單ID: " + event.salesOrderId());
+
+        // 從事件中取得訂單 ID，並找到該訂單
+        SalesOrder order = salesOrderRepository.findById(event.salesOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("監聽事件時找不到訂單，ID: " + event.salesOrderId()));
+
+        // 執行原本在 InventoryService 中的更新邏輯
+        order.setOrderStatus(SalesOrderStatus.SHIPPED);
+        order.setPaymentStatus(PaymentStatus.PAID); // 根據您之前的需求，出貨即付款
+
+        // 這裡可以安全地儲存，因為它在一個新的交易中
+        salesOrderRepository.save(order);
     }
 }

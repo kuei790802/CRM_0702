@@ -19,9 +19,9 @@ import java.util.Random;
 
 @Component
 @Profile("dev")
-public class DataInitializer implements CommandLineRunner {
+public class DataInitializer_BCustomer implements CommandLineRunner {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer_BCustomer.class);
     private final Random random = new Random();
 
     @Autowired

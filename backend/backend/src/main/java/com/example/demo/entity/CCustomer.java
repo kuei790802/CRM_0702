@@ -29,6 +29,14 @@ public class CCustomer extends CustomerBase {
     private LocalDateTime accessStartTime;
     private LocalDateTime accessEndTime;
 
+//    @Column(name = "is_active", nullable = false)
+//    @Builder.Default
+//    private boolean isActive = true;
+//
+//    @Column(name = "is_deleted", nullable = false)
+//    @Builder.Default
+//    private Boolean isDeleted = false;
+
 
 //    private LocalDateTime createdAt;
 //    private LocalDateTime updatedAt;

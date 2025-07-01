@@ -1,9 +1,8 @@
 package com.example.demo.controller.erp;
 
-import com.example.demo.dto.erp.ProductResponseDTO;
+import com.example.demo.dto.erp.*;
 import com.example.demo.entity.Product;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.dto.erp.ProductSimpleDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
@@ -13,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.dto.erp.ProductCreateDTO;
-import com.example.demo.dto.erp.ProductUpdateDTO;
 //import com.example.demo.entity.Product;
 import com.example.demo.service.erp.ProductService;
 

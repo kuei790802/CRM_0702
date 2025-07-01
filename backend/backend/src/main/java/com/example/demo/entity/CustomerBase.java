@@ -31,7 +31,7 @@ public abstract class CustomerBase {
     @Column(name = "customer_id")
     private Long customerId;
 
-    @Column(name = "customer_code", unique = true, nullable = false, length = 50)
+    @Column(name = "customer_code", unique = true, nullable = true, length = 50)
     private String customerCode;
 
     @Column(name = "name", nullable = false)
