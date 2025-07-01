@@ -127,7 +127,7 @@ const CRMDashboard = () => {
 
         {/* 堆疊漏斗圖區塊 */}
         <div className="bg-white shadow-md rounded-xl p-4">
-          <h2 className="text-lg font-semibold mb-4">商機階段漏斗分析</h2>
+          <h2 className="text-lg font-semibold mb-4">商機漏斗分析</h2>
           <ResponsiveContainer width="100%" height={250}>
             <FunnelChart>
               <RechartsTooltip />

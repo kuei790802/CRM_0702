@@ -240,43 +240,43 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Override
     @Transactional(readOnly = true)
     public List<SalesFunnelDto> getSalesFunnelData() {
-        // 步驟 1: 查詢每個階段的匯總數據 (數量和總金額)
-        List<SalesFunnelRepository> summaries = opportunityRepository.getFunnelStageSummaries();
-        Map<OpportunityStage, SalesFunnelRepository> summaryMap = summaries.stream()
-                .collect(Collectors.toMap(SalesFunnelRepository::getStage, summary -> summary));
+        // 查詢所有「未結案(失敗)」的商機
+        // 這會包含所有 OPEN 和 WON 的商機
+        List<Opportunity> activeOpportunities = opportunityRepository.findByStatusNot(OpportunityStatus.LOST);
 
-        // 步驟 2: 一次性查詢出所有 OPEN 的商機，並按階段分組
-        List<Opportunity> openOpportunities = opportunityRepository.findByStatus(OpportunityStatus.OPEN);
-        Map<OpportunityStage, List<Opportunity>> opportunitiesByStage = openOpportunities.stream()
+        // 按階段分組
+        Map<OpportunityStage, List<Opportunity>> opportunitiesByStage = activeOpportunities.stream()
                 .collect(Collectors.groupingBy(Opportunity::getStage));
 
-        // 步驟 3: 遍歷所有可能的階段枚舉值，以確保即使某階段沒有商機也能顯示
         List<SalesFunnelDto> funnelData = new ArrayList<>();
+
+        // 遍歷所有可能的階段
         for (OpportunityStage stage : OpportunityStage.values()) {
+            if (stage == OpportunityStage.CLOSED_LOST) {
+                continue;
+            }
+
             SalesFunnelDto stageDto = new SalesFunnelDto();
             stageDto.setStage(stage);
             stageDto.setStageDisplayName(stage.name());
 
-            // 從 summaryMap 中獲取匯總數據，如果不存在則設為 0
-            SalesFunnelRepository summary = summaryMap.get(stage);
-            stageDto.setTotalCount(summary != null ? summary.getTotalCount() : 0L);
-            stageDto.setTotalExpectedValue(summary != null && summary.getTotalValue()
-                    != null ? summary.getTotalValue() : BigDecimal.ZERO);
-
-            // 從 opportunitiesByStage 中獲取商機列表，如果不存在則設為空列表
             List<Opportunity> opportunitiesInStage = opportunitiesByStage.getOrDefault(stage, Collections.emptyList());
             List<OpportunityDto> opportunityDtos = opportunitiesInStage.stream()
                     .map(opportunity -> opportunityMapper.toResponse(opportunity, null))
                     .collect(Collectors.toList());
+
             stageDto.setOpportunities(opportunityDtos);
+            stageDto.setTotalCount((long) opportunitiesInStage.size());
+            stageDto.setTotalExpectedValue(
+                    opportunitiesInStage.stream()
+                            .map(Opportunity::getExpectedValue)
+                            .filter(Objects::nonNull)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            );
 
             funnelData.add(stageDto);
         }
-
-        // 過濾掉不屬於活躍漏斗的階段
-        return funnelData.stream()
-                .filter(stageDto -> stageDto.getStage() != OpportunityStage.CLOSED_LOST && stageDto.getStage() != OpportunityStage.CLOSED_WON)
-                .collect(Collectors.toList());
+        return funnelData;
     }
 
     /**

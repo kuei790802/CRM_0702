@@ -84,6 +84,14 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long>,
     List<Opportunity> findByStatus(OpportunityStatus status);
 
     /**
+     * 根據指定的狀態，查詢所有「不等於」該狀態的商機。
+     * 我們將用它來獲取所有未結案(失敗)的商機 (OPEN 或 WON)。
+     * @param status 要排除的狀態 (例如 OpportunityStatus.CLOSED_LOST)。
+     * @return 符合條件的商機列表。
+     */
+    List<Opportunity> findByStatusNot(OpportunityStatus status);
+
+    /**
      * 匯總查詢：按階段分組，計算每個階段的商機數量和預期總金額。
      * - 只計算狀態為 OPEN 的商機，因為已結束的商機不屬於銷售漏斗。
      * - 使用我們上面定義的 FunnelStageSummary 介面來接收結果。
