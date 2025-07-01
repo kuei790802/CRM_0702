@@ -19,7 +19,7 @@ const Navbar = () => {
     <>
       <nav className="
         fixed top-4 left-1/2 transform -translate-x-1/2 z-50 
-        w-[85%] max-w-8xl px-6 py-3 
+        w-[85.2%] max-w-8xl px-6 py-3 
         bg-white/30 backdrop-blur-md 
         border border-white/20 shadow-md 
         rounded-full transition-all duration-300

@@ -5,14 +5,12 @@ import Header from './components/Header';
 import ScrollToTop from './components/ScorllToTop';
 import BackToTop from "./components/YuYu/BackToTop";
 
-
 export default function App() {
   const location = useLocation();
   const isHome = location.pathname === '/';
 
- // ⭐ 根據路徑設定 body class
   useEffect(() => {
-    const frontendPaths = ['/', '/about', '/product', '/store']; // 根據你前台路由列出
+    const frontendPaths = ['/', '/about', '/product', '/store'];
     const isFrontend = frontendPaths.some(path => location.pathname.startsWith(path));
 
     if (isFrontend) {
@@ -21,7 +19,6 @@ export default function App() {
       document.body.classList.remove('cursor-frontend');
     }
   }, [location.pathname]);
-
 
   return (
     <div className="min-h-screen bg-white">

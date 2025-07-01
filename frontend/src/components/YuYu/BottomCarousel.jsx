@@ -1,7 +1,7 @@
 // BottomCarousel.jsx
 export default function BottomCarousel({ images }) {
   return (
-    <div className="group relative overflow-hidden h-[220px]">
+    <div className="group relative overflow-hidden pb-10">
         {/* 左側遮罩 */}
       <div className="pointer-events-none absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-white via-white/50 to-transparent z-10" />
       {/* 右側遮罩 */}
