@@ -31,7 +31,8 @@ function BackLogin() {
         localStorage.setItem("rememberedAccount", account);
       }
 
-      const role = user?.role;
+      const role = user?.roleName?.toLowerCase();
+      console.log("登入成功，角色:", role);
       if (role === "admin") navigate("/users");
       else if (role === "editor") navigate("/cms");
       else if (role === "manager") navigate("/erp");
