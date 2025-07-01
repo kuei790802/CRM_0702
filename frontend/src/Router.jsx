@@ -65,7 +65,7 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "signFlow", element: <SignFlow /> },
       { path: "signsuccess", element: <SignSuccess /> },
-      { path: "product", element: <Product /> },
+      { path: "product/:id", element: <Product /> },
       { path: "cart", element: <Cart /> },
       { path: "funnyerror", element: <FunnyError /> },
       { path: "user", element: <User /> },
