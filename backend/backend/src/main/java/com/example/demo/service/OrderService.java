@@ -5,9 +5,7 @@ import com.example.demo.dto.request.CreateOrderRequestDto;
 import com.example.demo.dto.response.OrderDetailDto;
 import com.example.demo.dto.response.OrderDto;
 import com.example.demo.entity.*;
-import com.example.demo.enums.OrderStatus;
-import com.example.demo.enums.PaymentMethod;
-import com.example.demo.enums.PaymentStatus;
+import com.example.demo.enums.*;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.*;
 import com.example.demo.service.erp.InventoryService;
@@ -21,12 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.demo.enums.PaymentMethod.CASH_ON_DELIVERY;
@@ -48,6 +44,7 @@ public class OrderService {
     private final UserRepository userRepository; // ✨ 1. 確保 UserRepository 已注入
     private final EcpayProperties ecpayProperties;
     private final EcpayService ecpayService;
+    private final CustomerCouponRepository customerCouponRepository;
 
     // 定義一個常數來代表「系統使用者」的ID
     private static final Long SYSTEM_USER_ID = 1L;
@@ -65,6 +62,44 @@ public class OrderService {
 
         if (cart.getCartdetails() == null || cart.getCartdetails().isEmpty()) {
             throw new IllegalStateException("購物車是空的，無法建立訂單。");
+        }
+
+        // --- ✨ 1. 將原始總金額的計算提前 ---
+        BigDecimal originalTotal = cart.getCartdetails().stream()
+                .map(cd -> cd.getProduct().getBasePrice()
+                        .multiply(BigDecimal.valueOf(cd.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+
+        // --- ✨ 2. 初始化優惠券相關變數 ---
+        BigDecimal finalTotal = originalTotal;
+        CustomerCoupon appliedCoupon = null;
+
+        // --- ✨ 3. 如果請求中有 customerCouponId，則進行優惠券處理 ---
+        if (requestDto.getCustomerCouponId() != null) {
+            Long couponId = requestDto.getCustomerCouponId();
+            appliedCoupon = customerCouponRepository.findById(couponId)
+                    .orElseThrow(() -> new ResourceNotFoundException("找不到優惠券 ID: " + couponId));
+
+            // 驗證優惠券所有權
+            if (!appliedCoupon.getCustomer().getCustomerId().equals(customerId)) {
+                throw new IllegalStateException("該優惠券不屬於這位使用者。");
+            }
+
+            // 驗證優惠券狀態
+            if (appliedCoupon.getStatus() != CustomerCouponStatus.UNUSED) {
+                throw new IllegalStateException("該優惠券已被使用或已失效。");
+            }
+
+            CouponTemplate template = appliedCoupon.getCouponTemplate();
+
+            // 驗證訂單金額是否滿足低消
+            if (originalTotal.compareTo(template.getMinPurchaseAmount()) < 0) {
+                throw new IllegalStateException("訂單金額 " + originalTotal + " 未達優惠券低消 $" + template.getMinPurchaseAmount());
+            }
+
+            // 計算折扣後金額
+            finalTotal = calculateDiscountedPrice(originalTotal, template);
         }
 
         CCustomerAddress address = cCustomerAddressRepository.findById((long)requestDto.getAddressId())
@@ -103,7 +138,8 @@ public class OrderService {
         String randomPart = UUID.randomUUID().toString().substring(0, 6);
         newOrder.setMerchantTradeNo("T" + timestamp + randomPart);
 
-        double totalAmount = 0;
+        // --- ✨ 4. 這邊不再需要計算 totalAmount，因為前面已經算好了 ---
+        // double totalAmount = 0; // 這行可以移除
         // ✨【關鍵修正】✨: 不要建立新的 List，而是直接操作 newOrder 內部的 orderDetails
         for (CartDetail cartDetail : cart.getCartdetails()) {
             OrderDetail orderDetail = new OrderDetail();
@@ -118,12 +154,22 @@ public class OrderService {
 
             // 直接將新的 detail 加入到 newOrder 持有的列表中
             newOrder.getOrderDetails().add(orderDetail);
-            totalAmount += orderDetail.getQuantity() * orderDetail.getUnitprice();
+//            totalAmount += orderDetail.getQuantity() * orderDetail.getUnitprice();
         }
-        newOrder.setTotalAmount(totalAmount);
 
-        // 儲存 Order，JPA 會因為 Cascade 設定而一併儲存所有 OrderDetail
+        // ✨ 5. 設定訂單的總金額為折扣後的 finalTotal
+        newOrder.setTotalAmount(finalTotal.doubleValue());
+
+        // ✨ 6. 先儲存 Order，取得 orderId
         Order savedOrder = orderRepository.save(newOrder);
+
+
+        // ✨ 7. 如果成功使用了優惠券，回頭更新 CustomerCoupon 的狀態與關聯
+        if (appliedCoupon != null) {
+            appliedCoupon.setStatus(CustomerCouponStatus.USED);
+            appliedCoupon.setOrder(savedOrder); // 將儲存後的訂單關聯回優惠券
+            customerCouponRepository.save(appliedCoupon); // 儲存優惠券的變更
+        }
 
         // 預留庫存
         for (OrderDetail detail : savedOrder.getOrderDetails()) {
@@ -327,5 +373,104 @@ public class OrderService {
         } else {
             System.out.println("訂單 " + merchantTradeNo + " 交易失敗，RtnCode: " + rtnCode);
         }
+    }
+
+
+    // ▼▼▼▼▼ 請將以下三個方法完整複製到您的 OrderService class 中 ▼▼▼▼▼
+
+    /**
+     * 【全新增加】處理從綠界物流選擇頁面回來後的回調 (Server-to-Server)
+     * 這個方法會在 LogisticsController 被呼叫。
+     * @param replyData 綠界回傳的 Map 資料
+     */
+    @Transactional
+    public void processLogisticsSelection(Map<String, String> replyData) {
+        String merchantTradeNo = replyData.get("MerchantTradeNo");
+        if (merchantTradeNo == null || merchantTradeNo.isEmpty()) {
+            throw new IllegalArgumentException("從綠界回傳的資料中缺少 MerchantTradeNo");
+        }
+
+        Order order = orderRepository.findByMerchantTradeNo(merchantTradeNo)
+                .orElseThrow(() -> new EntityNotFoundException("找不到對應的訂單編號: " + merchantTradeNo));
+
+        // 呼叫 EcpayService 的方法，去跟綠界建立一筆真正的物流訂單
+        String ecpayResponse = ecpayService.createLogisticsOrder(order, replyData);
+        System.out.println("建立綠界物流訂單API的回應: " + ecpayResponse);
+
+        // 解析綠界的回應，並儲存物流單號
+        // 範例: 1|OK...
+        // 範例: 1|OK\nMerchantID=2000132&...&AllPayLogisticsID=123456&...
+        String[] responseParts = ecpayResponse.split("\\R", 2);
+        if (responseParts.length > 0 && responseParts[0].startsWith("1|")) {
+            // 成功
+            System.out.println("物流訂單建立成功。");
+            // 如果您需要在 Order Entity 中儲存物流單號，可以在這裡處理
+            // Map<String, String> responseMap = parseEcpayResponse(responseParts[1]);
+            // String logisticsId = responseMap.get("AllPayLogisticsID");
+            // order.setLogisticsId(logisticsId);
+            // order.setLogisticsType(replyData.get("LogisticsType"));
+            // order.setOrderStatus(OrderStatus.PENDING_SHIPMENT); // 更新訂單狀態為待出貨
+            // orderRepository.save(order);
+        } else {
+            // 失敗
+            System.err.println("建立綠界物流訂單失敗，綠界回應: " + ecpayResponse);
+            throw new RuntimeException("建立綠界物流訂單失敗。");
+        }
+    }
+
+    /**
+     * 【全新增加】處理綠界發送的物流狀態更新回調
+     * 當貨物狀態改變時 (如: 已寄出、已到店、已取貨)，綠界會呼叫這個。
+     * @param callbackData
+     */
+    @Transactional
+    public void processLogisticsStatusCallback(Map<String, String> callbackData) {
+        System.out.println("收到物流狀態更新: " + callbackData);
+        String merchantTradeNo = callbackData.get("MerchantTradeNo");
+        Order order = orderRepository.findByMerchantTradeNo(merchantTradeNo)
+                .orElseThrow(() -> new EntityNotFoundException("找不到對應的訂單編號: " + merchantTradeNo));
+
+        // String status = callbackData.get("RtnCode"); // 物流狀態碼
+        // 您可以在這裡根據不同的狀態碼更新您的訂單物流狀態
+        // order.setLogisticsStatus(status);
+        // orderRepository.save(order);
+    }
+
+    /**
+     * 【全新增加】輔助方法，用於解析綠界回傳的 Key-Value 字串
+     */
+    private Map<String, String> parseEcpayResponse(String responseBody) {
+        Map<String, String> map = new TreeMap<>();
+        if (responseBody == null || responseBody.isEmpty()) return map;
+        String[] pairs = responseBody.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            if (idx > 0) {
+                map.put(pair.substring(0, idx), pair.substring(idx + 1));
+            }
+        }
+        return map;
+    }
+
+    // ▲▲▲▲▲ 以上是您需要加入的三個方法 ▲▲▲▲▲
+
+    /**
+     * 【全新增加】根據優惠券模板計算折扣後的價格
+     * @param originalPrice 原始價格
+     * @param template 優惠券模板
+     * @return 折扣後的價格
+     */
+    private BigDecimal calculateDiscountedPrice(BigDecimal originalPrice, CouponTemplate template) {
+        if (template.getCouponType() == CouponType.PERCENTAGE) {
+            // 百分比折扣，例如 0.9 代表九折。使用 setScale確保結果為整數。
+            return originalPrice.multiply(template.getDiscountValue()).setScale(0, RoundingMode.HALF_UP);
+        } else if (template.getCouponType() == CouponType.FIXED_AMOUNT) {
+            // 固定金額折抵
+            BigDecimal discountedPrice = originalPrice.subtract(template.getDiscountValue());
+            // 確保價格不會低於 0
+            return discountedPrice.compareTo(BigDecimal.ZERO) > 0 ? discountedPrice : BigDecimal.ZERO;
+        }
+        // 如果有其他未知的優惠券類型，則不打折
+        return originalPrice;
     }
 }

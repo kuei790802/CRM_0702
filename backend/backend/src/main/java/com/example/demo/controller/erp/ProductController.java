@@ -1,7 +1,8 @@
 package com.example.demo.controller.erp;
 
-import com.example.demo.dto.erp.ProductResponseDTO;
-import com.example.demo.dto.erp.ProductSimpleDTO;
+import com.example.demo.dto.erp.*;
+import com.example.demo.entity.Product;
+import com.example.demo.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
@@ -9,23 +10,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.dto.erp.ProductCreateDTO;
-import com.example.demo.dto.erp.ProductUpdateDTO;
 //import com.example.demo.entity.Product;
 import com.example.demo.service.erp.ProductService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import java.util.List;
 
@@ -43,7 +39,7 @@ public class ProductController {
         Long currentUserId = 1L;
 
         ProductResponseDTO createdProduct = productService.createProductFromDTO(productDTO, currentUserId);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
@@ -112,4 +108,51 @@ public class ProductController {
         
         return ResponseEntity.ok(restoredProduct);
     }
+
+
+    /**
+     * 【新增】提供給首頁獲取所有商品的 API 端點
+     * @return 返回包含所有商品的 JSON 陣列
+     */
+    @GetMapping("/homepage")
+    public ResponseEntity<List<ProductHomepageDto>> getAllProductsForHomepage() {
+        List<ProductHomepageDto> products = productService.getAllProductsForHomepage();
+        return ResponseEntity.ok(products);
+    }
+
+    /**
+     * 【全新增加】提供給前台，根據分類 ID 獲取商品列表的專用 API。
+     * 使用 @PathVariable 將 URL 路徑中的一部分作為參數。
+     * @param categoryId 商品分類的 ID，來自 URL 路徑，例如 /api/products/category/1 中的 1
+     * @return 返回該分類下的商品列表
+     */
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ProductHomepageDto>> getProductsByCategoryId(@PathVariable Long categoryId) {
+        List<ProductHomepageDto> products = productService.getProductsByCategory(categoryId);
+        return ResponseEntity.ok(products);
+    }
+
+    /**
+     * 【全新增加】建立新商品的 API 端點 (包含圖片上傳)
+     * 使用 @RequestPart 來同時接收 JSON 和檔案
+     */
+    @PostMapping("/add")
+    public ResponseEntity<?> createProduct(
+            @RequestPart("productData") ProductCreateDTO createDTO,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+
+        try {
+            Product newProduct = productService.createProductWithImages(createDTO, files);
+            // 這裡可以回傳一個更詳細的 DTO，但為了簡單起見，我們先回傳 ID
+            return ResponseEntity.ok(Map.of(
+                    "message", "商品建立成功",
+                    "productId", newProduct.getProductId()
+            ));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("圖片儲存失敗: " + e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
 }

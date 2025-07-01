@@ -18,9 +18,11 @@ import com.example.demo.entity.InventoryAdjustmentDetail;
 import com.example.demo.entity.InventoryMovement;
 import com.example.demo.enums.PaymentStatus;
 import com.example.demo.enums.SalesOrderStatus;
+import com.example.demo.event.SalesOrderShippedEvent;
 import com.example.demo.exception.DataConflictException;
 import com.example.demo.repository.*;
 import com.example.demo.specification.InventorySpecification;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -50,6 +52,7 @@ public class InventoryService {
 
     private final SalesOrderRepository salesOrderRepository;
     private final SalesShipmentRepository salesShipmentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Transactional
@@ -562,10 +565,23 @@ public class InventoryService {
 //            inventoryMovementRepository.save(movement);
         }
 
+        // ✨ 4. 發布事件，而不是直接更新訂單
+        // 建立一個事件物件，裝載必要的資訊
+        SalesOrderShippedEvent event = new SalesOrderShippedEvent(
+                savedShipment.getSalesOrder().getSalesOrderId(),
+                savedShipment.getShipmentId(),
+                LocalDateTime.now()
+        );
+        // 使用發布器將事件廣播出去
+        eventPublisher.publishEvent(event);
 
-        order.setOrderStatus(SalesOrderStatus.SHIPPED);
-        order.setPaymentStatus(PaymentStatus.PAID);
-        salesOrderRepository.save(order);
+        // ✨ 5. 【重要】刪除舊的、直接修改訂單的程式碼
+        // order.setOrderStatus(SalesOrderStatus.SHIPPED);
+        // order.setPaymentStatus(PaymentStatus.PAID);
+        // salesOrderRepository.save(order);
+
+
+
 
 
         return savedShipment;
