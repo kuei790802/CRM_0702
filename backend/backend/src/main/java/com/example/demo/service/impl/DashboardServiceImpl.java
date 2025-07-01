@@ -4,9 +4,9 @@ import com.example.demo.dto.response.dashboard.ChartDataDto;
 import com.example.demo.dto.response.dashboard.DashboardDto;
 import com.example.demo.dto.response.dashboard.KpiDto;
 import com.example.demo.dto.response.dashboard.NameValueDto;
-import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.repository.OpportunityRepository;
+import com.example.demo.repository.SalesFunnelRepository;
 import com.example.demo.service.DashboardService;
 import org.springframework.stereotype.Service;
 
@@ -37,12 +37,37 @@ public class DashboardServiceImpl implements DashboardService {
         // 1. KPI
         dashboardDto.setKpis(getKpiData());
 
-        // 2. 取得商機階段分佈 (圓餅圖)
-        List<Object[]> stageResults = opportunityRepository.countOpenOpportunitiesByStage();
-        List<NameValueDto> stageData = stageResults.stream()
-                .map(result -> new NameValueDto(((OpportunityStage) result[0]).name(), (Long) result[1]))
+        // 2. 取得商機階段分佈
+        List<SalesFunnelRepository> funnelSummaries = opportunityRepository.getFunnelStageSummaries();
+
+        funnelSummaries.sort(java.util.Comparator.comparing(summary -> summary.getStage().getSortOrder()));
+
+        // 3. 使用 funnelSummaries 產生「圓餅圖」的數量資料
+        List<NameValueDto> stageCountData = funnelSummaries.stream()
+                .map(summary -> new NameValueDto(
+                        summary.getStage().getDisplayName(), // 階段名稱
+                        summary.getTotalCount()      // 階段數量
+                ))
                 .collect(Collectors.toList());
-        dashboardDto.setStageDistribution(new ChartDataDto<>("商機階段分佈", stageData));
+        dashboardDto.setStageDistribution(new ChartDataDto<>("商機階段分佈", stageCountData));
+
+        // 4. 同樣使用 funnelSummaries 產生「長條圖」的金額資料
+        List<NameValueDto> stageValueData = funnelSummaries.stream()
+                .map(summary -> {
+                    BigDecimal value = summary.getTotalValue() == null ? BigDecimal.ZERO : summary.getTotalValue();
+                    return new NameValueDto(
+                            summary.getStage().getDisplayName(), // 階段名稱
+                            value                  // 階段總金額
+                    );
+                })
+                .collect(Collectors.toList());
+        dashboardDto.setStageValue(new ChartDataDto<>("各階段商機金額", stageValueData));
+
+//        List<Object[]> stageResults = opportunityRepository.countOpenOpportunitiesByStage();
+//        List<NameValueDto> stageData = stageResults.stream()
+//                .map(result -> new NameValueDto(((OpportunityStage) result[0]).name(), (Long) result[1]))
+//                .collect(Collectors.toList());
+//        dashboardDto.setStageDistribution(new ChartDataDto<>("商機階段分佈", stageData));
 
         // 3. 過去12個月每月新增商機趨勢
         dashboardDto.setMonthlyTrend(getMonthlyOpportunityTrend());
