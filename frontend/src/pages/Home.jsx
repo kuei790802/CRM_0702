@@ -24,8 +24,8 @@ function Home() {
   return (
     <>
       <Banner />
-      <Highlight />
       <Section />
+      <Highlight />
       <TripleCardSection />
       <IcePopCardGrid />
       <TopCarousel images={imagePaths.slice(0, 5)} />
