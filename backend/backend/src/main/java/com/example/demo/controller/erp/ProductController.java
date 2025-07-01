@@ -155,4 +155,11 @@ public class ProductController {
         }
     }
 
+    @Operation(summary = "取得單一產品(簡易版)", description = "取得單一產品的少量必要資訊，用於商品詳情頁")
+    @GetMapping("/details/{id}")
+    public ResponseEntity<ProductHomepageDto> getProductDetailsById(@PathVariable Integer id) {
+        ProductHomepageDto productDetails = productService.getProductDetailsById(id);
+        return ResponseEntity.ok(productDetails);
+    }
+
 }

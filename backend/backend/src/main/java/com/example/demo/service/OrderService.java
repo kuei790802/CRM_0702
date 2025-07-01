@@ -298,6 +298,8 @@ public class OrderService {
                 order.getCCustomer().getCustomerName(),
                 order.getOrderdate(),
                 order.getOrderStatus(),
+                order.getPaymentMethod(),
+                order.getPaymentStatus(),
                 order.getTotalAmount(),
                 detailDtos);
     }
