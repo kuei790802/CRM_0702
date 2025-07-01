@@ -1,140 +1,207 @@
 package com.example.demo.config.util;
 
 
-import com.example.demo.dto.erp.SalesOrderCreateDTO;
-import com.example.demo.dto.erp.SalesOrderDetailCreateDTO;
-import com.example.demo.dto.response.BCustomerDto;
-import com.example.demo.entity.BCustomer;
-import com.example.demo.entity.CCustomer;
-import com.example.demo.entity.Product;
-import com.example.demo.repository.CCustomerRepo;
+import com.example.demo.entity.*;
+import com.example.demo.enums.PaymentStatus;
+import com.example.demo.enums.SalesOrderStatus;
+import com.example.demo.repository.CustomerBaseRepository;
 import com.example.demo.repository.ProductRepository;
-import com.example.demo.service.BCustomerService;
-import com.github.javafaker.Faker;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import com.example.demo.repository.SalesOrderRepository;
+import com.example.demo.repository.WarehouseRepository;
+import com.example.demo.service.erp.InventoryService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.ZoneId;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 
-
-@Component
+@Configuration
+@Profile("dev-seeder") // 使用特定 Profile，避免與 'dev' 衝突
+@Slf4j
+@RequiredArgsConstructor
 public class SalesOrderFaker {
 
-    private final Faker faker;
-    private final Random random = new Random();
+    private final SalesOrderRepository salesOrderRepository;
+    private final CustomerBaseRepository customerBaseRepository;
+    private final ProductRepository productRepository;
+    private final WarehouseRepository warehouseRepository;
+    private final InventoryService inventoryService;
 
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private CCustomerRepo cCustomerRepo;
-    //    @Autowired
-//    private BCustomerRepository bCustomerRepository;
-    @Autowired
-    private BCustomerService bCustomerService;
+    // 定義假資料的常數
+    private static final Long SYSTEM_USER_ID = 1L;
+    private static final String[] PAYMENT_METHODS = {"CASH", "CREDIT_CARD", "LINE_PAY", "CASH_ON_DELIVERY"};
+    private static final PaymentStatus[] PAYMENT_STATUSES = {PaymentStatus.PAID, PaymentStatus.UNPAID};
+    private static final String[] SHIPPING_METHODS = {"DHL", "HCT", "t-cat"};
+    private static final SalesOrderStatus[] ORDER_STATUSES = {SalesOrderStatus.CONFIRMED, SalesOrderStatus.SHIPPED, SalesOrderStatus.COMPLETED};
 
+    // 地址相關的隨機選項
+    private static final String[] CITIES = {"台北市", "台中市", "台南市", "高雄市", "桃園市"};
+    private static final String[] DISTRICTS = {"南屯區", "西區", "南區", "大雅區", "前鎮區", "平鎮區", "楊梅區", "永和區"};
+    private static final String[] STREETS = {"忠孝路", "中正路", "大港路", "資展路", "大連路", "大進路", "公益路"};
+    private static final String[] SECTIONS = {"一段", "二段", "三段"};
 
-    private BCustomerDto bCustomerDto;
-
-
-
-    public SalesOrderFaker() {
-        this.faker = new Faker(new Locale("zh-TW"));
-    }
-
-    public SalesOrderCreateDTO generateFakeSalesOrderCreateDTO(List<Long> allCustomerIds, List<Long> productIds, CCustomerRepo cCustomerRepo, BCustomerService bCustomerService) {
-        if (allCustomerIds.isEmpty() || productIds.isEmpty()) {
-            throw new IllegalArgumentException("Customer and Product IDs must be provided.");
-        }
-
-        SalesOrderCreateDTO dto = new SalesOrderCreateDTO();
-
-        Long randomCustomerId = allCustomerIds.get(random.nextInt(allCustomerIds.size()));
-        dto.setCustomerId(randomCustomerId);
-        dto.setWarehouseId(1L);
-
-        // Determine if customer is B2B or B2C to fetch appropriate address and name
-        // This is a simplified approach. A more robust solution might involve a CustomerService
-        // that can return a generic Customer DTO or handle this logic.
-        // String customerName; // Not directly needed for DTO population
-        String customerAddress;
-        // String customerEmail; // Not directly needed for DTO population
-
-        // Try fetching as CCustomer first
-        CCustomer cCustomer = cCustomerRepo.findById(randomCustomerId).orElse(null);
-        if (cCustomer != null) {
-            // customerName = cCustomer.getCustomerName();
-            customerAddress = cCustomer.getAddress();
-            // customerEmail = cCustomer.getEmail();
-            // dto.setCustomerType("B2C"); // Not a field in SalesOrderCreateDTO
-        } else {
-            // Try fetching as BCustomer if not found as CCustomer
-            try {
-                BCustomerDto bCustomerDto = bCustomerService.findById(randomCustomerId);
-                customerAddress = bCustomerDto.getCustomerAddress();
-            }catch (EntityNotFoundException e){
-                customerAddress = faker.address().fullAddress();
+    @Bean
+    @Transactional
+    public CommandLineRunner seedSalesOrders() {
+        return args -> {
+            if (salesOrderRepository.count() > 0) {
+                log.warn("資料庫中已有銷售訂單，跳過 Faker 產生程序。");
+                return;
             }
-        }
+            log.info("偵測到無銷售訂單資料，開始執行 SalesOrder Faker...");
 
-        dto.setOrderDate(faker.date().past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        // dto.setCurrency("TWD"); // Not in DTO, service handles this
-        dto.setPaymentMethod(faker.options().option("Credit Card", "Bank Transfer", "Cash on Delivery"));
-        // dto.setPaymentStatus(faker.options().option(PaymentStatus.class)); // Not in DTO, service handles this
-        // dto.setOrderStatus(faker.options().option(SalesOrderStatus.class)); // Not in DTO, service handles this
-        dto.setShippingMethod(faker.options().option("Standard Shipping", "Express Shipping", "Local Pickup"));
-        dto.setShippingAddress(customerAddress);
-        // dto.setEstimatedDeliveryDate(dto.getOrderDate().plusDays(faker.number().numberBetween(3, 14))); // Not in DTO
-        dto.setRemarks(faker.lorem().sentence(3));
-        // dto.setCreatedBy(1L); // Not in DTO, service handles this
-        // dto.setUpdatedBy(1L); // Not in DTO, service handles this
+            // 1. 預先載入所需資料，避免在迴圈中重複查詢
+            List<CustomerBase> customers = customerBaseRepository.findAll();
+            List<Product> products = productRepository.findAll();
+            List<Warehouse> warehouses = warehouseRepository.findAll();
 
-        List<SalesOrderDetailCreateDTO> details = new ArrayList<>();
-        int numItems = random.nextInt(5) + 1; // 1 to 5 items per order
-        // BigDecimal totalAmount = BigDecimal.ZERO; // Calculated by service
-        // BigDecimal totalTax = BigDecimal.ZERO; // Calculated by service
+            if (customers.isEmpty() || products.isEmpty() || warehouses.isEmpty()) {
+                log.error("無法產生訂單假資料，因為客戶、商品或倉庫資料不存在！");
+                return;
+            }
 
-        for (int i = 0; i < numItems; i++) {
-            SalesOrderDetailCreateDTO detailDTO = new SalesOrderDetailCreateDTO();
-            Long randomProductId = productIds.get(random.nextInt(productIds.size()));
-            Product product = productRepository.findById(randomProductId)
-                    .orElseThrow(() -> new IllegalStateException("Product not found for ID: " + randomProductId + ". Ensure products are loaded."));
+            LocalDate startDate = LocalDate.of(2023, 1, 1);
+            LocalDate endDate = LocalDate.now();
+            log.info("將產生從 {} 到 {} 的訂單資料。", startDate, endDate);
 
-            detailDTO.setProductId(randomProductId);
-            detailDTO.setQuantity(BigDecimal.valueOf(random.nextInt(10) + 1)); // 1 to 10 units
-            detailDTO.setUnitPrice(product.getBasePrice());
+            // 使用 AtomicLong 確保在多執行緒環境下也能安全地產生唯一訂單號後綴
+            AtomicLong orderCounter = new AtomicLong(salesOrderRepository.count());
+            List<SalesOrder> allGeneratedOrders = new ArrayList<>();
 
-            // Fields like TaxAmount, Subtotal, DiscountAmount are not in SalesOrderDetailCreateDTO
-            // They will be calculated by the service based on product, quantity, unitPrice.
-            // BigDecimal itemSubtotal = detailDTO.getUnitPrice().multiply(detailDTO.getQuantity());
-            // BigDecimal itemTax = itemSubtotal.multiply(BigDecimal.valueOf(0.05));
-            // detailDTO.setTaxAmount(itemTax);
-            // detailDTO.setSubtotal(itemSubtotal.add(itemTax));
-            // detailDTO.setDiscountAmount(BigDecimal.ZERO);
+            // 2. 遍歷每一天
+            for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                int ordersPerDay = ThreadLocalRandom.current().nextInt(15, 21); // 每天 15~20 筆
 
-            details.add(detailDTO);
-            // totalAmount = totalAmount.add(itemSubtotal.add(itemTax)); // Calculated by service
-            // totalTax = totalTax.add(itemTax); // Calculated by service
-        }
-        dto.setDetails(details);
-        // dto.setTotalAmount(totalAmount); // Not in DTO
-        // dto.setTotalTaxAmount(totalTax); // Not in DTO
-        // dto.setTotalNetAmount(totalAmount.subtract(totalTax)); // Not in DTO
+                for (int i = 0; i < ordersPerDay; i++) {
+                    SalesOrder order = createSingleFakeOrder(date, customers, products, warehouses, orderCounter);
+                    allGeneratedOrders.add(order);
+                }
+            }
 
-        return dto;
+            log.info("共產生 {} 筆銷售訂單，正在存入資料庫...", allGeneratedOrders.size());
+            salesOrderRepository.saveAll(allGeneratedOrders);
+            log.info("訂單資料儲存完畢。開始為已確認的訂單預留庫存...");
+
+            // 3. 為已確認(CONFIRMED)的訂單預留庫存
+            for (SalesOrder savedOrder : allGeneratedOrders) {
+                if (savedOrder.getOrderStatus() == SalesOrderStatus.CONFIRMED) {
+                    for (SalesOrderDetail detail : savedOrder.getDetails()) {
+                        try {
+                            inventoryService.reserveStock(
+                                    detail.getProduct().getProductId(),
+                                    savedOrder.getWarehouse().getWarehouseId(),
+                                    detail.getQuantity(),
+                                    "SALES_ORDER",
+                                    savedOrder.getSalesOrderId(),
+                                    detail.getItemId(),
+                                    SYSTEM_USER_ID
+                            );
+                        } catch (Exception e) {
+                            log.error("為訂單 {} 預留庫存失敗: {}", savedOrder.getOrderNumber(), e.getMessage());
+                        }
+                    }
+                }
+            }
+            log.info("銷售訂單假資料產生程序全部完成！");
+        };
     }
 
-    public List<SalesOrderCreateDTO> generateFakeSalesOrderCreateDTOs(int count, List<Long> allCustomerIds, List<Long> productIds, CCustomerRepo cCustomerRepo, BCustomerService bCustomerService) {
-        List<SalesOrderCreateDTO> dtos = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            dtos.add(generateFakeSalesOrderCreateDTO(allCustomerIds, productIds, cCustomerRepo, bCustomerService));
+    private SalesOrder createSingleFakeOrder(LocalDate date, List<CustomerBase> customers, List<Product> products, List<Warehouse> warehouses, AtomicLong orderCounter) {
+        SalesOrder order = new SalesOrder();
+        LocalDateTime now = LocalDateTime.now();
+
+        // --- 設定訂單主檔 ---
+        order.setCustomer(getRandomElement(customers));
+        order.setWarehouse(getRandomElement(warehouses));
+        order.setOrderDate(date);
+        order.setShippingAddress(generateRandomAddress());
+        order.setPaymentMethod(getRandomElement(PAYMENT_METHODS));
+        order.setShippingMethod(getRandomElement(SHIPPING_METHODS));
+        order.setOrderStatus(getRandomElement(ORDER_STATUSES));
+        order.setPaymentStatus(getRandomElement(PAYMENT_STATUSES));
+        order.setRemarks("由 Faker 自動產生的訂單");
+        order.setCreatedBy(SYSTEM_USER_ID);
+        order.setUpdatedBy(SYSTEM_USER_ID);
+        order.setCreatedAt(now);
+        order.setUpdatedAt(now);
+
+        // --- 產生訂單明細 (1~5筆) ---
+        BigDecimal totalNetAmount = BigDecimal.ZERO;
+        int detailCount = ThreadLocalRandom.current().nextInt(1, 6);
+        for (int i = 0; i < detailCount; i++) {
+            SalesOrderDetail detail = new SalesOrderDetail();
+            Product product = getRandomElement(products);
+
+            detail.setProduct(product);
+            detail.setQuantity(BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(1, 4))); // 數量 1~3
+            detail.setUnitPrice(product.getBasePrice()); // 直接使用產品的基準價格
+            detail.setItemSequence(i + 1);
+            detail.setDiscountRate(BigDecimal.ZERO);
+
+            if (product.getUnit() != null) {
+                detail.setUnitId(product.getUnit().getUnitId());
+            }
+
+            // 計算金額
+            BigDecimal itemAmount = detail.getUnitPrice().multiply(detail.getQuantity());
+            detail.setItemAmount(itemAmount);
+
+            BigDecimal taxRateDivisor = new BigDecimal("1.05");
+            BigDecimal itemNetAmount = itemAmount.divide(taxRateDivisor, 2, RoundingMode.HALF_UP);
+            detail.setItemNetAmount(itemNetAmount);
+            detail.setItemTaxAmount(itemAmount.subtract(itemNetAmount));
+
+            // 設定稽核欄位
+            detail.setCreatedBy(SYSTEM_USER_ID);
+            detail.setUpdatedBy(SYSTEM_USER_ID);
+            detail.setCreatedAt(now);
+            detail.setUpdatedAt(now);
+
+            order.addDetail(detail);
+            totalNetAmount = totalNetAmount.add(itemNetAmount);
         }
-        return dtos;
+
+        // --- 回填訂單主檔的總金額 ---
+        order.setTotalNetAmount(totalNetAmount);
+        BigDecimal totalTaxAmount = totalNetAmount.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
+        order.setTotalTaxAmount(totalTaxAmount);
+        order.setTotalAmount(order.getTotalNetAmount().add(order.getTotalTaxAmount()));
+
+        // --- 產生唯一的訂單編號 ---
+        String orderNumber = "SO-" + date.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                + "-" + String.format("%05d", orderCounter.incrementAndGet());
+        order.setOrderNumber(orderNumber);
+
+        return order;
+    }
+
+    // 輔助方法：從列表中隨機取得一個元素
+    private <T> T getRandomElement(T[] array) {
+        return array[ThreadLocalRandom.current().nextInt(array.length)];
+    }
+
+    private <T> T getRandomElement(List<T> list) {
+        return list.get(ThreadLocalRandom.current().nextInt(list.size()));
+    }
+
+    // 輔助方法：產生隨機地址
+    private String generateRandomAddress() {
+        return getRandomElement(CITIES) +
+                getRandomElement(DISTRICTS) +
+                getRandomElement(STREETS) +
+                getRandomElement(SECTIONS) +
+                ThreadLocalRandom.current().nextInt(1, 446) + "號";
     }
 }
