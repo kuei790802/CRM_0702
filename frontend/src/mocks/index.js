@@ -31,6 +31,6 @@ export const handlers = [
   ...erpPurchaseOrdersHandler,
   ...usersManageHandler,
   ...userLogsHandler,
-  ...backLoginHandlers
+  // ...backLoginHandlers
 
 ];
