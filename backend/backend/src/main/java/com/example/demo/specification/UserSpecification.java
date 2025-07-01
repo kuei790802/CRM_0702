@@ -18,16 +18,23 @@ public class UserSpecification {
 
             if (req.getAccount() != null && !req.getAccount().isBlank()) {
                 predicates.add(cb.like(root.get("account"), "%" + req.getAccount() + "%"));
+            } else {
+                System.out.println(req.getAccount());
             }
 
             if (req.getRoleName() != null) {
                 predicates.add(cb.equal(root.get("roleName"), req.getRoleName()));
+            } else {
+                System.out.println(req.getRoleName());
             }
 
             if (req.getAuthorityCode() != null) {
                 Join<User, Authority> join = root.join("authorities", JoinType.LEFT);
                 predicates.add(cb.equal(join.get("code"), req.getAuthorityCode()));
+            } else {
+                System.out.println(req.getAuthorityCode());
             }
+            //1. 你是要我這樣加?印出東西?
 
             if (req.getIsActive() != null) {
                 predicates.add(cb.equal(root.get("isActive"), req.getIsActive()));

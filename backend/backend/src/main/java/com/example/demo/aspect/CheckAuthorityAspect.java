@@ -7,6 +7,8 @@ import com.example.demo.security.CheckAuthority;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
@@ -22,8 +24,8 @@ public class CheckAuthorityAspect {
 
     private final UserRepo userRepo;
 
-    @Before("@annotation(checkAuthority)")
-    public void checkUserAuthority(JoinPoint joinPoint, CheckAuthority checkAuthority) throws AccessDeniedException {
+    @Around("@annotation(checkAuthority)")
+    public Object checkUserAuthority(ProceedingJoinPoint joinPoint, CheckAuthority checkAuthority) throws Throwable {
         HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String account = (String) req.getAttribute("account");
 
@@ -45,5 +47,7 @@ public class CheckAuthorityAspect {
         if (!hasAuthority) {
             throw new AccessDeniedException("您沒有存取此資源的權限: " + requiredCode);
         }
+
+        return joinPoint.proceed(); // ✅ 注意不能漏這個
     }
 }

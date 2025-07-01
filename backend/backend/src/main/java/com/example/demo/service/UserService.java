@@ -28,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -213,7 +215,9 @@ public class UserService {
     }
 
 
+    @Transactional(readOnly = true)
     public Page<UserProfileResponse> queryUsers(UserQueryRequest req) {
+        try {
         Specification<User> spec = UserSpecification.build(req);
         Pageable pageable = PageRequest.of(req.getPage(), req.getSize(), Sort.by("userId").descending());
 
@@ -225,21 +229,27 @@ public class UserService {
                         user.getUserName(),
                         user.isActive(),
                         user.getRoleName(),
-                        user.getAuthorities().stream().map(Authority::getCode).collect(Collectors.toList()),
+                        Optional.ofNullable(user.getAuthorities())  // ✅ null 安全處理
+                                .orElse(Collections.emptyList())
+                                .stream()
+                                .map(Authority::getCode)
+                                .collect(Collectors.toList()),
                         user.getAccessStartDate(),
                         user.getAccessEndDate(),
                         user.getLastLogin()
                 ));
+        } catch (Exception e) {
+            System.out.println("🔥 查詢使用者發生錯誤：" + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("使用者查詢失敗", e); // ✅ 改這裡
+        }
     }
 
+    //用上方就可以刷新執行以下功能?
     //rolename找帳號?
-
     //authoritycode找帳號?
-
     //激活時間區間找帳號?
-
     //停權找帳號?
-
     //激活中找帳號?...請補充我還能幹嘛
 
 
