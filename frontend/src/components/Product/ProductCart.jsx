@@ -1,22 +1,31 @@
 import { useRef, useState } from "react";
-import mainImage from "../../assets/product1.png";
+import axios from "../../api/axiosFrontend";
 import useCartStore from "../../stores/cartStore";
 
-function ProductCart() {
+function ProductCart({ product }) {
   const containerRef = useRef(null);
   const imgRef = useRef(null);
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
 
-  const handleAddToCart = () => {
-    const product = {
-      id: "1",
-      name: "2025全新口味｜檸檬煉乳冰棒6入組",
-      price: 300,
-      image: mainImage,
-    };
+  if (!product) return null;
 
-    addItem(product, quantity);
+  const { id, name, price, image, descriptionList } = product;
+
+  const handleAddToCart = async () => {
+    const cartItem = { id, name, price, image };
+
+    addItem(cartItem, quantity);
+
+    try {
+      await axios.post("/cart/items", {
+        productid: id,
+        quantity: quantity,
+      });
+      console.log("已成功同步到後端購物車");
+    } catch (error) {
+      console.error("同步後端購物車失敗", error);
+    }
   };
 
   const handleMouseMove = (e) => {
@@ -39,17 +48,8 @@ function ProductCart() {
     imgRef.current.style.transform = "scale(1)";
   };
 
-  const handleDecrease = () => {
-    setQuantity((prev) => Math.max(1, prev - 1));
-  };
-
-  const handleIncrease = () => {
-    setQuantity((prev) => Math.min(99, prev + 1));
-  };
-
   return (
     <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* 圖片區 */}
       <div
         ref={containerRef}
         className="relative overflow-hidden rounded-lg border w-full h-[400px] cursor-zoom-in"
@@ -59,29 +59,24 @@ function ProductCart() {
       >
         <img
           ref={imgRef}
-          src={mainImage}
-          alt="主圖"
+          src={image}
+          alt={name}
           className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 ease-in-out"
         />
       </div>
 
-      {/* 商品內容區 */}
       <div className="space-y-6">
-        <h1 className="text-2xl md:text-3xl font-semibold">
-          2025全新口味｜檸檬煉乳冰棒6入組
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-semibold">{name}</h1>
+
         <ul className="list-inside text-gray-700 space-y-1">
-          <li>✅ 特選無皮油檸檬，清爽果酸香氣細緻純淨</li>
-          <li>✅ 天然手作煉乳，口感濃郁</li>
-          <li>✅ 全手工製作，封存真實果味</li>
-          <li>✅ 完美搭配，為夏季添上一抹清涼</li>
-          <li>✅ 自營工廠HACCP/ISO22000認證</li>
+          {descriptionList?.map((desc, idx) => (
+            <li key={idx}>✅ {desc}</li>
+          ))}
         </ul>
 
-        <div className="text-2xl font-bold text-gray-800">NT$300</div>
+        <div className="text-2xl font-bold text-gray-800">NT${price}</div>
 
         <div className="flex items-center gap-4">
-          {/* 數量選擇器 */}
           <div className="flex border rounded overflow-hidden text-gray-800">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -100,7 +95,6 @@ function ProductCart() {
             </button>
           </div>
 
-          {/* 加入購物車按鈕 */}
           <button
             onClick={handleAddToCart}
             className="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-6 py-2 rounded"

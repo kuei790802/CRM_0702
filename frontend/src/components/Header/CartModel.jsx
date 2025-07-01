@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FaTimes, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 import useCartStore from '../../stores/cartStore'; 
+import { Link } from 'react-router-dom';
 
 const CartModal = () => {
   const {
@@ -173,9 +174,11 @@ if (!shouldRender) return null;
                 ${totalPrice.toFixed(2)}
               </span>
             </div>
+            <Link to ="/cart" onClick={closeCart}>
             <button className="w-full bg-logo-blue hover:bg-logo-blue/90 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
               前往結帳
             </button>
+            </Link>
           </div>
         )}
       </div>
