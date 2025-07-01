@@ -13,6 +13,7 @@ import com.example.demo.entity.*;
 import com.example.demo.enums.AuthorityCode;
 import com.example.demo.enums.VIPLevelEnum;
 import com.example.demo.repository.*;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
