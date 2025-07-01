@@ -5,9 +5,7 @@ import com.example.demo.dto.request.CreateOrderRequestDto;
 import com.example.demo.dto.response.OrderDetailDto;
 import com.example.demo.dto.response.OrderDto;
 import com.example.demo.entity.*;
-import com.example.demo.enums.OrderStatus;
-import com.example.demo.enums.PaymentMethod;
-import com.example.demo.enums.PaymentStatus;
+import com.example.demo.enums.*;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.*;
 import com.example.demo.service.erp.InventoryService;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -45,6 +44,7 @@ public class OrderService {
     private final UserRepository userRepository; // ✨ 1. 確保 UserRepository 已注入
     private final EcpayProperties ecpayProperties;
     private final EcpayService ecpayService;
+    private final CustomerCouponRepository customerCouponRepository;
 
     // 定義一個常數來代表「系統使用者」的ID
     private static final Long SYSTEM_USER_ID = 1L;
@@ -62,6 +62,44 @@ public class OrderService {
 
         if (cart.getCartdetails() == null || cart.getCartdetails().isEmpty()) {
             throw new IllegalStateException("購物車是空的，無法建立訂單。");
+        }
+
+        // --- ✨ 1. 將原始總金額的計算提前 ---
+        BigDecimal originalTotal = cart.getCartdetails().stream()
+                .map(cd -> cd.getProduct().getBasePrice()
+                        .multiply(BigDecimal.valueOf(cd.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+
+        // --- ✨ 2. 初始化優惠券相關變數 ---
+        BigDecimal finalTotal = originalTotal;
+        CustomerCoupon appliedCoupon = null;
+
+        // --- ✨ 3. 如果請求中有 customerCouponId，則進行優惠券處理 ---
+        if (requestDto.getCustomerCouponId() != null) {
+            Long couponId = requestDto.getCustomerCouponId();
+            appliedCoupon = customerCouponRepository.findById(couponId)
+                    .orElseThrow(() -> new ResourceNotFoundException("找不到優惠券 ID: " + couponId));
+
+            // 驗證優惠券所有權
+            if (!appliedCoupon.getCustomer().getCustomerId().equals(customerId)) {
+                throw new IllegalStateException("該優惠券不屬於這位使用者。");
+            }
+
+            // 驗證優惠券狀態
+            if (appliedCoupon.getStatus() != CustomerCouponStatus.UNUSED) {
+                throw new IllegalStateException("該優惠券已被使用或已失效。");
+            }
+
+            CouponTemplate template = appliedCoupon.getCouponTemplate();
+
+            // 驗證訂單金額是否滿足低消
+            if (originalTotal.compareTo(template.getMinPurchaseAmount()) < 0) {
+                throw new IllegalStateException("訂單金額 " + originalTotal + " 未達優惠券低消 $" + template.getMinPurchaseAmount());
+            }
+
+            // 計算折扣後金額
+            finalTotal = calculateDiscountedPrice(originalTotal, template);
         }
 
         CCustomerAddress address = cCustomerAddressRepository.findById((long)requestDto.getAddressId())
@@ -100,7 +138,8 @@ public class OrderService {
         String randomPart = UUID.randomUUID().toString().substring(0, 6);
         newOrder.setMerchantTradeNo("T" + timestamp + randomPart);
 
-        double totalAmount = 0;
+        // --- ✨ 4. 這邊不再需要計算 totalAmount，因為前面已經算好了 ---
+        // double totalAmount = 0; // 這行可以移除
         // ✨【關鍵修正】✨: 不要建立新的 List，而是直接操作 newOrder 內部的 orderDetails
         for (CartDetail cartDetail : cart.getCartdetails()) {
             OrderDetail orderDetail = new OrderDetail();
@@ -115,12 +154,22 @@ public class OrderService {
 
             // 直接將新的 detail 加入到 newOrder 持有的列表中
             newOrder.getOrderDetails().add(orderDetail);
-            totalAmount += orderDetail.getQuantity() * orderDetail.getUnitprice();
+//            totalAmount += orderDetail.getQuantity() * orderDetail.getUnitprice();
         }
-        newOrder.setTotalAmount(totalAmount);
 
-        // 儲存 Order，JPA 會因為 Cascade 設定而一併儲存所有 OrderDetail
+        // ✨ 5. 設定訂單的總金額為折扣後的 finalTotal
+        newOrder.setTotalAmount(finalTotal.doubleValue());
+
+        // ✨ 6. 先儲存 Order，取得 orderId
         Order savedOrder = orderRepository.save(newOrder);
+
+
+        // ✨ 7. 如果成功使用了優惠券，回頭更新 CustomerCoupon 的狀態與關聯
+        if (appliedCoupon != null) {
+            appliedCoupon.setStatus(CustomerCouponStatus.USED);
+            appliedCoupon.setOrder(savedOrder); // 將儲存後的訂單關聯回優惠券
+            customerCouponRepository.save(appliedCoupon); // 儲存優惠券的變更
+        }
 
         // 預留庫存
         for (OrderDetail detail : savedOrder.getOrderDetails()) {
@@ -404,4 +453,24 @@ public class OrderService {
     }
 
     // ▲▲▲▲▲ 以上是您需要加入的三個方法 ▲▲▲▲▲
+
+    /**
+     * 【全新增加】根據優惠券模板計算折扣後的價格
+     * @param originalPrice 原始價格
+     * @param template 優惠券模板
+     * @return 折扣後的價格
+     */
+    private BigDecimal calculateDiscountedPrice(BigDecimal originalPrice, CouponTemplate template) {
+        if (template.getCouponType() == CouponType.PERCENTAGE) {
+            // 百分比折扣，例如 0.9 代表九折。使用 setScale確保結果為整數。
+            return originalPrice.multiply(template.getDiscountValue()).setScale(0, RoundingMode.HALF_UP);
+        } else if (template.getCouponType() == CouponType.FIXED_AMOUNT) {
+            // 固定金額折抵
+            BigDecimal discountedPrice = originalPrice.subtract(template.getDiscountValue());
+            // 確保價格不會低於 0
+            return discountedPrice.compareTo(BigDecimal.ZERO) > 0 ? discountedPrice : BigDecimal.ZERO;
+        }
+        // 如果有其他未知的優惠券類型，則不打折
+        return originalPrice;
+    }
 }

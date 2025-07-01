@@ -2,7 +2,10 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.UpdateCCustomerProfileRequest;
 import com.example.demo.dto.response.CCustomerProfileResponse;
-import com.example.demo.entity.*;
+import com.example.demo.dto.response.CustomerCouponDto;
+import com.example.demo.entity.CCustomer;
+import com.example.demo.entity.CouponTemplate;
+import com.example.demo.entity.Order;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.exception.AccountAlreadyExistsException;
 import com.example.demo.exception.EmailAlreadyExistsException;
@@ -13,6 +16,8 @@ import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.PasswordResetTokenRepo;
 import com.example.demo.repository.VIPLevelRepo;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,13 +38,21 @@ public class CCustomerService {
     private final VIPLevelRepo vipLevelRepo;
     private final VIPLevelService vipLevelService;
     private final PasswordResetTokenRepo tokenRepo;
+    private final CouponTemplateService couponTemplateService;
+    private final CustomerCouponService customerCouponService;
+
+    // 註冊禮優惠券的代碼
+    private static final String NEW_MEMBER_COUPON_CODE = "NEW_MEMBER_90";
 
     // 建構自注入customerRepo、encoder
-    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository, VIPLevelRepo vipLevelRepo, VIPLevelService vipLevelService, PasswordResetTokenRepo tokenRepo) {
+    public CCustomerService(CCustomerRepo cCustomerRepo, OrderRepository orderRepository, CouponTemplateService couponTemplateService, CustomerCouponService customerCouponService) {
         this.cCustomerRepo = cCustomerRepo;
         this.vipLevelRepo = vipLevelRepo;
         this.vipLevelService = vipLevelService;
         this.tokenRepo = tokenRepo;
+        this.orderRepository = orderRepository;
+        this.couponTemplateService = couponTemplateService;
+        this.customerCouponService = customerCouponService;
         this.encoder = new BCryptPasswordEncoder(); // 或改為在外部注入
         this.orderRepository = orderRepository;
     }
@@ -93,6 +107,10 @@ public class CCustomerService {
 
         validatePasswordStrength(password);
 
+        // ✨ 新增 #1: 產生一個唯一的客戶編號
+        // 這裡使用 "C-" 前綴加上一個隨機的8位碼
+        String newCustomerCode = "C-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
         CCustomer newCCustomer = CCustomer.builder()
                 .account(account)
                 .customerName(customerName)
@@ -100,12 +118,38 @@ public class CCustomerService {
                 .email(email)
                 .address(address)
                 .birthday(birthday)
+                .customerCode(newCustomerCode) // ✨ 新增 #2: 在建立物件時設定 customerCode
                 .isActive(true)
                 .isDeleted(false)
                 .build();
 
-        return cCustomerRepo.save(newCCustomer);
+        // --- 您原有的儲存用戶邏輯，完全保留 ---
+        CCustomer savedCustomer = cCustomerRepo.save(newCCustomer);
+
+        // ==========================================================
+        // 【新功能】在此處新增發送優惠券的邏輯
+        // ==========================================================
+        try {
+//            log.info("嘗試為新用戶(ID:{})發送註冊禮優惠券...", savedCustomer.getCustomerId());
+            CouponTemplate welcomeCouponTemplate = couponTemplateService.findTemplateByCode(NEW_MEMBER_COUPON_CODE);
+
+            if (welcomeCouponTemplate.getIssuedQuantity() < welcomeCouponTemplate.getTotalQuantity()) {
+                customerCouponService.grantCouponToCustomer(savedCustomer, welcomeCouponTemplate);
+//                log.info("成功發送註冊禮優惠券(Code:{})給用戶(ID:{})。", NEW_MEMBER_COUPON_CODE, savedCustomer.getCustomerId());
+            } else {
+//                log.warn("註冊禮優惠券(Code:{})庫存不足，無法發送給新用戶(ID:{})。", NEW_MEMBER_COUPON_CODE, savedCustomer.getCustomerId());
+            }
+        } catch (Exception e) {
+            // 如果發券失敗，只記錄錯誤，不影響用戶註冊成功。
+//            log.error("為用戶(ID:{})發送註冊禮優惠券時發生預期外的錯誤。", savedCustomer.getCustomerId(), e);
+        }
+        // ==========================================================
+        // 【新功能結束】
+        // ==========================================================
+
+        return savedCustomer; // 返回儲存後的用戶實體
     }
+
 
 
 
@@ -128,6 +172,21 @@ public class CCustomerService {
     public CCustomerProfileResponse getProfile(String account) {
         CCustomer customer = cCustomerRepo.findByAccount(account)
                 .orElseThrow(()-> new UsernameNotFoundException("找不到使用者: " + account));
+
+        // 【重要修改】將 Set<CustomerCoupon> 轉換為 List<CustomerCouponDto>
+        List<CustomerCouponDto> couponDtos = customer.getCustomerCoupons().stream()
+                .map(customerCoupon -> CustomerCouponDto.builder()
+                        .customerCouponId(customerCoupon.getId())
+                        .name(customerCoupon.getCouponTemplate().getName())
+                        .description(customerCoupon.getCouponTemplate().getDescription())
+                        .couponType(customerCoupon.getCouponTemplate().getCouponType())
+                        .discountValue(customerCoupon.getCouponTemplate().getDiscountValue())
+                        .minPurchaseAmount(customerCoupon.getCouponTemplate().getMinPurchaseAmount())
+                        .validTo(customerCoupon.getCouponTemplate().getValidTo())
+                        .status(customerCoupon.getStatus())
+                        .build())
+                .collect(Collectors.toList());
+
 
         return new CCustomerProfileResponse(
                 customer.getAccount(),
@@ -225,6 +284,21 @@ public class CCustomerService {
         }
 
         CCustomer savedCustomer = cCustomerRepo.save(customer);
+
+        // 【重要修改】將 Set<CustomerCoupon> 轉換為 List<CustomerCouponDto>
+        List<CustomerCouponDto> couponDtos = savedCustomer.getCustomerCoupons().stream()
+                .map(customerCoupon -> CustomerCouponDto.builder()
+                        .customerCouponId(customerCoupon.getId())
+                        .name(customerCoupon.getCouponTemplate().getName())
+                        .description(customerCoupon.getCouponTemplate().getDescription())
+                        .couponType(customerCoupon.getCouponTemplate().getCouponType())
+                        .discountValue(customerCoupon.getCouponTemplate().getDiscountValue())
+                        .minPurchaseAmount(customerCoupon.getCouponTemplate().getMinPurchaseAmount())
+                        .validTo(customerCoupon.getCouponTemplate().getValidTo())
+                        .status(customerCoupon.getStatus())
+                        .build())
+                .collect(Collectors.toList());
+
 
         return new CCustomerProfileResponse(
                 savedCustomer.getAccount(),
