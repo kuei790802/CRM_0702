@@ -13,6 +13,7 @@ import com.example.demo.entity.*;
 import com.example.demo.enums.AuthorityCode;
 import com.example.demo.enums.VIPLevelEnum;
 import com.example.demo.repository.*;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -58,12 +59,16 @@ public class DataInitializer {
     private static final String[] ICE_CREAM_SUFFIXES = {"冰淇淋", "雪酪", "聖代", "冰棒", "雪糕"};
 
 
+    @PostConstruct
+    public void initCriticalData() {
+        initAuthoritiesAndAdmin();
+        createVipLevelsIfNotExist();
+    }
+
+
     @Bean
     @Profile("dev")
     public CommandLineRunner initDatabase() {
-        initAuthoritiesAndAdmin();
-        createVipLevelsIfNotExist();
-
         return args -> {
             log.info("DataInitializer started. Current profile check...");
             log.info("Product count: {}", productRepository.count());
