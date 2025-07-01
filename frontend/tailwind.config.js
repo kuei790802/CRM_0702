@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 export default {
   content: [
     "./index.html",
@@ -25,10 +25,20 @@ export default {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(50%)' },
         },
+        typing: {
+          'from': { width: '0' },
+          'to': { width: '100%' },
+        },
+        blink: {
+          '0%, 100%': { borderColor: 'transparent' },
+          '50%': { borderColor: '#DDB675' },
+        },
       },
       animation: {
         'scroll-right': 'scrollRight 20s linear infinite',
         'scroll-left': 'scrollLeft 20s linear infinite',
+        'typing': 'typing 2s steps(30, end) forwards',
+        'blink': 'blink 0.75s step-end infinite',
       },
     },
     container: {
