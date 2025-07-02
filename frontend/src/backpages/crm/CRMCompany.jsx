@@ -79,7 +79,7 @@ const CRMCompany = () => {
       setData(res.data.content || []);
       setTotal(res.data.totalElements || 0);
     } catch (error) {
-      console.error("公司資料抓取失敗:", error);
+      console.error("客戶資料抓取失敗:", error);
     } finally {
       setLoading(false);
     }
@@ -95,8 +95,8 @@ const CRMCompany = () => {
       setSelectedCompany(res.data);
       setDetailVisible(true);
     } catch (error) {
-      console.error("公司詳細資料取得失敗:", error);
-      message.error("無法取得公司資料");
+      console.error("客戶詳細資料取得失敗:", error);
+      message.error("無法取得客戶資料");
     }
   };
 
@@ -116,7 +116,7 @@ const CRMCompany = () => {
       });
       setEditVisible(true);
     } catch (err) {
-      console.error("取得公司資料失敗", err);
+      console.error("取得客戶資料失敗", err);
       message.error("無法取得資料");
     }
   };
@@ -146,7 +146,7 @@ const CRMCompany = () => {
 
   const columns = [
     {
-      title: "公司名稱",
+      title: "客戶名稱",
       dataIndex: "customerName",
       copyable: true,
       ellipsis: true,
@@ -197,7 +197,7 @@ const CRMCompany = () => {
         search={false}
         pagination={false}
         dateFormatter="string"
-        headerTitle="公司列表"
+        headerTitle="客戶列表"
         options={false}
         onRow={(record) => ({
           onClick: () => fetchCompanyDetail(record.customerId),
@@ -209,7 +209,7 @@ const CRMCompany = () => {
             type="primary"
             onClick={handleAdd}
           >
-            新增公司
+            新增客戶
           </Button>,
         ]}
       />
@@ -225,14 +225,14 @@ const CRMCompany = () => {
       </div>
 
       <Modal
-        title="公司詳細資料"
+        title="客戶詳細資料"
         open={detailVisible}
         onCancel={() => setDetailVisible(false)}
         footer={null}
       >
         {selectedCompany && (
           <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="公司名稱">
+            <Descriptions.Item label="客戶名稱">
               {selectedCompany.customerName}
             </Descriptions.Item>
             <Descriptions.Item label="產業別">
@@ -249,7 +249,7 @@ const CRMCompany = () => {
       </Modal>
 
       <Modal
-        title={editCompany ? "編輯公司" : "新增公司"}
+        title={editCompany ? "編輯客戶" : "新增客戶"}
         open={editVisible}
         onCancel={() => setEditVisible(false)}
         onOk={() => form.submit()}
@@ -276,9 +276,9 @@ const CRMCompany = () => {
           }}
         >
           <Form.Item
-            label="公司名稱"
+            label="客戶名稱"
             name="customerName"
-            rules={[{ required: true, message: "公司名稱不可為空" }]}
+            rules={[{ required: true, message: "客戶名稱不可為空" }]}
           >
             <Input />
           </Form.Item>
@@ -324,7 +324,7 @@ const CRMCompany = () => {
         okText="確定"
         cancelText="取消"
       >
-        <p>確定要刪除這家公司嗎？</p>
+        <p>確定要刪除這個客戶嗎？</p>
       </Modal>
     </div>
   );

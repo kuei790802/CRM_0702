@@ -36,7 +36,7 @@ const CRMCustomer = () => {
   const fetchData = async (page = 1, filters = {}) => {
     setLoading(true);
     try {
-      const keyword = filters?.keyword || " ";
+      const keyword = filters?.keyword || "";
 
       const res = await axios.get("/contacts/search/by-name", {
         params: {
@@ -110,12 +110,12 @@ const CRMCustomer = () => {
 
   const columns = [
     {
-      title: "客戶名稱",
+      title: "聯絡人名稱",
       dataIndex: "contactName",
       copyable: true,
       ellipsis: true,
       fieldProps: {
-        placeholder: "搜尋客戶名稱",
+        placeholder: "搜尋聯絡人名稱",
       },
       search: {
         transform: (value) => ({ keyword: value }),
@@ -128,7 +128,7 @@ const CRMCustomer = () => {
       hideInSearch: true,
     },
     {
-      title: "公司名稱",
+      title: "客戶名稱",
       dataIndex: "customerName",
       ellipsis: true,
       hideInSearch: true,
@@ -174,7 +174,7 @@ const CRMCustomer = () => {
         }}
         pagination={false}
         dateFormatter="string"
-        headerTitle="客戶列表"
+        headerTitle="聯絡人列表"
         options={false}
         onSubmit={(params) => {
           setSearchFilters(params);
@@ -190,7 +190,7 @@ const CRMCustomer = () => {
             type="primary"
             onClick={() => navigate("/crm/customer/new")}
           >
-            新增客戶
+            新增聯絡人
           </Button>,
         ]}
       />
@@ -243,7 +243,7 @@ const CRMCustomer = () => {
         okText="確定"
         cancelText="取消"
       >
-        <p>確定要刪除這位客戶嗎？</p>
+        <p>確定要刪除這位聯絡人嗎？</p>
       </Modal>
 
       <Modal

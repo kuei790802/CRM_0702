@@ -16,4 +16,6 @@ public class DashboardDto {
     private List<KpiDto> kpis;
     private ChartDataDto<NameValueDto> stageDistribution;
     private ChartDataDto<NameValueDto> monthlyTrend;
+
+    private ChartDataDto<NameValueDto> stageValue;
 }

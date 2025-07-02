@@ -21,7 +21,6 @@ public class ActivityRequest {
     private ActivityType activityType;
 
     @NotNull(message = "開始時間不可為空")
-    @FutureOrPresent(message = "開始時間不能是過去的時間")
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;

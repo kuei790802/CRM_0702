@@ -73,11 +73,11 @@ private String tinNumber;
     // ----- 多對多關聯：一個客戶可以有多個標籤 -----
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "b_customer_tags",
-            joinColumns = @JoinColumn(name = "b_customer_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
+            name = "customer_tags_link", // 客戶與標籤的中間表
+            joinColumns = @JoinColumn(name = "customer_id"),
+            inverseJoinColumns = @JoinColumn(name = "customer_tag_id")
     )
-    private Set<Tag> tags = new HashSet<>();
+    private Set<CustomerTag> tags = new HashSet<>();
 
     // ----- 關聯管理輔助方法 -----
     /**
@@ -100,12 +100,12 @@ private String tinNumber;
         contact.setBCustomer(null); // 清除聯絡人所屬的客戶
     }
 
-    public void addTag(Tag tag) {
+    public void addTag(CustomerTag tag) {
         this.tags.add(tag);
         tag.getBCustomers().add(this);
     }
 
-    public void removeTag(Tag tag) {
+    public void removeTag(CustomerTag tag) {
         this.tags.remove(tag);
         tag.getBCustomers().remove(this);
     }

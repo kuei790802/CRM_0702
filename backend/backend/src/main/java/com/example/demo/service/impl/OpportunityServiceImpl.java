@@ -7,7 +7,7 @@ import com.example.demo.dto.response.SalesFunnelDto;
 import com.example.demo.entity.BCustomer;
 import com.example.demo.entity.Contact;
 import com.example.demo.entity.Opportunity;
-import com.example.demo.entity.Tag;
+import com.example.demo.entity.OpportunityTag;
 import com.example.demo.enums.OpportunityStage;
 import com.example.demo.enums.OpportunityStatus;
 import com.example.demo.mapper.OpportunityMapper;
@@ -39,18 +39,18 @@ public class OpportunityServiceImpl implements OpportunityService {
     private final BCustomerRepository bCustomerRepository;
     private final ContactRepository contactRepository;
     private final OpportunityMapper opportunityMapper;
-    private final TagRepository tagRepository;
+    private final OpportunityTagRepository opportunityTagRepository;
 
     public OpportunityServiceImpl(OpportunityRepository opportunityRepository,
                                   BCustomerRepository bCustomerRepository,
                                   ContactRepository contactRepository,
                                   OpportunityMapper opportunityMapper,
-                                  TagRepository tagRepository) {
+                                  OpportunityTagRepository opportunityTagRepository) {
         this.opportunityRepository = opportunityRepository;
         this.bCustomerRepository = bCustomerRepository;
         this.contactRepository = contactRepository;
         this.opportunityMapper = opportunityMapper;
-        this.tagRepository = tagRepository;
+        this.opportunityTagRepository = opportunityTagRepository;
     }
 
     /**
@@ -90,33 +90,37 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Override
     @Transactional
     public OpportunityDto create(OpportunityRequest request) {
-        BCustomer bCustomer = bCustomerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getCustomerId() + " 的客戶"));
-
-        Contact contact = null;
-        if (request.getContactId() != null) {
-            contact = contactRepository.findById(request.getContactId())
-                    .orElseThrow(() -> new EntityNotFoundException("找不到 ID 為 " + request.getContactId() + " 的聯絡人"));
-        }
-
         Opportunity opportunity = opportunityMapper.toEntity(request);
 
-        opportunity.setBCustomer(bCustomer);
-        opportunity.setContact(contact);
-        opportunity.setCreatedAt(LocalDateTime.now());
-        opportunity.setUpdatedAt(LocalDateTime.now());
-        opportunity.setNumberOfRatings(0);
-        opportunity.setTotalRatingSum(0L);
+        BCustomer customer = bCustomerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new EntityNotFoundException("找不到客戶 ID: " + request.getCustomerId()));
+        opportunity.setBCustomer(customer);
 
+        if (request.getContactId() != null) {
+            Contact contact = contactRepository.findById(request.getContactId())
+                    .orElseThrow(() -> new EntityNotFoundException("找不到聯絡人 ID: " + request.getContactId()));
+            opportunity.setContact(contact);
+        }
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
+            List<OpportunityTag> tags = opportunityTagRepository.findAllById(request.getTagIds());
             if (tags.size() != request.getTagIds().size()) {
-                throw new EntityNotFoundException("一個或多個標籤ID不存在。");
+                throw new EntityNotFoundException("一個或多個用於創建的商機標籤ID不存在。");
             }
             opportunity.setTags(new HashSet<>(tags));
         }
 
+        LocalDateTime creationTime;
+        if (request.getCreateDate() != null) {
+            creationTime = request.getCreateDate();
+        } else {
+            creationTime = LocalDateTime.now();
+        }
+
+        opportunity.setCreatedAt(creationTime);
+        opportunity.setUpdatedAt(creationTime);
+
         Opportunity savedOpportunity = opportunityRepository.save(opportunity);
+
         return opportunityMapper.toResponse(savedOpportunity, null);
     }
 
@@ -154,9 +158,9 @@ public class OpportunityServiceImpl implements OpportunityService {
         }
 
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
+            List<OpportunityTag> tags = opportunityTagRepository.findAllById(request.getTagIds());
             if (tags.size() != request.getTagIds().size()) {
-                throw new EntityNotFoundException("一個或多個用於更新的標籤ID不存在。");
+                throw new EntityNotFoundException("一個或多個用於更新的商機標籤ID不存在。");
             }
             existingOpportunity.setTags(new HashSet<>(tags));
         } else {
@@ -236,43 +240,43 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Override
     @Transactional(readOnly = true)
     public List<SalesFunnelDto> getSalesFunnelData() {
-        // 步驟 1: 查詢每個階段的匯總數據 (數量和總金額)
-        List<SalesFunnelRepository> summaries = opportunityRepository.getFunnelStageSummaries();
-        Map<OpportunityStage, SalesFunnelRepository> summaryMap = summaries.stream()
-                .collect(Collectors.toMap(SalesFunnelRepository::getStage, summary -> summary));
+        // 查詢所有「未結案(失敗)」的商機
+        // 這會包含所有 OPEN 和 WON 的商機
+        List<Opportunity> activeOpportunities = opportunityRepository.findByStatusNot(OpportunityStatus.LOST);
 
-        // 步驟 2: 一次性查詢出所有 OPEN 的商機，並按階段分組
-        List<Opportunity> openOpportunities = opportunityRepository.findByStatus(OpportunityStatus.OPEN);
-        Map<OpportunityStage, List<Opportunity>> opportunitiesByStage = openOpportunities.stream()
+        // 按階段分組
+        Map<OpportunityStage, List<Opportunity>> opportunitiesByStage = activeOpportunities.stream()
                 .collect(Collectors.groupingBy(Opportunity::getStage));
 
-        // 步驟 3: 遍歷所有可能的階段枚舉值，以確保即使某階段沒有商機也能顯示
         List<SalesFunnelDto> funnelData = new ArrayList<>();
+
+        // 遍歷所有可能的階段
         for (OpportunityStage stage : OpportunityStage.values()) {
+            if (stage == OpportunityStage.CLOSED_LOST) {
+                continue;
+            }
+
             SalesFunnelDto stageDto = new SalesFunnelDto();
             stageDto.setStage(stage);
             stageDto.setStageDisplayName(stage.name());
 
-            // 從 summaryMap 中獲取匯總數據，如果不存在則設為 0
-            SalesFunnelRepository summary = summaryMap.get(stage);
-            stageDto.setTotalCount(summary != null ? summary.getTotalCount() : 0L);
-            stageDto.setTotalExpectedValue(summary != null && summary.getTotalValue()
-                    != null ? summary.getTotalValue() : BigDecimal.ZERO);
-
-            // 從 opportunitiesByStage 中獲取商機列表，如果不存在則設為空列表
             List<Opportunity> opportunitiesInStage = opportunitiesByStage.getOrDefault(stage, Collections.emptyList());
             List<OpportunityDto> opportunityDtos = opportunitiesInStage.stream()
                     .map(opportunity -> opportunityMapper.toResponse(opportunity, null))
                     .collect(Collectors.toList());
+
             stageDto.setOpportunities(opportunityDtos);
+            stageDto.setTotalCount((long) opportunitiesInStage.size());
+            stageDto.setTotalExpectedValue(
+                    opportunitiesInStage.stream()
+                            .map(Opportunity::getExpectedValue)
+                            .filter(Objects::nonNull)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            );
 
             funnelData.add(stageDto);
         }
-
-        // 過濾掉不屬於活躍漏斗的階段
-        return funnelData.stream()
-                .filter(stageDto -> stageDto.getStage() != OpportunityStage.CLOSED_LOST && stageDto.getStage() != OpportunityStage.CLOSED_WON)
-                .collect(Collectors.toList());
+        return funnelData;
     }
 
     /**
@@ -347,4 +351,5 @@ public class OpportunityServiceImpl implements OpportunityService {
         return opportunityRepository.findByStage(stage, pageable)
                 .map(opportunity -> opportunityMapper.toResponse(opportunity, null));
     }
+
 }

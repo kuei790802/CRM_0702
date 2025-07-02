@@ -17,22 +17,18 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { FaStar, FaRegStar, FaEdit } from "react-icons/fa";
+import { FaStar, FaRegStar, FaClock, FaEdit } from "react-icons/fa";
 
-const visibleStages = [
-  "INITIAL_CONTACT",
-  "NEEDS_ANALYSIS",
-  "PROPOSAL",
-  "NEGOTIATION",
-];
+const visibleStages = ["INITIAL_CONTACT", "PROPOSAL", "NEGOTIATION", "CLOSED_WON"];
 const columnTitles = {
   INITIAL_CONTACT: "初步接洽",
-  NEEDS_ANALYSIS: "需求分析",
   PROPOSAL: "提案",
   NEGOTIATION: "談判",
+  CLOSED_WON: "成交"
 };
 
-export default function SalesFunnelBoard({ columns, setColumns, onContractGenerated }) {
+export default function SalesFunnelBoard({ columns, setColumns, onCardDoubleClick,onContractGeneratedv}) {
+
   const [overColumnId, setOverColumnId] = useState(null);
   const [activeCard, setActiveCard] = useState(null);
   const [activeId, setActiveId] = useState(null);
@@ -71,6 +67,7 @@ export default function SalesFunnelBoard({ columns, setColumns, onContractGenera
 
   const handleDragEnd = ({ active, over }) => {
     setActiveCard(null);
+    setOverColumnId(null);
     setActiveId(null);
     setOverColumnId(null);
     if (!over) return;
@@ -145,6 +142,7 @@ export default function SalesFunnelBoard({ columns, setColumns, onContractGenera
               items={items}
               isOver={overColumnId === columnId}
               activeId={activeId}
+              onCardDoubleClick={onCardDoubleClick}
             />
           ))}
       </div>
@@ -163,7 +161,7 @@ export default function SalesFunnelBoard({ columns, setColumns, onContractGenera
   );
 }
 
-function Column({ id, title, items, isOver }) {
+function Column({ id, title, items, isOver, activeId ,onCardDoubleClick}) {
   const { setNodeRef } = useDroppable({ id });
   return (
     <div
@@ -198,10 +196,20 @@ function SortableCard({
   rating,
   type = "default",
   isOverlay = false,
+  isPreview = false,
+  onCardDoubleClick,
 }) {
   const [currentRating, setCurrentRating] = useState(rating);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [selectedType, setSelectedType] = useState(type);
+
+  const handleStarClick = (index) => {
+    if (currentRating === 1 && index === 0) {
+      setCurrentRating(0);
+    } else {
+      setCurrentRating(index + 1);
+    }
+  };
 
   const handleTypeChange = (newType) => {
     setSelectedType(newType);
@@ -239,9 +247,11 @@ function SortableCard({
       {...attributes}
       {...listeners}
       style={style}
+      onDoubleClick={onCardDoubleClick}
       className={`bg-white w-full px-3 py-4 border-2 ${borderColor} hover:shadow-md rounded-2xl relative cursor-pointer group`}
     >
-      <div className="absolute top-2 right-2">
+      {/* 卡片右上角的 FaEdit 和顏色選單 */}
+      <div className="absolute bottom-2 right-2">
         <FaEdit
           className="text-gray-500 hover:text-black transition duration-200 cursor-pointer"
           onClick={() => setShowColorPicker((prev) => !prev)}
@@ -261,6 +271,7 @@ function SortableCard({
                       warning: "bg-yellow-400",
                       error: "bg-red-400",
                       info: "bg-blue-400",
+                      default: "bg-gray-400",
                     }[typeOption]
                   }`}
                 ></span>
@@ -271,8 +282,10 @@ function SortableCard({
         )}
       </div>
 
+      {/* 標題 */}
       <div className="font-semibold mb-2">{title}</div>
 
+      {/* 星星評分 */}
       <div className="flex items-center text-sm text-gray-600">
         {[...Array(3)].map((_, idx) =>
           idx < currentRating ? (
