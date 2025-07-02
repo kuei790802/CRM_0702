@@ -63,7 +63,7 @@ public class BCustomer extends CustomerBase{
 //
 //    @LastModifiedDate
 //    private LocalDateTime updatedAt;
-@Column(name = "tin_number", unique = true, nullable = false)
+@Column(name = "tin_number", unique = true, nullable = true)
 private String tinNumber;
     // ----- 一對多關聯：客戶擁有的聯絡人集合 -----
     @Builder.Default
