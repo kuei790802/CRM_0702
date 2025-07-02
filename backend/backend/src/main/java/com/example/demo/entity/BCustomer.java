@@ -5,6 +5,7 @@ import com.example.demo.enums.BCustomerLevel;
 import com.example.demo.enums.BCustomerType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,23 +17,24 @@ import java.util.Set;
 
 @Entity
 @Table(name = "b_customers")
+@DiscriminatorValue("B2B")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@ToString(exclude = {"contacts", "tags"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class BCustomer {
+@SuperBuilder
+//@ToString(exclude = {"contacts", "tags"})
+//@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class BCustomer extends CustomerBase{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
-    private Long customerId;
-
-    @Column(nullable = false, length = 100)
-    private String customerName;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @EqualsAndHashCode.Include
+//    private Long customerId;
+//
+//    @Column(nullable = false, length = 100)
+//    private String customerName;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 100)
@@ -46,23 +48,25 @@ public class BCustomer {
     @Column(length = 50)
     private BCustomerLevel BCustomerLevel;
 
-    @Column(length = 255)
-    private String customerAddress;
+//    @Column(length = 255)
+//    private String customerAddress;
+//
+//    @Column(length = 30)
+//    private String customerTel;
+//
+//    @Column(length = 150)
+//    private String customerEmail;
 
-    @Column(length = 30)
-    private String customerTel;
-
-    @Column(length = 150)
-    private String customerEmail;
-
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
-
+//    @CreatedDate
+//    @Column(updatable = false)
+//    private LocalDateTime createdAt;
+//
+//    @LastModifiedDate
+//    private LocalDateTime updatedAt;
+@Column(name = "tin_number", unique = true, nullable = false)
+private String tinNumber;
     // ----- 一對多關聯：客戶擁有的聯絡人集合 -----
+    @Builder.Default
     @OneToMany(mappedBy = "bCustomer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Contact> contacts = new HashSet<>();
 

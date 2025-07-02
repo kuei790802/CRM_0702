@@ -73,7 +73,7 @@ public class OpportunityMapper {
         Long contactId = (opportunity.getContact() != null) ? opportunity.getContact().getContactId() : null;
         String contactName = (opportunity.getContact() != null) ? opportunity.getContact().getContactName() : null;
 
-        // 計算平均評分
+        //計算平均評分
         Double averageRating = 0.0;
         if (opportunity.getNumberOfRatings() != null && opportunity.getNumberOfRatings() > 0) {
             averageRating = (double) opportunity.getTotalRatingSum() / opportunity.getNumberOfRatings();
@@ -87,7 +87,6 @@ public class OpportunityMapper {
                 .closeDate(opportunity.getCloseDate())
                 .stage(opportunity.getStage())
                 .status(opportunity.getStatus())
-                .priority(opportunity.getPriority())
                 .customerId(customerId)
                 .customerName(customerName)
                 .contactId(contactId)

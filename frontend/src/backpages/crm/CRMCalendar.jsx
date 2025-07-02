@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import {
   Calendar,
   Select,
-  Button,
-  Badge,
-  Modal,
-  Tooltip,
   Form,
   Input,
   DatePicker,
   TimePicker,
+  Modal,
+  Button,
+  Badge,
+  Tooltip,
   message,
 } from 'antd';
 import dayjs from 'dayjs';
@@ -183,7 +183,6 @@ const CRMCalendar = () => {
         headerRender={customHeader}
       />
 
-      {/* 活動詳情 */}
       <Modal
         open={modalVisible}
         title={`事件詳情：${selectedDate?.date}`}
