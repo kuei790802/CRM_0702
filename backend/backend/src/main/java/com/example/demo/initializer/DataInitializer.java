@@ -5,6 +5,7 @@ import com.example.demo.dto.response.BCustomerDto;
 import com.example.demo.dto.response.ContactDto;
 import com.example.demo.dto.response.OpportunityDto;
 import com.example.demo.dto.response.OpportunityTagDto;
+import com.example.demo.repository.OpportunityRepository;
 import com.example.demo.service.*;
 import com.example.demo.util.*;
 import org.slf4j.Logger;
@@ -39,6 +40,9 @@ public class DataInitializer implements CommandLineRunner {
     private OpportunityService opportunityService;
 
     @Autowired
+    private OpportunityRepository opportunityRepository;
+
+    @Autowired
     private OpportunityTagService opportunityTagService;
 
     @Autowired
@@ -64,6 +68,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (opportunityRepository.count() > 0) {
+            logger.info("資料庫已有商機資料，跳過初始資料植入程序。");
+            return;
+        }
         logger.info("--- 應用程式啟動，開始生成一年份的假資料 (僅限 dev profile) ---");
 
         // 步驟 1: 建立「商機」專用的標籤，並取得它們的 ID
@@ -86,7 +94,7 @@ public class DataInitializer implements CommandLineRunner {
             LocalDate currentMonth = today.minusMonths(i).withDayOfMonth(1);
             logger.info("--- 開始為 {} 月份生成資料 ---", currentMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")));
 
-            int opportunitiesToCreate = random.nextInt(6) + 5;
+            int opportunitiesToCreate = random.nextInt(3) + 2;
             List<Long> monthlyOpportunityIds = createMonthlyOpportunities(
                     opportunitiesToCreate, customerIds, contactIds, opportunityTagIds, currentMonth
             );
