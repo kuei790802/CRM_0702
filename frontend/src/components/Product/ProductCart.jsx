@@ -1,32 +1,31 @@
 import { useRef, useState } from "react";
-import axios from "../../api/axiosFrontend";
 import useCartStore from "../../stores/cartStore";
 
 function ProductCart({ product }) {
   const containerRef = useRef(null);
   const imgRef = useRef(null);
   const [quantity, setQuantity] = useState(1);
-  const addItem = useCartStore((state) => state.addItem);
+
+  // 取出 store 方法（不再使用 addItem）
+  const { addItemToServer, fetchCartFromServer, openCart } = useCartStore();
 
   if (!product) return null;
 
   const { id, name, price, image, descriptionList } = product;
 
   const handleAddToCart = async () => {
-    const cartItem = { id, name, price, image };
+  try {
+    console.log("🧪 加入購物車參數", { id, quantity });
 
-    addItem(cartItem, quantity);
-
-    try {
-      await axios.post("/cart/items", {
-        productid: id,
-        quantity: quantity,
-      });
-      console.log("已成功同步到後端購物車");
-    } catch (error) {
-      console.error("同步後端購物車失敗", error);
-    }
-  };
+    await addItemToServer(id, quantity);
+    await fetchCartFromServer();
+    openCart();
+    console.log("✅ 已新增並打開購物車");
+  } catch (error) {
+    console.error("❌ 加入購物車失敗", error);
+    console.log("🔍 錯誤詳細資訊", error?.response?.data || error.message);
+  }
+};
 
   const handleMouseMove = (e) => {
     const container = containerRef.current;

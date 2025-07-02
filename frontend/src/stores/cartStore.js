@@ -77,7 +77,7 @@ const useCartStore = create((set, get) => ({
   // 新增商品到後端購物車
   addItemToServer: async (productId, quantity = 1) => {
     try {
-      const response = await axiosInstance.post('/cart/items', [
+      const response = await axiosInstance.post('/cart/items/more', [
         { productid: productId, quantity },
       ]);
       return response.data;
