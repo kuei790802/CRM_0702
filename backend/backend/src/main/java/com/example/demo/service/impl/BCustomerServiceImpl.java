@@ -204,9 +204,9 @@ public class BCustomerServiceImpl implements BCustomerService {
         dto.setIndustry(BCustomer.getIndustry());
         dto.setBCustomerType(BCustomer.getBCustomerType());
         dto.setBCustomerLevel(BCustomer.getBCustomerLevel());
-        dto.setCustomerAddress(BCustomer.getCustomerAddress());
-        dto.setCustomerTel(BCustomer.getCustomerTel());
-        dto.setCustomerEmail(BCustomer.getCustomerEmail());
+        dto.setCustomerAddress(BCustomer.getAddress());
+        dto.setCustomerTel(BCustomer.getTel());
+        dto.setCustomerEmail(BCustomer.getEmail());
         dto.setCreatedAt(BCustomer.getCreatedAt());
         dto.setUpdatedAt(BCustomer.getUpdatedAt());
 
@@ -230,8 +230,8 @@ public class BCustomerServiceImpl implements BCustomerService {
         BCustomer.setIndustry(request.getIndustry());
         BCustomer.setBCustomerType(request.getBCustomerType());
         BCustomer.setBCustomerLevel(request.getBCustomerLevel());
-        BCustomer.setCustomerAddress(request.getCustomerAddress());
-        BCustomer.setCustomerTel(request.getCustomerTel());
-        BCustomer.setCustomerEmail(request.getCustomerEmail());
+        BCustomer.setAddress(request.getCustomerAddress());
+        BCustomer.setTel(request.getCustomerTel());
+        BCustomer.setEmail(request.getCustomerEmail());
     }
 }
