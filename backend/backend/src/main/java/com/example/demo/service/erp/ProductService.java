@@ -32,11 +32,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -308,6 +306,38 @@ public class ProductService {
         }
 
         return savedProduct;
+    }
+
+    /**
+     * 根據 ID 查找商品，並回傳用於商品詳情頁的簡易版 DTO
+     */
+    public ProductHomepageDto getProductDetailsById(Integer id) {
+        Product product = productRepository.findById((long)id)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到產品 ID: " + id));
+        return convertToHomepageDto(product);
+    }
+
+    /**
+     * 一個新的輔助方法，用於將 Product 實體轉換為 ProductHomepageDto
+     */
+    private ProductHomepageDto convertToHomepageDto(Product product) {
+        ProductHomepageDto dto = new ProductHomepageDto();
+        dto.setProductId(product.getProductId());
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+        dto.setPrice(product.getBasePrice()); // 假設 price 是從 basePrice 來的
+
+        // 處理圖片 URL 列表
+        if (product.getProductimgs() != null) {
+            List<String> imageUrls = product.getProductimgs().stream()
+                    .map(ProductImg::getImgurl)
+                    .collect(Collectors.toList());
+            dto.setImageUrls(imageUrls);
+        } else {
+            dto.setImageUrls(Collections.emptyList()); // 如果沒有圖片，給一個空列表
+        }
+
+        return dto;
     }
 
 }

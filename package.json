@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "framer-motion": "^12.19.2",
+    "framer-motion": "^12.22.0",
     "react-intersection-observer": "^9.16.0",
     "recharts": "^3.0.2"
   }

@@ -14,6 +14,7 @@ import { erpPurchaseOrdersHandler } from './modules/erpPurchaseOrders';
 import { usersManageHandler } from './modules/usersManage';
 import { userLogsHandler } from './modules/userLogs';
 import { backLoginHandlers } from './modules/backLogin';
+import { cmsproductdetailhandlers } from './modules/cmsproductdetail';
 
 export const handlers = [
   ...newsHandlers,
@@ -31,6 +32,7 @@ export const handlers = [
   ...erpPurchaseOrdersHandler,
   ...usersManageHandler,
   ...userLogsHandler,
-  // ...backLoginHandlers
+  // ...backLoginHandlers,
+  ...cmsproductdetailhandlers
 
 ];

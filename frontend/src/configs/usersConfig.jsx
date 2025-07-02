@@ -28,6 +28,11 @@ const usersConfig = {
         name: '操作紀錄',
         icon: <UserOutlined />,
       },
+      {
+        path: '/users/message',
+        name: '客服訊息',
+        icon: <RobotOutlined />,
+      },
     ],
   },
 };
