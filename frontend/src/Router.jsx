@@ -45,8 +45,9 @@ import ERPNewOrderForm from "./backpages/erp/ERPNewOrderForm.jsx";
 // 使用者角色和權限
 import UsersManage from "./backpages/users/usersManage.jsx";
 import UsersLogs from "./backpages/users/usersLogs.jsx";
-import UsersAuthority from "./backpages/users/usersAuthority.jsx";
+import UsersEdit from "./backcomponents/user/usersEdit.jsx";
 import UsersMessage from "./backpages/users/usersMessage.jsx";
+import UsersRegister from "./backcomponents/user/usersRegister.jsx";
 
 const user = useBackUserStore.getState().backUser;
 const role = user?.role || "admin";
@@ -184,12 +185,16 @@ const router = createBrowserRouter([
           element: <UsersLogs />,
         },
         {
-          path: "authority",
-          element: <UsersAuthority />,
+          path: "management/edit/:account",
+          element: <UsersEdit />,
         },
         {
           path: "message",
           element: <UsersMessage />,
+        },
+        {
+          path: "management/register",
+          element: <UsersRegister />,
         },
       ],
   },

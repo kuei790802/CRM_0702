@@ -10,6 +10,7 @@ function Orders() {
     const fetchOrders = async () => {
       try {
         const res = await axiosInstance.get('/orders/my-orders');
+        console.log('取得訂單成功:', res.data);
         setOrders(res.data);
       } catch (err) {
         console.error('取得訂單失敗:', err);
