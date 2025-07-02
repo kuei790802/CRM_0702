@@ -4,10 +4,13 @@ import { PlusOutlined } from "@ant-design/icons";
 import axios from "../../api/axiosBackend";
 import CRMOpportunityForm from "./CRMOpportunityForm";
 import SalesFunnelBoard from "../../backcomponents/crm/SalesFunnelBoard.jsx";
+import ContractGenerator from "../../backcomponents/crm/ContractGenerator";
 
 export default function SalesFunnel() {
   const [columns, setColumns] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
+  const [contractModalOpen, setContractModalOpen] = useState(false);
+  const [contractData, setContractData] = useState(null);
 
   useEffect(() => {
     const fetchFunnelData = async () => {
@@ -56,6 +59,11 @@ export default function SalesFunnel() {
     setModalOpen(false);
   };
 
+  const handleContractGenerated = (data) => {
+    setContractData(data);
+    setContractModalOpen(true);
+  };
+
   return (
     <div className="p-4">
       <div className="flex justify-end items-center mb-4">
@@ -69,7 +77,11 @@ export default function SalesFunnel() {
         </Button>
       </div>
 
-      <SalesFunnelBoard columns={columns} setColumns={setColumns} />
+      <SalesFunnelBoard
+        columns={columns}
+        setColumns={setColumns}
+        onContractGenerated={handleContractGenerated}
+      />
 
       <Modal
         open={modalOpen}
@@ -79,6 +91,21 @@ export default function SalesFunnel() {
         destroyOnClose
       >
         <CRMOpportunityForm onSubmit={handleCreate} />
+      </Modal>
+
+      <Modal
+        open={contractModalOpen}
+        onCancel={() => setContractModalOpen(false)}
+        footer={null}
+        title="合約已建立"
+        destroyOnClose
+      >
+        {contractData ? (
+          <ContractGenerator
+            influencerName={contractData.title}
+            onFinish={() => setContractModalOpen(false)}
+          />
+        ) : null}
       </Modal>
     </div>
   );

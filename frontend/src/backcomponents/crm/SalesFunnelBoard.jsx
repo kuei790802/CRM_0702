@@ -1,5 +1,6 @@
 // SalesFunnelBoard.jsx
 import React, { useState } from "react";
+import axios from "../../api/axiosBackend";
 import {
   DndContext,
   closestCenter,
@@ -16,9 +17,14 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { FaStar, FaRegStar, FaClock, FaEdit } from "react-icons/fa";
+import { FaStar, FaRegStar, FaEdit } from "react-icons/fa";
 
-const visibleStages = ["INITIAL_CONTACT", "NEEDS_ANALYSIS", "PROPOSAL", "NEGOTIATION"];
+const visibleStages = [
+  "INITIAL_CONTACT",
+  "NEEDS_ANALYSIS",
+  "PROPOSAL",
+  "NEGOTIATION",
+];
 const columnTitles = {
   INITIAL_CONTACT: "初步接洽",
   NEEDS_ANALYSIS: "需求分析",
@@ -26,7 +32,7 @@ const columnTitles = {
   NEGOTIATION: "談判",
 };
 
-export default function SalesFunnelBoard({ columns, setColumns }) {
+export default function SalesFunnelBoard({ columns, setColumns, onContractGenerated }) {
   const [overColumnId, setOverColumnId] = useState(null);
   const [activeCard, setActiveCard] = useState(null);
   const [activeId, setActiveId] = useState(null);
@@ -51,71 +57,39 @@ export default function SalesFunnelBoard({ columns, setColumns }) {
     if (!over) return;
     const overId = over.id;
 
-    let sourceColumn = null;
-    for (const key in columns) {
-      if (columns[key].some((item) => item.id === active.id)) {
-        sourceColumn = key;
-        break;
-      }
-    }
-
-    let targetColumn = null;
     const isOverColumn = Object.keys(columns).includes(overId);
-    if (isOverColumn) {
-      targetColumn = overId;
-    } else {
-      for (const key in columns) {
-        if (columns[key].some((item) => item.id === overId)) {
-          targetColumn = key;
-          break;
-        }
-      }
+    const targetColumn = isOverColumn
+      ? overId
+      : Object.keys(columns).find((key) =>
+          columns[key].some((item) => item.id === overId)
+        );
+
+    if (targetColumn) {
+      setOverColumnId(targetColumn);
     }
-
-    if (!sourceColumn || !targetColumn || sourceColumn === targetColumn) return;
-
-    const activeItem = columns[sourceColumn].find((i) => i.id === active.id);
-    const newSource = columns[sourceColumn].filter((i) => i.id !== active.id);
-    const newTarget = [...columns[targetColumn], activeItem];
-
-    setColumns({
-      ...columns,
-      [sourceColumn]: newSource,
-      [targetColumn]: newTarget,
-    });
-    setOverColumnId(targetColumn);
   };
 
   const handleDragEnd = ({ active, over }) => {
     setActiveCard(null);
-    setOverColumnId(null);
     setActiveId(null);
+    setOverColumnId(null);
     if (!over) return;
 
     const activeId = active.id;
     const overId = over.id;
 
-    let sourceColumn = null;
-    let targetColumn = null;
-
-    for (const key in columns) {
-      if (columns[key].some((item) => item.id === activeId)) {
-        sourceColumn = key;
-      }
-    }
-
-    const isOverColumn = Object.keys(columns).includes(overId);
-    if (isOverColumn) {
-      targetColumn = overId;
-    } else {
-      for (const key in columns) {
-        if (columns[key].some((item) => item.id === overId)) {
-          targetColumn = key;
-        }
-      }
-    }
+    const sourceColumn = Object.keys(columns).find((key) =>
+      columns[key].some((item) => item.id === activeId)
+    );
+    const targetColumn = Object.keys(columns).includes(overId)
+      ? overId
+      : Object.keys(columns).find((key) =>
+          columns[key].some((item) => item.id === overId)
+        );
 
     if (!sourceColumn || !targetColumn) return;
+
+    const activeItem = columns[sourceColumn].find((i) => i.id === activeId);
 
     if (sourceColumn === targetColumn) {
       const oldIndex = columns[sourceColumn].findIndex(
@@ -125,6 +99,29 @@ export default function SalesFunnelBoard({ columns, setColumns }) {
       if (oldIndex !== newIndex) {
         const newItems = arrayMove(columns[sourceColumn], oldIndex, newIndex);
         setColumns({ ...columns, [sourceColumn]: newItems });
+      }
+    } else {
+      const newSource = columns[sourceColumn].filter((i) => i.id !== activeId);
+      const newTarget = [...columns[targetColumn], activeItem];
+      setColumns({
+        ...columns,
+        [sourceColumn]: newSource,
+        [targetColumn]: newTarget,
+      });
+
+      if (targetColumn === "NEGOTIATION") {
+        const opportunityId =
+          activeItem?.opportunityId || activeItem?.id?.replace(/^c/, "");
+        if (opportunityId) {
+          axios
+            .post("/contracts/generate", { opportunityId })
+            .then((res) => {
+              onContractGenerated?.(res.data);
+            })
+            .catch((error) => {
+              console.error("❌ 合約產生失敗", error);
+            });
+        }
       }
     }
   };
@@ -138,7 +135,7 @@ export default function SalesFunnelBoard({ columns, setColumns }) {
       onDragEnd={handleDragEnd}
     >
       <div className="grid grid-cols-4 gap-4 min-h-screen">
-        {Object.entries(columns)
+        {Object.entries(columns || {})
           .filter(([key]) => visibleStages.includes(key))
           .map(([columnId, items]) => (
             <Column
@@ -166,7 +163,7 @@ export default function SalesFunnelBoard({ columns, setColumns }) {
   );
 }
 
-function Column({ id, title, items, isOver, activeId }) {
+function Column({ id, title, items, isOver }) {
   const { setNodeRef } = useDroppable({ id });
   return (
     <div
@@ -201,25 +198,16 @@ function SortableCard({
   rating,
   type = "default",
   isOverlay = false,
-  isPreview = false,
 }) {
   const [currentRating, setCurrentRating] = useState(rating);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [selectedType, setSelectedType] = useState(type);
 
-  const handleStarClick = (index) => {
-    if (currentRating === 1 && index === 0) {
-      setCurrentRating(0);
-    } else {
-      setCurrentRating(index + 1);
-    }
-  };
-
   const handleTypeChange = (newType) => {
     setSelectedType(newType);
     setShowColorPicker(false);
   };
-  const sortable = useSortable({ id });
+
   const {
     attributes,
     listeners,
@@ -227,7 +215,7 @@ function SortableCard({
     transform,
     transition,
     isDragging,
-  } = sortable;
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -253,7 +241,6 @@ function SortableCard({
       style={style}
       className={`bg-white w-full px-3 py-4 border-2 ${borderColor} hover:shadow-md rounded-2xl relative cursor-pointer group`}
     >
-      {/* 卡片右上角的 FaEdit 和顏色選單 */}
       <div className="absolute top-2 right-2">
         <FaEdit
           className="text-gray-500 hover:text-black transition duration-200 cursor-pointer"
@@ -284,10 +271,8 @@ function SortableCard({
         )}
       </div>
 
-      {/* 標題 */}
       <div className="font-semibold mb-2">{title}</div>
 
-      {/* 星星評分 */}
       <div className="flex items-center text-sm text-gray-600">
         {[...Array(3)].map((_, idx) =>
           idx < currentRating ? (
@@ -295,9 +280,7 @@ function SortableCard({
               key={idx}
               className="text-yellow-400 cursor-pointer"
               onClick={() =>
-                currentRating === 1 && idx === 0
-                  ? setCurrentRating(0)
-                  : setCurrentRating(idx + 1)
+                setCurrentRating(currentRating === 1 && idx === 0 ? 0 : idx + 1)
               }
             />
           ) : (
