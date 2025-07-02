@@ -37,6 +37,28 @@ function Orders() {
     }
   };
 
+  const convertPaymentMethod = (method) => {
+    switch (method) {
+      case 'CASH_ON_DELIVERY':
+        return '貨到付款';
+      case 'ONLINE_PAYMENT':
+        return '線上支付';
+      default:
+        return method;
+    }
+  };
+
+  const convertPaymentStatus = (status) => {
+    switch (status) {
+      case 'PAID':
+        return '已付款';
+      case 'UNPAID':
+        return '未付款';
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="text-sm space-y-6">
       <h2 className="text-base font-bold text-gray-800">訂單紀錄</h2>
@@ -84,8 +106,12 @@ function Orders() {
           <div className="bg-white p-6 rounded-md max-w-lg w-full shadow-lg">
             <h3 className="text-lg font-bold mb-4">訂單明細 #{selectedOrder.orderid}</h3>
             <p className="text-sm mb-2 text-gray-700">訂單日期：{selectedOrder.orderdate}</p>
-            <p className="text-sm mb-2 text-gray-700">付款方式：{selectedOrder.paymentMethod}</p>
-            <p className="text-sm mb-2 text-gray-700">付款狀態：{selectedOrder.paymentStatus}</p>
+            <p className="text-sm mb-2 text-gray-700">
+              付款方式：{convertPaymentMethod(selectedOrder.paymentMethod)}
+            </p>
+            <p className="text-sm mb-2 text-gray-700">
+              付款狀態：{convertPaymentStatus(selectedOrder.paymentStatus)}
+            </p>
 
             <div className="mt-4 border-t pt-4">
               <h4 className="font-semibold mb-2">商品列表：</h4>

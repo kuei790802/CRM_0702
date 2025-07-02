@@ -48,6 +48,7 @@ import UsersLogs from "./backpages/users/usersLogs.jsx";
 import UsersEdit from "./backcomponents/user/usersEdit.jsx";
 import UsersMessage from "./backpages/users/usersMessage.jsx";
 import UsersRegister from "./backcomponents/user/usersRegister.jsx";
+import UserMessageChat from "./backcomponents/user/MessageChat.jsx";
 
 const user = useBackUserStore.getState().backUser;
 const role = user?.role || "admin";
@@ -195,6 +196,10 @@ const router = createBrowserRouter([
         {
           path: "management/register",
           element: <UsersRegister />,
+        },
+        {
+          path: "message/:messageId",
+          element: <UserMessageChat />,
         },
       ],
   },

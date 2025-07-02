@@ -37,6 +37,13 @@ const usersConfig = {
         path: '/users/message',
         name: '客服訊息',
         icon: <RobotOutlined />,
+        routes: [
+          {
+            path: '/users/message/:messageId',
+            name: '訊息對話',
+            hideInMenu: true,
+          },
+        ],
       },
     ],
   },

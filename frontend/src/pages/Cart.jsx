@@ -95,13 +95,14 @@ function Cart() {
 
           document.body.appendChild(form);
           form.submit();
+          await fetchCartFromServer();
           navigate("/");
         } catch (err) {
           console.error("取得綠界連結失敗", err);
           setErrorMsg("無法跳轉綠界付款，請稍後再試");
         }
       } else {
-        // ✅ 如果是貨到付款，直接跳轉回主畫面
+        await fetchCartFromServer();
         navigate("/");
       }
     } catch (err) {
