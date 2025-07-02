@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -54,6 +56,19 @@ public class CartController {
                                                      @RequestBody AddItemRequestDto requestDto) {
         Long customerId = getCustomerIdFromRequest(request);
         CartViewDto updatedCart = cartService.addItemToCart(customerId, requestDto);
+        return ResponseEntity.ok(updatedCart);
+    }
+
+    /**
+     * ✨✨✨【全新的】批次新增多個商品到購物車 ✨✨✨
+     */
+    @PostMapping("/items/more") // 維持您原本的 /items 路徑用於批次新增
+    @CheckJwt
+    public ResponseEntity<CartViewDto> addMultipleItemsToCart(HttpServletRequest request,
+                                                              @RequestBody List<AddItemRequestDto> requestDtos) { // ✨ 接收一個 List
+        Long customerId = getCustomerIdFromRequest(request);
+        // 呼叫我們即將建立的新 Service 方法
+        CartViewDto updatedCart = cartService.addMultipleItemsToCart(customerId, requestDtos);
         return ResponseEntity.ok(updatedCart);
     }
 
