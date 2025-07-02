@@ -45,6 +45,7 @@ import ERPNewOrderForm from "./backpages/erp/ERPNewOrderForm.jsx";
 import UsersManage from "./backpages/users/usersManage.jsx";
 import UsersLogs from "./backpages/users/usersLogs.jsx";
 import UsersAuthority from "./backpages/users/usersAuthority.jsx";
+import UsersMessage from "./backpages/users/usersMessage.jsx";
 
 const user = useBackUserStore.getState().backUser;
 const role = user?.role || "admin";
@@ -183,6 +184,10 @@ const router = createBrowserRouter([
         {
           path: "authority",
           element: <UsersAuthority />,
+        },
+        {
+          path: "message",
+          element: <UsersMessage />,
         },
       ],
   },

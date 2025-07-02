@@ -33,9 +33,9 @@ function BackLogin() {
 
       const role = user?.roleName?.toLowerCase();
       console.log("登入成功，角色:", role);
-      if (role === "admin") navigate("/users");
-      else if (role === "editor") navigate("/cms");
-      else if (role === "manager") navigate("/erp");
+      if (role === "admin") navigate("/users/management");
+      else if (role === "editor") navigate("/crm/dashboard");
+      else if (role === "manager") navigate("/erp/dashboard");
       else navigate("/");
     } catch (err) {
       console.error("登入失敗:", err);
