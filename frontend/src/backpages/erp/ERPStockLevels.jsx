@@ -57,7 +57,7 @@ const ERPStockLevels = () => {
     {
       title: '平均成本',
       dataIndex: 'averageCost',
-      valueType: 'money',
+      render: (val) => `$${val.toLocaleString()}`,
     },
     {
       title: '最後更新時間',
