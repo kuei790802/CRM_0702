@@ -236,7 +236,7 @@ const SignFlow = () => {
         disabled={!isFormValid}
         className={`w-full font-bold py-3 rounded-md transition ${
           isFormValid
-            ? "bg-orange-500 text-white hover:bg-orange-600"
+            ? "bg-sky-500 text-white hover:bg-sky-600"
             : "bg-gray-200 text-gray-400 cursor-not-allowed"
         }`}
       >

@@ -68,14 +68,13 @@ const ERPOrders = () => {
       dataIndex: "orderStatus",
       valueType: "select",
       valueEnum: {
-        PENDING_PAYMENT: { text: "待付款", status: "Default" },
-        PENDING_SHIPMENT: { text: "待出貨", status: "Processing" },
+        DRAFT: { text: "草稿", status: "Default" },
+        PENDING: { text: "待處理", status: "Processing" },
+        CONFIRMED: { text: "已確認", status: "Success" },
+        PARTIAL_SHIPPED: { text: "部分出貨", status: "Warning" },
         SHIPPED: { text: "已出貨", status: "Success" },
-        PENDING_PICKUP: { text: "已到門市", status: "Warning" },
-        COMPLETE: { text: "已完成", status: "Success" },
+        COMPLETED: { text: "已完成", status: "Success" },
         CANCELLED: { text: "已取消", status: "Error" },
-        RETURN_REQUESTED: { text: "申請退貨", status: "Warning" },
-        RETURNED: { text: "已退貨", status: "Default" },
       },
       search: {
         transform: (value) => ({ orderStatus: value }),
@@ -107,7 +106,6 @@ const ERPOrders = () => {
         <TableDropdown
           key="dropdown"
           menus={[
-            { key: "copy", name: "複製" },
             { key: "delete", name: "刪除" },
           ]}
         />,
@@ -138,11 +136,8 @@ const ERPOrders = () => {
           setCurrentPage(1);
         }}
         toolBarRender={() => [
-          <Button
-            key="new"
-            icon={<PlusOutlined />}
-            type="primary"
-          >
+          <Button key="new" icon={<PlusOutlined />} type="primary"
+          onClick={() => navigate("/erp/sales/orders/new")}>
             新增訂單
           </Button>,
         ]}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Descriptions, Card, Spin, Table, Input, Button, message } from "antd";
-import { useParams } from "react-router-dom";
+import { Descriptions, Card, Spin, Table, Input, Button, message, Modal, Select } from "antd";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "../../api/axiosBackend";
 
 const ERPOrderForm = () => {
@@ -9,14 +9,16 @@ const ERPOrderForm = () => {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [remarks, setRemarks] = useState("");
+  const [shipping, setShipping] = useState(false);
+  const [warehouseId, setWarehouseId] = useState(1); // 預設倉庫 ID
+  const [showShipModal, setShowShipModal] = useState(false); // 出貨確認 Modal
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Fetching order with ID:", id);
     const fetchOrder = async () => {
       setLoading(true);
       try {
         const res = await axios.get(`/sales-orders/${id}`);
-        
         setOrder(res.data);
         setRemarks(res.data.remarks);
       } catch (error) {
@@ -36,6 +38,22 @@ const ERPOrderForm = () => {
       setEditing(false);
     } catch (error) {
       message.error("更新失敗");
+    }
+  };
+
+  const handleShip = async () => {
+    setShipping(true);
+    try {
+      await axios.post(`/inventory/sales-orders/${id}/ship`, {
+        warehouseId,
+      });
+      message.success("出貨成功");
+      navigate("/erp/sales/orders");
+    } catch (error) {
+      message.error("出貨失敗，請稍後再試");
+    } finally {
+      setShipping(false);
+      setShowShipModal(false);
     }
   };
 
@@ -87,18 +105,34 @@ const ERPOrderForm = () => {
             <Descriptions.Item label="總金額">${order.totalAmount}</Descriptions.Item>
           </Descriptions>
 
-          <div className="mt-4 text-right">
+          <div className="mt-4 text-right space-x-2">
             {editing ? (
               <>
-                <Button onClick={() => setEditing(false)} style={{ marginRight: 8 }}>取消</Button>
+                <Button onClick={() => setEditing(false)}>取消</Button>
                 <Button type="primary" onClick={handleSave}>儲存</Button>
               </>
             ) : (
-              <Button type="primary" onClick={() => setEditing(true)}>編輯備註</Button>
+              <>
+                <Button type="primary" onClick={() => setEditing(true)}>編輯備註</Button>
+                <Button type="primary" onClick={() => setShowShipModal(true)}>出貨</Button>
+              </>
             )}
           </div>
         </Card>
       )}
+
+      <Modal
+        visible={showShipModal}
+        title="確認出貨"
+        onOk={handleShip}
+        confirmLoading={shipping}
+        onCancel={() => setShowShipModal(false)}
+        okText="確認出貨"
+        cancelText="取消"
+      >
+        <p>是否確認將訂單 <b>{order?.orderNumber}</b> 出貨？</p>
+        <p>倉庫 ID: {warehouseId}</p>
+      </Modal>
     </Spin>
   );
 };

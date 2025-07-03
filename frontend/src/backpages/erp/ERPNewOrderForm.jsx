@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import {
   Card,
   Form,
@@ -13,6 +13,7 @@ import {
 } from "antd";
 import axios from "../../api/axiosBackend";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -20,9 +21,26 @@ const ERPNewOrderForm = () => {
   const [form] = Form.useForm();
   const [details, setDetails] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("/products/simple-list");
+        setProducts(res.data);
+      } catch (error) {
+        message.error("商品資料載入失敗");
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const addDetail = () => {
-    setDetails([...details, { key: Date.now(), productId: null, quantity: 1, unitPrice: 0 }]);
+    setDetails([
+      ...details,
+      { key: Date.now(), productId: null, quantity: 1, unitPrice: 0 },
+    ]);
   };
 
   const removeDetail = (key) => {
@@ -30,9 +48,11 @@ const ERPNewOrderForm = () => {
   };
 
   const updateDetail = (key, field, value) => {
-    setDetails(details.map(item =>
-      item.key === key ? { ...item, [field]: value } : item
-    ));
+    setDetails(
+      details.map((item) =>
+        item.key === key ? { ...item, [field]: value } : item
+      )
+    );
   };
 
   const handleSubmit = async (values) => {
@@ -53,6 +73,7 @@ const ERPNewOrderForm = () => {
       message.success("訂單新增成功");
       form.resetFields();
       setDetails([]);
+      navigate("/erp/sales/orders");
     } catch (error) {
       message.error("訂單新增失敗");
     } finally {
@@ -62,13 +83,23 @@ const ERPNewOrderForm = () => {
 
   const columns = [
     {
-      title: "商品ID",
+      title: "商品名稱",
       dataIndex: "productId",
       render: (val, record) => (
-        <InputNumber
+        <Select
+          style={{ width: "100%" }}
+          placeholder="請選擇商品"
           value={val}
           onChange={(value) => updateDetail(record.key, "productId", value)}
-        />
+          showSearch
+          optionFilterProp="children"
+        >
+          {products.map((product) => (
+            <Select.Option key={product.productId} value={product.productId}>
+              {product.productName}
+            </Select.Option>
+          ))}
+        </Select>
       ),
     },
     {
@@ -106,27 +137,51 @@ const ERPNewOrderForm = () => {
   return (
     <Card title="新增訂單" loading={loading}>
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <Form.Item label="客戶ID" name="customerId" rules={[{ required: true }]}>
+        <Form.Item
+          label="客戶ID"
+          name="customerId"
+          rules={[{ required: true }]}
+        >
           <InputNumber style={{ width: "100%" }} />
         </Form.Item>
 
-        <Form.Item label="倉庫ID" name="warehouseId" rules={[{ required: true }]}>
+        <Form.Item
+          label="倉庫ID"
+          name="warehouseId"
+          rules={[{ required: true }]}
+        >
           <InputNumber style={{ width: "100%" }} />
         </Form.Item>
 
-        <Form.Item label="訂單日期" name="orderDate" rules={[{ required: true }]}>
+        <Form.Item
+          label="訂單日期"
+          name="orderDate"
+          rules={[{ required: true }]}
+        >
           <DatePicker style={{ width: "100%" }} />
         </Form.Item>
 
-        <Form.Item label="出貨地址" name="shippingAddress" rules={[{ required: true }]}>
+        <Form.Item
+          label="出貨地址"
+          name="shippingAddress"
+          rules={[{ required: true }]}
+        >
           <Input.TextArea rows={2} />
         </Form.Item>
 
-        <Form.Item label="出貨方式" name="shippingMethod" rules={[{ required: true }]}>
+        <Form.Item
+          label="出貨方式"
+          name="shippingMethod"
+          rules={[{ required: true }]}
+        >
           <Input />
         </Form.Item>
 
-        <Form.Item label="付款方式" name="paymentMethod" rules={[{ required: true }]}>
+        <Form.Item
+          label="付款方式"
+          name="paymentMethod"
+          rules={[{ required: true }]}
+        >
           <Select placeholder="請選擇">
             <Option value="CASH">現金</Option>
             <Option value="CREDIT_CARD">信用卡</Option>

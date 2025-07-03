@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import useUserStore from "../stores/userStore";
 
 function Login() {
-  const [account, setAccount] = useState("kevin_lin88");
-  const [password, setPassword] = useState("MyStr0ngP@sswd#1");
+  const [account, setAccount] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ function Login() {
 
         <button
           type="submit"
-          className="w-full bg-orange-500 text-white py-2 rounded font-bold hover:bg-orange-600"
+          className="w-full bg-sky-500 text-white py-2 rounded font-bold hover:bg-sky-600"
         >
           開始購物吧！
         </button>
@@ -79,7 +79,7 @@ function Login() {
       <div className="text-center mt-10">
         <p className="text-lg font-bold">還不是會員？</p>
         <Link to="/SignFlow">
-          <button className="mt-2 px-6 py-2 border border-orange-500 text-orange-500 font-semibold rounded hover:bg-orange-50">
+          <button className="mt-2 px-6 py-2 border border-sky-500 text-sky-500 font-semibold rounded hover:bg-sky-50">
             註冊會員
           </button>
         </Link>
