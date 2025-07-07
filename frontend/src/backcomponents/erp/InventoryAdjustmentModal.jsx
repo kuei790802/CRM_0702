@@ -1,132 +1,131 @@
-import React, { useState } from 'react';
-import { Modal, Form, InputNumber, Select, Input, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, InputNumber, Select, message } from 'antd';
 import axios from '../../api/axiosBackend';
+import useBackUserStore from '../../stores/useBackUserStore';
 
 const { Option } = Select;
 
-const InventoryAdjustmentModal = ({ visible, onCancel, onSuccess, productInfo }) => {
+const InventoryAdjustmentModal = ({ open, onCancel, onSuccess, productInfo }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const { backUser } = useBackUserStore();
 
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
 
-      // TODO(jules): The backend DTO for /api/inventory/adjust is InventoryAdjustmentDTO
-      // It expects: productId, warehouseId, quantity, unitCost, movementType,
-      // documentType, documentId, documentItemId, userId (operatorId)
-      // For now, documentType, documentId, documentItemId, userId can be omitted or defaulted if backend allows
-
+      // 构建请求体 - 修正欄位名稱
       const payload = {
-        productId: values.productId,
-        warehouseId: values.warehouseId,
-        quantity: values.quantity,
-        unitCost: values.unitCost, // This might be optional or derived
+        productId: productInfo?.productId,
+        warehouseId: productInfo?.warehouseId,
+        quantity: values.quantity, // 改為 quantity，而不是 quantityChange
+        unitCost: values.unitCost || 0,
         movementType: values.movementType,
-        // operatorId: 1, // Assuming a default user ID for now as per backend TODOs
+        documentType: 'MANUAL_ADJUSTMENT',
+        userId: backUser?.userId
       };
 
-      await axios.post('/api/inventory/adjust', payload);
-      message.success('Inventory adjusted successfully!');
-      onSuccess(); // Callback to refresh data and close modal
-      form.resetFields();
+      // 添加调试日志
+      console.log('Sending payload:', payload);
+
+      const response = await axios.post('/inventory/adjust', payload);
+      
+      if (response.status === 200) {
+        message.success('庫存調整成功！');
+        form.resetFields();
+        onSuccess?.();
+        onCancel?.();
+      }
     } catch (error) {
-      console.error('Failed to adjust inventory:', error);
-      const errorMsg = error.response?.data?.message || 'Failed to adjust inventory. Please check console for details.';
-      message.error(errorMsg);
+      console.error('庫存調整失敗:', error.response?.data || error);
+      message.error(
+        error.response?.data?.message || 
+        '庫存調整失敗，請確認輸入資料是否正確。'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Pre-fill form if productInfo is provided (e.g., for a quick adjustment from a row)
-  // For a general adjustment, these would be empty or selected by user.
-  // This example assumes a general adjustment modal first.
-  // useEffect(() => {
-  //   if (productInfo) {
-  //     form.setFieldsValue({
-  //       productId: productInfo.productId,
-  //       warehouseId: productInfo.warehouseId,
-  //       // Potentially current unitCost if available
-  //     });
-  //   } else {
-  //     form.resetFields();
-  //   }
-  // }, [productInfo, form, visible]);
-
+  useEffect(() => {
+    if (open && productInfo) {
+      form.setFieldsValue({
+        productId: productInfo.productId,
+        warehouseId: productInfo.warehouseId,
+      });
+    }
+  }, [open, productInfo, form]);
 
   return (
     <Modal
-      title="Adjust Inventory"
-      visible={visible}
+      title="調整庫存"
+      open={open}
       onOk={handleOk}
       onCancel={() => {
         form.resetFields();
         onCancel();
       }}
       confirmLoading={loading}
-      destroyOnClose // Reset form state when modal is closed
+      destroyOnClose={true}  // 修正: destroyOnHidden -> destroyOnClose
+      maskClosable={false}
     >
-      <Form form={form} layout="vertical" name="inventoryAdjustmentForm">
-        <Form.Item
-          name="productId"
-          label="Product ID"
-          rules={[{ required: true, message: 'Please input the Product ID!' }]}
-        >
-          <InputNumber style={{ width: '100%' }} placeholder="Enter Product ID" />
-        </Form.Item>
-        <Form.Item
-          name="warehouseId"
-          label="Warehouse ID"
-          rules={[{ required: true, message: 'Please input the Warehouse ID!' }]}
-        >
-          <InputNumber style={{ width: '100%' }} placeholder="Enter Warehouse ID" />
-        </Form.Item>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          quantity: 0,
+          unitCost: 0,
+          movementType: 'ADJUSTMENT_IN' // 改為更常用的預設值
+        }}
+      >
         <Form.Item
           name="quantity"
-          label="Adjustment Quantity"
-          rules={[{ required: true, message: 'Please input the quantity!' }]}
-          help="Enter a positive value to increase stock, negative to decrease."
+          label="調整數量"
+          rules={[
+            { required: true, message: '請輸入調整數量！' },
+            { type: 'number', message: '請輸入有效數字！' }
+          ]}
+          help="輸入正數增加庫存，負數減少庫存"
         >
-          <InputNumber style={{ width: '100%' }} placeholder="e.g., 10 or -5" />
+          <InputNumber 
+            style={{ width: '100%' }} 
+            placeholder="例如：10 或 -5"
+            step={0.01}
+            precision={2}
+          />
         </Form.Item>
+        
         <Form.Item
           name="unitCost"
-          label="Unit Cost"
+          label="單位成本"
           rules={[
-            { required: true, message: 'Please input the unit cost!' },
-            { type: 'number', min: 0, message: 'Unit cost must be a positive number' }
+            { required: true, message: '請輸入單位成本！' },
+            { type: 'number', min: 0, message: '單位成本必須為正數' }
           ]}
         >
           <InputNumber
             style={{ width: '100%' }}
-            placeholder="Enter unit cost if applicable"
-            addonBefore="$"
+            placeholder="請輸入單位成本"
+            prefix="$"
+            step={0.01}
+            min={0}
+            precision={2}
           />
         </Form.Item>
+
         <Form.Item
           name="movementType"
-          label="Movement Type"
-          rules={[{ required: true, message: 'Please select a movement type!' }]}
+          label="異動類型"
+          rules={[{ required: true, message: '請選擇異動類型！' }]}
         >
-          <Select placeholder="Select a movement type">
-            {/* These should ideally come from an enum or config on the backend/shared */}
-            <Option value="MANUAL_ADJUSTMENT">Manual Adjustment</Option>
-            <Option value="STOCKTAKE_GAIN">Stocktake Gain</Option>
-            <Option value="STOCKTAKE_LOSS">Stocktake Loss</Option>
-            <Option value="DAMAGE">Damaged Goods</Option>
-            <Option value="RETURN_RESTOCK">Return Restock</Option>
-            {/* Add other relevant movement types */}
+          <Select placeholder="請選擇異動類型">
+            <Option value="ADJUSTMENT_IN">調整增加</Option>
+            <Option value="ADJUSTMENT_OUT">調整減少</Option>
+            <Option value="MISCELLANEOUS_RECEIPT">其他入庫</Option>
+            <Option value="MISCELLANEOUS_ISSUE">其他出庫</Option>
           </Select>
         </Form.Item>
-        {/* Optional fields for document linking - can be added later if needed */}
-        {/* <Form.Item name="documentType" label="Document Type">
-          <Input placeholder="e.g., PO, SO, ADJ" />
-        </Form.Item>
-        <Form.Item name="documentId" label="Document ID">
-          <InputNumber style={{ width: '100%' }} placeholder="Associated Document ID" />
-        </Form.Item> */}
       </Form>
     </Modal>
   );

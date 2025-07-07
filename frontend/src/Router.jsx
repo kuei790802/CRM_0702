@@ -36,12 +36,15 @@ import CRMCompany from "./backpages/crm/CRMCompany.jsx";
 //ERP相關頁面
 import ERPOrders from "./backpages/erp/ERPOrders.jsx";
 import ERPProducts from "./backpages/erp/ERPProducts.jsx";
-import ERPStockLevels from "./backpages/erp/ERPStockLevels.jsx";
+import Inventory from "./backpages/erp/Inventory.jsx";
 import ERPPurchaseOrders from "./backpages/erp/ERPPurchaseOrders.jsx";
+import ERPPurchaseOrderForm from "./backpages/erp/ERPPurchaseOrderForm.jsx";
+import ERPNewPurchaseOrderForm from "./backpages/erp/ERPNewPurchaseOrderForm.jsx"; // 新增這行
 import ERPCustomers from "./backpages/erp/ERPCustomers.jsx";
 import ERPDashboard from "./backpages/erp/ERPDashboard.jsx";
 import ERPOrderForm from "./backpages/erp/ERPOrderForm.jsx";
 import ERPNewOrderForm from "./backpages/erp/ERPNewOrderForm.jsx";
+
 // 使用者角色和權限
 import UsersManage from "./backpages/users/usersManage.jsx";
 import UsersLogs from "./backpages/users/usersLogs.jsx";
@@ -143,12 +146,20 @@ const router = createBrowserRouter([
         element: <ERPProducts />,
       },
       {
-        path: "inventory/purchaseorders",
+        path: "purchaseOrders",
         element: <ERPPurchaseOrders />,
       },
       {
+        path: "purchaseOrders/:id",
+        element: <ERPPurchaseOrderForm />,
+      },
+      {
+        path: "purchaseOrders/new",
+        element: <ERPNewPurchaseOrderForm />, // 修正這裡
+      },
+      {
         path: "inventory/stocklevels",
-        element: <ERPStockLevels />,
+        element: <Inventory />,
       },
       {
         path: "sales/orders",

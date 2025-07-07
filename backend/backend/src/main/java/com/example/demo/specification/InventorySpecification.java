@@ -1,6 +1,5 @@
 package com.example.demo.specification;
 
-
 import com.example.demo.entity.Inventory;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,9 +20,6 @@ public class InventorySpecification {
             if (warehouseId != null) {
                 predicates.add(criteriaBuilder.equal(root.get("warehouse").get("warehouseId"), warehouseId));
             }
-
-
-            query.orderBy(criteriaBuilder.asc(root.get("product").get("productId")), criteriaBuilder.asc(root.get("warehouse").get("warehouseId")));
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

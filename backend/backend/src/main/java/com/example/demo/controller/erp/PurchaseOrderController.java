@@ -23,6 +23,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
 @RequestMapping("/api/purchaseOrders")
@@ -58,6 +61,19 @@ public class PurchaseOrderController {
         Long currentUserId = 1L;
         PurchaseOrderViewDTO deletedOrder = poService.deletePurchaseOrder(id, currentUserId);
         return ResponseEntity.ok(deletedOrder);
+    }
+
+    // 新增：確認進貨單 API
+    @PostMapping("/{id}/confirm")
+    @Operation(summary = "確認進貨單", description = "將草稿狀態的進貨單確認，使其可以進行收貨操作")
+    @ApiResponse(responseCode = "200", description = "進貨單確認成功")
+    @ApiResponse(responseCode = "404", description = "找不到進貨單")
+    @ApiResponse(responseCode = "409", description = "進貨單狀態錯誤，無法確認")
+    public ResponseEntity<PurchaseOrderViewDTO> confirmPurchaseOrder(
+            @Parameter(description = "要確認的進貨單ID") @PathVariable Long id) {
+        Long currentUserId = 1L; // TODO: Replace with actual authenticated user
+        PurchaseOrderViewDTO confirmedOrder = poService.confirmPurchaseOrder(id, currentUserId);
+        return ResponseEntity.ok(confirmedOrder);
     }
 
     @GetMapping

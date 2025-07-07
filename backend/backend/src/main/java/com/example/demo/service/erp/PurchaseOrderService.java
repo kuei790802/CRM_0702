@@ -141,6 +141,26 @@ public class PurchaseOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + id + " 的進貨單"));
     }
 
+    @Transactional
+    public PurchaseOrderViewDTO confirmPurchaseOrder(Long orderId, Long userId) {
+        PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到ID為 " + orderId + " 的進貨單"));
+
+        // 檢查狀態是否為草稿
+        if (purchaseOrder.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new IllegalStateException("只有草稿狀態的進貨單才能確認");
+        }
+
+        // 更新狀態為已確認
+        purchaseOrder.setStatus(PurchaseOrderStatus.CONFIRMED);
+        purchaseOrder.setUpdatedBy(userId);
+        purchaseOrder.setUpdatedAt(LocalDateTime.now());
+
+        PurchaseOrder savedOrder = purchaseOrderRepository.save(purchaseOrder);
+        return getPurchaseOrderViewById(savedOrder.getPurchaseOrderId());
+    }
+
+
 
     @Transactional
     public PurchaseOrderViewDTO updatePurchaseOrder(Long id, PurchaseOrderUpdateDTO updateDTO, Long userId) {

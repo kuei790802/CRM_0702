@@ -1,33 +1,31 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { ProTable } from "@ant-design/pro-components";
-import { Pagination, InputNumber, Button, message } from "antd"; // Added Button, message
-import { PlusOutlined } from "@ant-design/icons"; // For the button icon
-import axios from "../../api/axiosBackend";
-import InventoryAdjustmentModal from "../../backcomponents/erp/InventoryAdjustmentModal"; // Import the modal
+import { Pagination, Button, message } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import axios from "../../api/axiosBackend"; // Corrected Path
+import InventoryAdjustmentModal from "../../backcomponents/erp/InventoryAdjustmentModal"; // Corrected Path
 
-const PAGE_SIZE = 10; // Standard page size
+const PAGE_SIZE = 10;
 
 function Inventory() {
   const actionRef = useRef();
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  // const [selectedProductInfo, setSelectedProductInfo] = useState(null); // For pre-filling modal if triggered from a row
+  const [selectedProductInfo, setSelectedProductInfo] = useState(null);
   const [searchFilters, setSearchFilters] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async (page = 1, filters = {}) => { // Make sure this is being called correctly
+  const fetchData = async (page = 1, filters = {}) => {
     setLoading(true);
-    // setData([]); // Let's not clear data immediately to avoid flickering if total is 0 initially
     try {
-      const res = await axios.get("/api/inventory", {
+      const res = await axios.get("/inventory", {
         params: {
           ...filters,
           page: page - 1,
           size: PAGE_SIZE,
-          sort: "lastUpdatedAt,desc",
+          sort: "updatedAt,desc",
         },
       });
 
@@ -41,8 +39,8 @@ function Inventory() {
     } catch (error) {
       console.error("Inventory data fetching failed:", error);
       message.error("Failed to fetch inventory data.");
-      setData([]); // Ensure data is empty on error
-      setTotal(0); // Ensure total is 0 on error
+      setData([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -57,25 +55,25 @@ function Inventory() {
       title: "Product Name",
       dataIndex: "productName",
       key: "productName",
-      hideInSearch: true, // Will search by productId for now
+      hideInSearch: true,
     },
     {
       title: "Product Code",
       dataIndex: "productCode",
       key: "productCode",
       copyable: true,
-      hideInSearch: true, // Will search by productId for now
+      hideInSearch: true,
     },
     {
-      title: "Product ID", // Search field for Product
+      title: "Product ID",
       dataIndex: "productId",
       key: "productId",
-      hideInTable: true, // Don't show this column in table, only for search
+      hideInTable: true,
       valueType: 'digit',
-      fieldProps: { // Props for the search input
+      fieldProps: {
         placeholder: "Enter Product ID",
       },
-      search: { // Custom transform for search
+      search: {
         transform: (value) => ({ productId: value }),
       },
     },
@@ -83,13 +81,13 @@ function Inventory() {
       title: "Warehouse Name",
       dataIndex: "warehouseName",
       key: "warehouseName",
-      hideInSearch: true, // Will search by warehouseId for now
+      hideInSearch: true,
     },
     {
-      title: "Warehouse ID", // Search field for Warehouse
+      title: "Warehouse ID",
       dataIndex: "warehouseId",
       key: "warehouseId",
-      hideInTable: true, // Don't show this column in table, only for search
+      hideInTable: true,
       valueType: 'digit',
       fieldProps: {
         placeholder: "Enter Warehouse ID",
@@ -116,13 +114,28 @@ function Inventory() {
     },
     {
       title: "Last Updated",
-      dataIndex: "lastUpdatedAt",
-      key: "lastUpdatedAt",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
       valueType: "dateTime",
       hideInSearch: true,
-      sorter: true, // Allow sorting by this column
+      sorter: true,
     },
-    // No 'Actions' column for now, will be added with Adjust Inventory functionality
+    {
+      title: "Actions",
+      key: "action",
+      hideInSearch: true,
+      render: (_, record) => (
+        <Button
+          type="link"
+          onClick={() => {
+            setSelectedProductInfo(record);
+            setIsModalOpen(true);
+          }}
+        >
+          Adjust
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -132,63 +145,57 @@ function Inventory() {
         actionRef={actionRef}
         dataSource={data}
         loading={loading}
-        rowKey="inventoryId" // Unique key for each row
-        search={{
-          labelWidth: "auto",
-          searchText: "Search",
-          resetText: "Clear",
-          // collapsed: false, // Optional: Keep search expanded by default
-        }}
-        pagination={false} // We use a custom pagination component
-        dateFormatter="string"
-        headerTitle="Inventory Management"
-        options={false} // Disable density, full screen, reload, settings for now
-        onSubmit={(params) => { // Called when search form is submitted
-          // ProTable passes all form values, including undefined ones if not filled.
-          // We filter out undefined/null values before setting searchFilters
-          const activeFilters = {};
-          if (params.productId) activeFilters.productId = params.productId;
-          if (params.warehouseId) activeFilters.warehouseId = params.warehouseId;
-
-          setSearchFilters(activeFilters);
+        rowKey="inventoryId"
+        onSubmit={(params) => {
+          const filters = {
+            productId: params.productId,
+            warehouseId: params.warehouseId,
+          };
+          setSearchFilters(filters);
           setCurrentPage(1); // Reset to first page on new search
         }}
-        // toolBarRender can be added later for "Adjust Inventory" button
+        onReset={() => {
+          setSearchFilters({});
+          setCurrentPage(1);
+        }}
+        pagination={false}
+        dateFormatter="string"
+        headerTitle="Inventory Management"
         toolBarRender={() => [
           <Button
-            key="adjust"
+            key="button"
             icon={<PlusOutlined />}
-            type="primary"
             onClick={() => {
-              // setSelectedProductInfo(null); // For a general adjustment
-              setIsModalVisible(true);
+              setSelectedProductInfo(null); // Reset for new entry
+              setIsModalOpen(true);
             }}
+            type="primary"
           >
-            Adjust Inventory
+            New Adjustment
           </Button>,
         ]}
       />
+      <div className="flex justify-center py-4">
+        <Pagination
+          current={currentPage}
+          pageSize={PAGE_SIZE}
+          total={total}
+          onChange={(page) => setCurrentPage(page)}
+          showSizeChanger={false}
+        />
+      </div>
 
-      {total > 0 && (
-        <div className="flex justify-center py-4">
-          <Pagination
-            current={currentPage}
-            pageSize={PAGE_SIZE}
-            total={total}
-            onChange={(page) => setCurrentPage(page)}
-            showSizeChanger={false} // Optional: if you want to allow changing page size
-          />
-        </div>
+      {isModalOpen && (
+        <InventoryAdjustmentModal
+          open={isModalOpen}
+          onCancel={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            setIsModalOpen(false);
+            fetchData(currentPage, searchFilters);
+          }}
+          productInfo={selectedProductInfo}
+        />
       )}
-      <InventoryAdjustmentModal
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        onSuccess={() => {
-          setIsModalVisible(false);
-          fetchData(currentPage, searchFilters); // Refresh data
-        }}
-        // productInfo={selectedProductInfo} // Pass selected product info if opening modal from a row action
-      />
     </div>
   );
 }
