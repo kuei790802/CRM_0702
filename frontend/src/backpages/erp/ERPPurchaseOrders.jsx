@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { PlusOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { ProTable, TableDropdown } from "@ant-design/pro-components";
-import { Button, Pagination, Tag, message, Modal } from "antd";
+import { Button, Pagination, Tag, message, Modal, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axiosBackend";
 
@@ -16,6 +16,7 @@ const ERPPurchaseOrders = () => {
   const [searchFilters, setSearchFilters] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [modal, contextHolder] = Modal.useModal();
 
   const fetchData = async (page = 1, filters = {}) => {
     setLoading(true);
@@ -45,22 +46,26 @@ const ERPPurchaseOrders = () => {
     fetchData(currentPage, searchFilters);
   }, [currentPage, searchFilters]);
 
+  const handleEdit = (record) => {
+    navigate(`/erp/purchaseOrders/${record.purchaseOrderId}`);
+  };
+
   // 確認進貨單
   const handleConfirmOrder = (record) => {
-    confirm({
-      title: '確認進貨單',
+    modal.confirm({
+      title: "確認進貨單",
       content: `確定要確認進貨單 ${record.orderNumber} 嗎？確認後將無法再修改。`,
-      okText: '確認',
-      cancelText: '取消',
+      okText: "確認",
+      cancelText: "取消",
       onOk: async () => {
         try {
           await axios.post(`/purchaseOrders/${record.purchaseOrderId}/confirm`);
-          message.success('進貨單確認成功！');
+          message.success("進貨單確認成功！");
           // 重新載入資料
           fetchData(currentPage, searchFilters);
         } catch (error) {
-          console.error('確認失敗:', error);
-          message.error(error.response?.data?.message || '確認失敗，請稍後再試');
+          console.error("確認失敗:", error);
+          message.error("確認失敗");
         }
       },
     });
@@ -68,20 +73,24 @@ const ERPPurchaseOrders = () => {
 
   // 處理庫存收貨
   const handleReceiveInventory = (record) => {
-    confirm({
-      title: '確認收貨',
+    modal.confirm({
+      title: "確認收貨",
       content: `確定要將進貨單 ${record.orderNumber} 的商品全部收貨入庫嗎？`,
-      okText: '確認收貨',
-      cancelText: '取消',
+      okText: "確認收貨",
+      cancelText: "取消",
       onOk: async () => {
         try {
-          await axios.post(`/inventory/purchase-orders/${record.purchaseOrderId}/receive`);
-          message.success('收貨成功！庫存已更新');
+          await axios.post(
+            `/inventory/purchase-orders/${record.purchaseOrderId}/receive`
+          );
+          message.success("收貨成功！庫存已更新");
           // 重新載入資料
           fetchData(currentPage, searchFilters);
         } catch (error) {
-          console.error('收貨失敗:', error);
-          message.error(error.response?.data?.message || '收貨失敗，請稍後再試');
+          console.error("收貨失敗:", error);
+          message.error(
+            error.response?.data?.message || "收貨失敗，請稍後再試"
+          );
         }
       },
     });
@@ -89,20 +98,22 @@ const ERPPurchaseOrders = () => {
 
   // 刪除進貨單
   const handleDelete = (record) => {
-    confirm({
-      title: '確認刪除',
+    modal.confirm({
+      title: "確認刪除",
       content: `確定要刪除進貨單 ${record.orderNumber} 嗎？此操作無法恢復。`,
-      okText: '確認刪除',
-      okType: 'danger',
-      cancelText: '取消',
+      okText: "確認刪除",
+      okType: "danger",
+      cancelText: "取消",
       onOk: async () => {
         try {
           await axios.delete(`/purchaseOrders/${record.purchaseOrderId}`);
-          message.success('刪除成功');
+          message.success("刪除成功");
           fetchData(currentPage, searchFilters);
         } catch (error) {
-          console.error('刪除失敗:', error);
-          message.error(error.response?.data?.message || '刪除失敗，請稍後再試');
+          console.error("刪除失敗:", error);
+          message.error(
+            error.response?.data?.message || "刪除失敗，請稍後再試"
+          );
         }
       },
     });
@@ -163,58 +174,38 @@ const ERPPurchaseOrders = () => {
     },
     {
       title: "操作",
-      valueType: "option",
-      key: "option",
+      key: "action",
       render: (_, record) => {
         const actions = [
-          <a
-            key="edit"
-            onClick={() => navigate(`/erp/purchaseOrders/${record.purchaseOrderId}`)}
-          >
+          <Button key="edit" onClick={() => handleEdit(record)}>
             編輯
-          </a>
+          </Button>,
+          <Button
+            key="confirm"
+            type="primary"
+            onClick={() => handleConfirmOrder(record)}
+            disabled={record.status !== "DRAFT"}
+          >
+            確認
+          </Button>,
+          <Button
+            key="receive"
+            onClick={() => handleReceiveInventory(record)}
+            disabled={record.status !== "CONFIRMED"}
+          >
+            收貨
+          </Button>,
+          <Button
+            key="delete"
+            type="primary"
+            danger
+            onClick={() => handleDelete(record)}
+          >
+            刪除
+          </Button>,
         ];
 
-        // 草稿狀態才能確認
-        if (record.status === 'DRAFT') {
-          actions.push(
-            <a
-              key="confirm"
-              onClick={() => handleConfirmOrder(record)}
-              style={{ color: '#1890ff' }}
-            >
-              確認
-            </a>
-          );
-        }
-
-        // 只有已確認狀態才能收貨
-        if (record.status === 'CONFIRMED') {
-          actions.push(
-            <a
-              key="receive"
-              onClick={() => handleReceiveInventory(record)}
-              style={{ color: '#52c41a' }}
-            >
-              收貨入庫
-            </a>
-          );
-        }
-
-        actions.push(
-          <TableDropdown
-            key="dropdown"
-            menus={[
-              { 
-                key: "delete", 
-                name: "刪除",
-                onClick: () => handleDelete(record)
-              },
-            ]}
-          />
-        );
-
-        return actions;
+        return <Space size="middle">{actions}</Space>;
       },
       hideInSearch: true,
     },
@@ -222,6 +213,7 @@ const ERPPurchaseOrders = () => {
 
   return (
     <div className="bg-white px-2">
+      {contextHolder}
       <ProTable
         columns={columns}
         actionRef={actionRef}
@@ -246,9 +238,9 @@ const ERPPurchaseOrders = () => {
           setCurrentPage(1);
         }}
         toolBarRender={() => [
-          <Button 
-            key="new" 
-            icon={<PlusOutlined />} 
+          <Button
+            key="new"
+            icon={<PlusOutlined />}
             type="primary"
             onClick={() => navigate("/erp/purchaseOrders/new")}
           >
@@ -276,37 +268,37 @@ const ERPPurchaseOrders = () => {
 
 export default ERPPurchaseOrders;
 
-// ✅ 狀態文字與顏色對應（更新為後端真實狀態）
+// 狀態文字與顏色對應（更新為後端真實狀態）
 function getStatusText(status) {
   switch (status) {
-    case 'DRAFT':
-      return '草稿';
-    case 'CONFIRMED':
-      return '已確認';
-    case 'PARTIALLY_RECEIVED':
-      return '部分收貨';
-    case 'RECEIVED':
-      return '已收貨';
-    case 'CANCELLED':
-      return '已取消';
+    case "DRAFT":
+      return "草稿";
+    case "CONFIRMED":
+      return "已確認";
+    case "PARTIALLY_RECEIVED":
+      return "部分收貨";
+    case "RECEIVED":
+      return "已收貨";
+    case "CANCELLED":
+      return "已取消";
     default:
-      return '未知';
+      return "未知";
   }
 }
 
 function getStatusColor(status) {
   switch (status) {
-    case 'DRAFT':
-      return 'default';
-    case 'CONFIRMED':
-      return 'blue';
-    case 'PARTIALLY_RECEIVED':
-      return 'orange';
-    case 'RECEIVED':
-      return 'green';
-    case 'CANCELLED':
-      return 'red';
+    case "DRAFT":
+      return "default";
+    case "CONFIRMED":
+      return "blue";
+    case "PARTIALLY_RECEIVED":
+      return "orange";
+    case "RECEIVED":
+      return "green";
+    case "CANCELLED":
+      return "red";
     default:
-      return 'gray';
+      return "gray";
   }
 }

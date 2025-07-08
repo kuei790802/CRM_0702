@@ -27,25 +27,32 @@ const ERPNewPurchaseOrderForm = () => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get("/products/simple-list");
-        setProducts(res.data);
+        // Handle different possible response formats
+        const productsData = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.content)
+          ? res.data.content
+          : [];
+        setProducts(productsData);
       } catch (err) {
-        message.error("商品資料載入失敗");
         console.error("商品資料載入失敗:", err);
+        message.error("商品資料載入失敗");
+        setProducts([]); // Ensure products is always an array
       }
     };
-    
+
     void fetchProducts();
   }, []);
 
   const addDetail = () => {
     setDetails([
       ...details,
-      { 
-        key: Date.now(), 
-        productId: null, 
-        quantity: 1, 
+      {
+        key: Date.now(),
+        productId: null,
+        quantity: 1,
         unitPrice: 0,
-        warehouseId: 1
+        warehouseId: 1,
       },
     ]);
   };
@@ -70,9 +77,13 @@ const ERPNewPurchaseOrderForm = () => {
 
     // 驗證每個明細項目是否完整
     const invalidDetails = details.filter(
-      item => !item.productId || !item.quantity || item.unitPrice === null || item.unitPrice === undefined
+      (item) =>
+        !item.productId ||
+        !item.quantity ||
+        item.unitPrice === null ||
+        item.unitPrice === undefined
     );
-    
+
     if (invalidDetails.length > 0) {
       message.error("請完善所有商品明細的資料");
       return;
@@ -88,8 +99,8 @@ const ERPNewPurchaseOrderForm = () => {
         productId: parseInt(item.productId),
         quantity: parseFloat(item.quantity).toString(), // 轉為字串傳送
         unitPrice: parseFloat(item.unitPrice).toString(), // 轉為字串傳送
-        warehouseId: parseInt(values.warehouseId)
-      }))
+        warehouseId: parseInt(values.warehouseId),
+      })),
     };
 
     console.log("發送的數據:", payload);
@@ -106,13 +117,13 @@ const ERPNewPurchaseOrderForm = () => {
     } catch (err) {
       console.error("完整錯誤信息:", err);
       message.error("進貨單新增失敗");
-      
+
       // 顯示更詳細的錯誤信息
       if (err.response?.data) {
         console.error("後端返回的錯誤:", err.response.data);
         if (err.response.data.message) {
           message.error(`詳細錯誤: ${err.response.data.message}`);
-        } else if (typeof err.response.data === 'string') {
+        } else if (typeof err.response.data === "string") {
           message.error(`錯誤信息: ${err.response.data}`);
         }
       }
@@ -186,8 +197,8 @@ const ERPNewPurchaseOrderForm = () => {
           name="supplierId"
           rules={[{ required: true, message: "請輸入供應商ID" }]}
         >
-          <InputNumber 
-            style={{ width: "100%" }} 
+          <InputNumber
+            style={{ width: "100%" }}
             min={1}
             placeholder="請輸入供應商ID"
           />
@@ -199,8 +210,8 @@ const ERPNewPurchaseOrderForm = () => {
           rules={[{ required: true, message: "請輸入倉庫ID" }]}
           initialValue={1}
         >
-          <InputNumber 
-            style={{ width: "100%" }} 
+          <InputNumber
+            style={{ width: "100%" }}
             min={1}
             placeholder="請輸入倉庫ID"
           />
@@ -233,9 +244,9 @@ const ERPNewPurchaseOrderForm = () => {
 
         <Form.Item>
           <Space>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
+            <Button
+              type="primary"
+              htmlType="submit"
               loading={loading}
               disabled={details.length === 0}
             >

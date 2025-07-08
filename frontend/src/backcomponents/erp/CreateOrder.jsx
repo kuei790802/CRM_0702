@@ -15,7 +15,7 @@ import axios from "../../api/axiosBackend";
 const CreateOrder = ({ onSuccess }) => {
   const handleSubmit = async (values) => {
     try {
-      await axios.post("/sales-orders", values);
+      await axios.post("/erp/sales-orders", values);
       message.success("訂單新增成功！");
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -33,11 +33,7 @@ const CreateOrder = ({ onSuccess }) => {
           submitText: "新增訂單",
           resetText: "清除",
         },
-        render: (_, dom) => (
-          <div style={{ textAlign: "right" }}>
-            {dom}
-          </div>
-        ),
+        render: (_, dom) => <div style={{ textAlign: "right" }}>{dom}</div>,
       }}
     >
       <ProFormSelect
@@ -45,7 +41,7 @@ const CreateOrder = ({ onSuccess }) => {
         label="客戶"
         placeholder="請選擇客戶"
         request={async () => {
-          const res = await axios.get("/customers");
+          const res = await axios.get("/erp/customers");
           return res.data.content.map((c) => ({
             label: c.name,
             value: c.customerId,
@@ -81,18 +77,14 @@ const CreateOrder = ({ onSuccess }) => {
         rules={[{ required: true, message: "請輸入付款方式" }]}
       />
 
-      <ProFormTextArea
-        name="remarks"
-        label="備註"
-        placeholder="請輸入備註"
-      />
+      <ProFormTextArea name="remarks" label="備註" placeholder="請輸入備註" />
 
       <ProFormSelect
         name="warehouseId"
         label="倉庫"
         placeholder="請選擇倉庫"
         request={async () => {
-          const res = await axios.get("/warehouses");
+          const res = await axios.get("/erp/warehouses");
           return res.data.content.map((w) => ({
             label: w.name,
             value: w.warehouseId,
@@ -107,9 +99,7 @@ const CreateOrder = ({ onSuccess }) => {
         creatorButtonProps={{
           creatorButtonText: "新增商品",
         }}
-        initialValue={[
-          { productId: null, quantity: 1, unitPrice: 0 },
-        ]}
+        initialValue={[{ productId: null, quantity: 1, unitPrice: 0 }]}
       >
         <ProForm.Group>
           <ProFormSelect
@@ -117,7 +107,7 @@ const CreateOrder = ({ onSuccess }) => {
             label="商品"
             placeholder="請選擇商品"
             request={async () => {
-              const res = await axios.get("/products");
+              const res = await axios.get("/erp/products");
               return res.data.content.map((p) => ({
                 label: p.name,
                 value: p.productId,
