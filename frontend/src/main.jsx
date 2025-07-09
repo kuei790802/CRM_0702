@@ -1,7 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
+import { App as AntdApp } from "antd";
 import "./index.css";
+import App from "./App";
 import router from "./Router.jsx";
 
 // if (import.meta.env.MODE === 'development' || import.meta.env.VITE_USE_MOCK === 'true') {
@@ -11,10 +13,12 @@ import router from "./Router.jsx";
 //   });
 // }
 
+const root = createRoot(document.getElementById("root"));
 
-
-createRoot(document.getElementById("root")).render(
+root.render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AntdApp>
+      <RouterProvider router={router} />
+    </AntdApp>
   </StrictMode>
 );

@@ -1,60 +1,42 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import { PlusOutlined } from "@ant-design/icons";
-import { ProTable, TableDropdown } from "@ant-design/pro-components";
-import { Button, Pagination } from "antd";
+import { ProTable, TableDropdown } from "@ant-design/pro-components"; // ✨ 1. 重新匯入 TableDropdown
+import { Button, App } from "antd"; // ✨ 2. 不再需要 Popconfirm 和 Space
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axiosBackend";
 
-const PAGE_SIZE = 10;
-
 const ERPOrders = () => {
   const actionRef = useRef();
-  const [data, setData] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchFilters, setSearchFilters] = useState({});
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { message, modal } = App.useApp(); // ✨ 3. 我們會用到 modal 來做二次確認
 
-  const fetchData = async (page = 1, filters = {}) => {
-    setLoading(true);
-    setData([]);
-    try {
-      const res = await axios.get("/sales-orders", {
-        params: {
-          ...filters,
-          page: page - 1,
-          size: PAGE_SIZE,
-          sort: "orderDate",
-        },
-      });
-
-      setData(res.data.content);
-      setTotal(res.data.totalElements);
-    } catch (error) {
-      console.error("訂單資料抓取失敗:", error);
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteOrder = (orderId) => {
+    modal.confirm({
+      title: "確定要取消這筆訂單嗎？",
+      content: "取消後，訂單狀態將變更為「已取消」。此操作無法復原。",
+      okText: "確定取消",
+      okType: "danger",
+      cancelText: "再想想",
+      onOk: async () => {
+        try {
+          await axios.delete(`/sales-orders/${orderId}`);
+          message.success("訂單已成功取消");
+          actionRef.current?.reload();
+        } catch (error) {
+          console.error("取消訂單失敗:", error);
+          const errorMsg =
+            error.response?.data?.message || "操作失敗，請稍後再試";
+          message.error(errorMsg);
+        }
+      },
+    });
   };
-
-  useEffect(() => {
-    fetchData(currentPage, searchFilters);
-  }, [currentPage, searchFilters]);
 
   const columns = [
     {
       title: "客戶名稱",
       dataIndex: "customerName",
-      formItemProps: {
-        label: "客戶名稱",
-      },
-      fieldProps: {
-        placeholder: "請輸入客戶名稱",
-      },
-      search: {
-        transform: (value) => ({ keyword: value }),
-      },
+      // ... (其他欄位定義保持不變)
     },
     {
       title: "訂單編號",
@@ -70,14 +52,11 @@ const ERPOrders = () => {
       valueEnum: {
         DRAFT: { text: "草稿", status: "Default" },
         PENDING: { text: "待處理", status: "Processing" },
-        CONFIRMED: { text: "已確認", status: "Success" },
+        CONFIRMED: { text: "已確認", status: "Processing" },
         PARTIAL_SHIPPED: { text: "部分出貨", status: "Warning" },
         SHIPPED: { text: "已出貨", status: "Success" },
         COMPLETED: { text: "已完成", status: "Success" },
         CANCELLED: { text: "已取消", status: "Error" },
-      },
-      search: {
-        transform: (value) => ({ orderStatus: value }),
       },
     },
     {
@@ -96,17 +75,20 @@ const ERPOrders = () => {
       title: "操作",
       valueType: "option",
       key: "option",
-      render: (_, record) => [
-        <a
-          key="edit"
-          onClick={() => navigate(`/erp/sales/orders/${record.salesOrderId}`)}
-        >
-          編輯
-        </a>,
+      // ✨ 4. 【核心改動】使用 TableDropdown 將所有操作收合
+      render: (text, record, _, action) => [
         <TableDropdown
-          key="dropdown"
+          key="actions"
+          onMenuClick={({ key }) => {
+            if (key === 'edit') {
+              navigate(`/erp/sales/orders/${record.salesOrderId}`);
+            } else if (key === 'delete') {
+              handleDeleteOrder(record.salesOrderId);
+            }
+          }}
           menus={[
-            { key: "delete", name: "刪除" },
+            { key: 'edit', name: '編輯訂單' },
+            { key: 'delete', name: '取消訂單', danger: true }, // danger: true 會讓文字變紅色
           ]}
         />,
       ],
@@ -119,39 +101,52 @@ const ERPOrders = () => {
       <ProTable
         columns={columns}
         actionRef={actionRef}
-        dataSource={data}
-        loading={loading}
         rowKey="salesOrderId"
         search={{
           labelWidth: "auto",
-          searchText: "搜尋",
-          resetText: "清除",
         }}
-        pagination={false}
+        request={async (params = {}) => {
+          try {
+            const res = await axios.get("/sales-orders", {
+              params: {
+                page: params.current ? params.current - 1 : 0,
+                size: params.pageSize,
+                keyword: params.customerName,
+                status: params.orderStatus,
+                sort: "createdAt,desc",
+              },
+            });
+            return {
+              data: res.data.content,
+              success: true,
+              total: res.data.totalElements,
+            };
+          } catch (error) {
+            console.error("ProTable 訂單資料抓取失敗:", error);
+            message.error("訂單資料抓取失敗！");
+            return {
+              data: [],
+              success: false,
+              total: 0,
+            };
+          }
+        }}
+        pagination={{
+          pageSize: 10,
+        }}
         dateFormatter="string"
         headerTitle="訂單管理"
-        options={false}
-        onSubmit={(params) => {
-          setSearchFilters(params);
-          setCurrentPage(1);
-        }}
         toolBarRender={() => [
-          <Button key="new" icon={<PlusOutlined />} type="primary"
-          onClick={() => navigate("/erp/sales/orders/new")}>
+          <Button
+            key="new"
+            icon={<PlusOutlined />}
+            type="primary"
+            onClick={() => navigate("/erp/sales/orders/new")}
+          >
             新增訂單
           </Button>,
         ]}
       />
-
-      <div className="flex justify-center py-4">
-        <Pagination
-          current={currentPage}
-          pageSize={PAGE_SIZE}
-          total={total}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-        />
-      </div>
     </div>
   );
 };

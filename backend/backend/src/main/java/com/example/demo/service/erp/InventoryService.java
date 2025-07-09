@@ -8,20 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.demo.dto.erp.InventoryAdjustmentCreateDTO;
-import com.example.demo.dto.erp.InventoryAdjustmentDetailCreateDTO;
-import com.example.demo.dto.erp.InventoryViewDTO;
-import com.example.demo.entity.*;
-import com.example.demo.entity.Inventory;
-import com.example.demo.entity.InventoryAdjustment;
-import com.example.demo.entity.InventoryAdjustmentDetail;
-import com.example.demo.entity.InventoryMovement;
-import com.example.demo.enums.PaymentStatus;
-import com.example.demo.enums.SalesOrderStatus;
-import com.example.demo.event.SalesOrderShippedEvent;
-import com.example.demo.exception.DataConflictException;
-import com.example.demo.repository.*;
-import com.example.demo.specification.InventorySpecification;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,9 +15,38 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dto.erp.InventoryAdjustmentCreateDTO;
+import com.example.demo.dto.erp.InventoryAdjustmentDetailCreateDTO;
+import com.example.demo.dto.erp.InventoryViewDTO;
+import com.example.demo.entity.Inventory;
+import com.example.demo.entity.InventoryAdjustment;
+import com.example.demo.entity.InventoryAdjustmentDetail;
+import com.example.demo.entity.InventoryMovement;
+import com.example.demo.entity.Product;
+import com.example.demo.entity.PurchaseOrder;
+import com.example.demo.entity.PurchaseOrderDetail;
+import com.example.demo.entity.SalesOrder;
+import com.example.demo.entity.SalesOrderDetail;
+import com.example.demo.entity.SalesShipment;
+import com.example.demo.entity.SalesShipmentDetail;
+import com.example.demo.entity.User;
+import com.example.demo.entity.Warehouse;
 import com.example.demo.enums.MovementType;
 import com.example.demo.enums.PurchaseOrderStatus;
+import com.example.demo.enums.SalesOrderStatus;
+import com.example.demo.event.SalesOrderShippedEvent;
+import com.example.demo.exception.DataConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.InventoryAdjustmentRepository;
+import com.example.demo.repository.InventoryMovementRepository;
+import com.example.demo.repository.InventoryRepository;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.PurchaseOrderRepository;
+import com.example.demo.repository.SalesOrderRepository;
+import com.example.demo.repository.SalesShipmentRepository;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.WarehouseRepository;
+import com.example.demo.specification.InventorySpecification;
 
 import lombok.RequiredArgsConstructor;
 
@@ -461,130 +476,99 @@ public class InventoryService {
     @Transactional
     public SalesShipment shipSalesOrder(Long salesOrderId, Long warehouseId, Long operatorId) {
 
-
+        // 1. 查找相關實體
         SalesOrder order = salesOrderRepository.findById(salesOrderId)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + salesOrderId + " 的銷售訂單"));
+        User operator = userRepository.findById(operatorId)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + operatorId + " 的操作員"));
 
+        // 2. 商業邏輯驗證
         if (order.getOrderStatus() != SalesOrderStatus.CONFIRMED) {
             throw new DataConflictException("訂單狀態不為「已確認」，無法出貨。");
         }
-
-        // Validate that the order's warehouse matches the shipment warehouse
         if (!order.getWarehouse().getWarehouseId().equals(warehouseId)) {
-            throw new DataConflictException("銷售訂單 (ID: " + salesOrderId + ") 預計從倉庫 ID " + order.getWarehouse().getWarehouseId() + " 出貨，但請求的出貨倉庫為 ID " + warehouseId + "。請確認倉庫一致性。");
+            throw new DataConflictException("請求的出貨倉庫 (ID: " + warehouseId + ") 與訂單預設倉庫 (ID: " + order.getWarehouse().getWarehouseId() + ") 不符。");
         }
 
-//        if (order.getOrderStatus() != SalesOrderStatus.CONFIRMED) {
-//            throw new DataConflictException("此銷售訂單狀態為 " + order.getOrderStatus() + "，不可執行出貨。");
-//        }
+        // 3. 建立出貨單 (SalesShipment)
+        SalesShipment shipment = createSalesShipmentEntity(order, operator);
 
-        User operator = userRepository.findById(operatorId)
-                .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + operatorId + " 的操作員"));
-        Warehouse shipmentWarehouse = warehouseRepository.findById(warehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException("找不到 ID 為 " + warehouseId + " 的出貨倉庫"));
-
-
-        SalesShipment shipment = new SalesShipment();
-        shipment.setSalesOrder(order);
-        shipment.setCustomer(order.getCustomer());
-        shipment.setWarehouse(shipmentWarehouse);
-        shipment.setShipmentDate(LocalDate.now());
-        shipment.setShippingMethod(order.getShippingMethod());
-        shipment.setShippingStatus("SHIPPED");
-
-        String shipmentNumber = "SHIP-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        shipment.setShipmentNumber(shipmentNumber);
-
-
+        // 4. 處理出貨明細並扣除庫存
         for (SalesOrderDetail detail : order.getDetails()) {
-
-
-            int updatedRows = inventoryRepository.deductStockAndAllocation(
-                    detail.getProduct().getProductId(),
-                    warehouseId,
-                    detail.getQuantity()
-            );
-
-
-            if (updatedRows == 0) {
-                throw new DataConflictException("庫存不足：產品 '" + detail.getProduct().getName() + "' 在倉庫 ID " + warehouseId + " 中數量不足，無法出貨。");
-            }
-
-
-            SalesShipmentDetail shipmentDetail = new SalesShipmentDetail();
-            shipmentDetail.setProduct(detail.getProduct());
-            shipmentDetail.setShippedQuantity(detail.getQuantity());
-            shipmentDetail.setSalesOrderItemId(detail.getItemId());
-            shipment.addDetail(shipmentDetail);
-
+            deductInventoryForShipment(detail, warehouseId);
+            shipment.addDetail(createShipmentDetailEntity(detail));
         }
 
+        // 5. 儲存出貨單 (這會一併儲存所有明細)
         SalesShipment savedShipment = salesShipmentRepository.save(shipment);
 
-        for (SalesShipmentDetail savedShipmentDetail : savedShipment.getDetails()) {
-            Product product = savedShipmentDetail.getProduct();
-            Warehouse warehouse = savedShipment.getWarehouse();
-            Inventory inventory = inventoryRepository.findByProductAndWarehouse(product, warehouse)
-                    .orElseThrow(() -> new IllegalStateException("庫存紀錄消失，資料異常！產品ID: " + product.getProductId()));
-//            Product product = detail.getProduct();
-//            Warehouse warehouse = shipment.getWarehouse();
-//            Inventory inventory = inventoryRepository.findByProductAndWarehouse(product, warehouse)
-//                    .orElseThrow(() -> new IllegalStateException("庫存紀錄消失，資料異常！"));
+        // 6. 建立庫存異動紀錄 (InventoryMovement)
+        createInventoryMovementsForShipment(savedShipment, operator);
 
-//            for(SalesShipmentDetail salesShipmentDetail : savedSh)
-
-// After successfully deducting stock via repository (which only touches currentStock)
-            // We also need to reduce unitsAllocated for the shipped quantity.
-//            inventory.setUnitsAllocated(inventory.getUnitsAllocated().subtract(savedShipmentDetail.getShippedQuantity()));
-//            inventoryRepository.save(inventory); // Save the change to unitsAllocated
-
-            createInventoryMovement(
-                    product,
-                    shipmentWarehouse,
-                    MovementType.SALE_SHIPMENT_OUT.name(),
-                    savedShipmentDetail.getShippedQuantity().negate(),
-                    inventory.getAverageCost(),
-                    inventory.getCurrentStock(),
-                    "SalesShipment",
-                    savedShipment.getShipmentId(),
-                    savedShipmentDetail.getItemId(),
-                    operator
-            );
-//            InventoryMovement movement = new InventoryMovement();
-//            movement.setProduct(product);
-//            movement.setWarehouse(shipment.getWarehouse());
-//            movement.setMovementType("OUT_SALE");
-//            movement.setQuantityChange(savedShipmentDetail.getShippedQuantity().negate());
-//            movement.setCurrentStockAfterMovement(inventory.getCurrentStock());
-//            movement.setUnitCostAtMovement(inventory.getAverageCost());
-//            movement.setDocumentType("SalesShipment");
-//            movement.setDocumentId(savedShipment.getShipmentId());
-//            movement.setDocumentItemId(savedShipmentDetail.getItemId());
-//            movement.setRecordedBy(operator);
-//            movement.setMovementDate(LocalDateTime.now());
-//            inventoryMovementRepository.save(movement);
-        }
-
-        // ✨ 4. 發布事件，而不是直接更新訂單
-        // 建立一個事件物件，裝載必要的資訊
+        // 7. 【關鍵】發布事件，通知其他服務
         SalesOrderShippedEvent event = new SalesOrderShippedEvent(
                 savedShipment.getSalesOrder().getSalesOrderId(),
                 savedShipment.getShipmentId(),
                 LocalDateTime.now()
         );
-        // 使用發布器將事件廣播出去
         eventPublisher.publishEvent(event);
 
-        // ✨ 5. 【重要】刪除舊的、直接修改訂單的程式碼
-        // order.setOrderStatus(SalesOrderStatus.SHIPPED);
-        // order.setPaymentStatus(PaymentStatus.PAID);
-        // salesOrderRepository.save(order);
-
-
-
-
-
+        // 8. 回傳新建立的出貨單
         return savedShipment;
+    }
+
+    // --- Helper Methods for shipSalesOrder ---
+
+    private SalesShipment createSalesShipmentEntity(SalesOrder order, User operator) {
+        SalesShipment shipment = new SalesShipment();
+        shipment.setSalesOrder(order);
+        shipment.setCustomer(order.getCustomer());
+        shipment.setWarehouse(order.getWarehouse());
+        shipment.setShipmentDate(LocalDate.now());
+        shipment.setShippingMethod(order.getShippingMethod());
+        shipment.setShippingStatus("SHIPPED");
+        shipment.setShipmentNumber("SHIP-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        // shipment.setCreatedBy(operator.getId()); // 如果有審計功能
+        return shipment;
+    }
+
+    private void deductInventoryForShipment(SalesOrderDetail detail, Long warehouseId) {
+        int updatedRows = inventoryRepository.deductStockAndAllocation(
+                detail.getProduct().getProductId(),
+                warehouseId,
+                detail.getQuantity()
+        );
+        if (updatedRows == 0) {
+            throw new DataConflictException("庫存不足：產品 '" + detail.getProduct().getName() + "' 在倉庫 ID " + warehouseId + " 中數量不足，無法出貨。");
+        }
+    }
+
+    private SalesShipmentDetail createShipmentDetailEntity(SalesOrderDetail orderDetail) {
+        SalesShipmentDetail shipmentDetail = new SalesShipmentDetail();
+        shipmentDetail.setProduct(orderDetail.getProduct());
+        shipmentDetail.setShippedQuantity(orderDetail.getQuantity());
+        shipmentDetail.setSalesOrderItemId(orderDetail.getItemId());
+        return shipmentDetail;
+    }
+
+    private void createInventoryMovementsForShipment(SalesShipment shipment, User operator) {
+        for (SalesShipmentDetail detail : shipment.getDetails()) {
+            Inventory inventory = inventoryRepository.findByProductAndWarehouse(detail.getProduct(), shipment.getWarehouse())
+                    .orElseThrow(() -> new IllegalStateException("庫存紀錄異常消失！"));
+
+            createInventoryMovement(
+                    detail.getProduct(),
+                    shipment.getWarehouse(),
+                    MovementType.SALE_SHIPMENT_OUT.name(),
+                    detail.getShippedQuantity().negate(), // 出庫為負數
+                    inventory.getAverageCost(),
+                    inventory.getCurrentStock(),
+                    "SalesShipment",
+                    shipment.getShipmentId(),
+                    detail.getItemId(),
+                    operator
+            );
+        }
     }
 
     private void createInventoryMovement(Product product, Warehouse warehouse, String movementType,

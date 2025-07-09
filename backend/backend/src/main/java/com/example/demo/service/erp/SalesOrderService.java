@@ -1,7 +1,30 @@
 package com.example.demo.service.erp;
 
-import com.example.demo.dto.erp.*;
-import com.example.demo.entity.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import com.example.demo.dto.erp.SalesOrderCreateDTO;
+import com.example.demo.dto.erp.SalesOrderDetailCreateDTO;
+import com.example.demo.dto.erp.SalesOrderDetailUpdateDTO;
+import com.example.demo.dto.erp.SalesOrderSummaryDTO;
+import com.example.demo.dto.erp.SalesOrderUpdateDTO;
+import com.example.demo.dto.erp.SalesOrderViewDTO;
+import com.example.demo.entity.CustomerBase;
+import com.example.demo.entity.Product;
+import com.example.demo.entity.SalesOrder;
+import com.example.demo.entity.SalesOrderDetail;
+import com.example.demo.entity.Warehouse;
 import com.example.demo.enums.PaymentStatus;
 import com.example.demo.enums.SalesOrderStatus;
 import com.example.demo.event.SalesOrderShippedEvent;
@@ -12,20 +35,8 @@ import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SalesOrderRepository;
 import com.example.demo.repository.WarehouseRepository;
 import com.example.demo.specification.SalesOrderSpecification;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import lombok.RequiredArgsConstructor;
 
 
 
@@ -293,19 +304,23 @@ public class SalesOrderService {
     }
 
     @TransactionalEventListener
-    @Transactional // 讓這個監聽方法本身也成為一個獨立的交易
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleOrderShippedEvent(SalesOrderShippedEvent event) {
-        System.out.println("收到訂單已出貨事件，訂單ID: " + event.salesOrderId());
+        // 為了方便除錯，可以在 console 印出 log
+        System.out.println("SalesOrderService 收到訂單已出貨事件，準備更新訂單狀態，訂單ID: " + event.salesOrderId());
 
-        // 從事件中取得訂單 ID，並找到該訂單
+        // 根據事件提供的 ID 找到訂單
         SalesOrder order = salesOrderRepository.findById(event.salesOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("監聽事件時找不到訂單，ID: " + event.salesOrderId()));
+                .orElseThrow(() -> new ResourceNotFoundException("事件監聽器：找不到訂單，ID: " + event.salesOrderId()));
 
-        // 執行原本在 InventoryService 中的更新邏輯
+        // 根據您的初衷，更新狀態
         order.setOrderStatus(SalesOrderStatus.SHIPPED);
-        order.setPaymentStatus(PaymentStatus.PAID); // 根據您之前的需求，出貨即付款
+        order.setPaymentStatus(PaymentStatus.PAID);
+        order.setUpdatedAt(LocalDateTime.now());
+        // 這邊可以加上 order.setUpdatedBy(SYSTEM_USER_ID) 之類的邏輯，表示此為系統自動更新
 
-        // 這裡可以安全地儲存，因為它在一個新的交易中
+        // 儲存更新
         salesOrderRepository.save(order);
+        System.out.println("訂單ID: " + event.salesOrderId() + " 狀態已成功更新為 SHIPPED/PAID。");
     }
 }
